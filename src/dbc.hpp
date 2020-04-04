@@ -34,3 +34,11 @@ std::istream & getline( std::istream & stream, std::string & line ) {
 
 }
 
+
+namespace dbc {
+
+class parser {
+
+};
+
+}
