@@ -12,5 +12,6 @@ set(CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS} ${GCC_COVERAGE_COMPILE_FLAGS}")
 
 # add where to find the source files
 include_directories(src)
+include_directories(test)
 add_subdirectory(test)
 
