@@ -1,9 +1,10 @@
-#include "catch.hpp"
+#include <catch2/catch.hpp>
 #include "defines.hpp"
-#include "dbc.hpp"
+#include "util/utils.hpp"
+
+using namespace Utils;
 
 TEST_CASE("Basic file input with safe getline", "") {
-
 	SECTION("Verify line inputs") {
 		std::ifstream TextFile;
 		std::string test;
@@ -12,13 +13,13 @@ TEST_CASE("Basic file input with safe getline", "") {
 		CHECK(TextFile.is_open());
 
 		if(TextFile.is_open()) {
-			SafeStr::getline(TextFile, test);
+			SafeString::getline(TextFile, test);
 			REQUIRE(test == "This is a non dbc formatted file.");
-			SafeStr::getline(TextFile, test);
+			SafeString::getline(TextFile, test);
 			REQUIRE(test == "");
-			SafeStr::getline(TextFile, test);
+			SafeString::getline(TextFile, test);
 			REQUIRE(test == "Make sure things pass with this");
-			SafeStr::getline(TextFile, test);
+			SafeString::getline(TextFile, test);
 			REQUIRE(test == "Who knows 	what might happen.");
 
 			TextFile.close();

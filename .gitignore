@@ -1,3 +1,6 @@
 # Build folders
 bin/
 build/
+
+# -- Git -- #
+*.bak
