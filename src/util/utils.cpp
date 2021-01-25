@@ -2,7 +2,7 @@
 
 namespace Utils {
 
-	std::istream & SafeString::getline( std::istream & stream, std::string & line ) {
+	std::istream & SafeString::get_line( std::istream & stream, std::string & line ) {
 		std::string newline;
 
 		std::getline( stream, newline );

@@ -4,8 +4,8 @@
 
 using namespace Utils;
 
-TEST_CASE("Basic file input with safe getline", "") {
-	SECTION("Verify line inputs") {
+TEST_CASE("Basic file input with safe get_line that is non line ending specific", "") {
+	SECTION("Verify various line ending input files") {
 		std::ifstream TextFile;
 		std::string test;
 
@@ -13,13 +13,13 @@ TEST_CASE("Basic file input with safe getline", "") {
 		CHECK(TextFile.is_open());
 
 		if(TextFile.is_open()) {
-			SafeString::getline(TextFile, test);
+			SafeString::get_line(TextFile, test);
 			REQUIRE(test == "This is a non dbc formatted file.");
-			SafeString::getline(TextFile, test);
+			SafeString::get_line(TextFile, test);
 			REQUIRE(test == "");
-			SafeString::getline(TextFile, test);
+			SafeString::get_line(TextFile, test);
 			REQUIRE(test == "Make sure things pass with this");
-			SafeString::getline(TextFile, test);
+			SafeString::get_line(TextFile, test);
 			REQUIRE(test == "Who knows 	what might happen.");
 
 			TextFile.close();

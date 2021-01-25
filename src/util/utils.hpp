@@ -6,7 +6,16 @@ namespace Utils {
 
 	class SafeString {
 	public:
-		static std::istream & getline( std::istream & stream, std::string & line );
+		/**
+		 * This is a safe non line ending specific get_ine function. This is to help with files
+		 * carried over from different systems. i.e Unix file comes to Windows with LF endings
+		 * instead of CRLF.
+		 *
+		 * @param  stream [description]
+		 * @param  line   [description]
+		 * @return        [description]
+		 */
+		static std::istream & get_line( std::istream & stream, std::string & line );
 
 	};
 
