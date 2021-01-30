@@ -1,4 +1,4 @@
-# C++ DBC Header Only File Parser
+# C++ DBC Parser
 
 This is to provide a library header only file to read in DBC files. I was looking around and couldn't
 find a simple library that didn't have dependencies. So here we are making one. I got some inspiration
