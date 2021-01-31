@@ -2,9 +2,19 @@
 #include "defines.hpp"
 #include "dbc.hpp"
 
-TEST_CASE("Load a simple 1 line message dbc", "[fileio]") {
+TEST_CASE("Testing dbc file loading", "[fileio]") {
 	auto parser = std::unique_ptr<libdbc::DbcParser>(new libdbc::DbcParser());
 
-	REQUIRE_THROWS_AS(parser->parse_file(DBC_FILE_2), libdbc::validity_error);
+	SECTION("Loading a non dbc file should throw an error", "[error]") {
+		REQUIRE_THROWS_AS(parser->parse_file(TEXT_FILE), libdbc::validity_error);
+	}
+
+	SECTION("Loading a single simple dbc file", "[dbc]") {
+		std::vector<libdbc::Message> messages;
+
+		parser->parse_file(DBC_FILE_2);
+
+		REQUIRE(parser->get_version() == "");
+	}
 
 }
