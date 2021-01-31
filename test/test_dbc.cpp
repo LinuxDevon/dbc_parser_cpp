@@ -14,7 +14,7 @@ TEST_CASE("Testing dbc file loading", "[fileio]") {
 
 		parser->parse_file(DBC_FILE_2);
 
-		REQUIRE(parser->get_version() == "");
+		REQUIRE(parser->get_version() == "1.0.0");
 	}
 
 }
