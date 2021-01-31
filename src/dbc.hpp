@@ -29,7 +29,7 @@ namespace libdbc {
 			parse_dbc_header(s);
 
 			while(!s.eof()) {
-				Utils::SafeString::get_line(s, line);
+				utils::SafeString::get_line(s, line);
 
 			}
 
@@ -48,7 +48,7 @@ namespace libdbc {
 			std::string line;
 			std::smatch match;
 
-			Utils::SafeString::get_line(file_stream, line);
+			utils::SafeString::get_line(file_stream, line);
 
 			if(!std::regex_search(line, match, version_re)) {
 				throw validity_error();
