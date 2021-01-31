@@ -2,7 +2,7 @@
 #include <fstream>
 #include <iostream>
 
-namespace Utils {
+namespace utils {
 
 	class SafeString {
 	public:

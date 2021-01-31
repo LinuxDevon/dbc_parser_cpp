@@ -1,7 +1,7 @@
 project(tests VERSION 0.1.0)
 
 list(APPEND TEST_SOURCES main.cpp
-			 test_file_loading.cpp
+			 test_dbc.cpp
 			 test_utils.cpp)
 
 include_directories(SYSTEM ${PROJECT_SOURCE_DIR}/third_party/Catch2/single_include)

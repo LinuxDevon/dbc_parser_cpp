@@ -1,6 +1,6 @@
 #include "util/utils.hpp"
 
-namespace Utils {
+namespace utils {
 
 	std::istream & SafeString::get_line( std::istream & stream, std::string & line ) {
 		std::string newline;

@@ -2,7 +2,7 @@
 #include "defines.hpp"
 #include "util/utils.hpp"
 
-using namespace Utils;
+using namespace utils;
 
 TEST_CASE("Basic file input with safe get_line that is non line ending specific", "") {
 	SECTION("Verify various line ending input files") {
