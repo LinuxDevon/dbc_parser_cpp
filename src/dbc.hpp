@@ -2,6 +2,7 @@
 #include "util/utils.hpp"
 
 #include <regex>
+#include <iostream>
 
 namespace libdbc {
 
@@ -19,7 +20,7 @@ namespace libdbc {
 	class DbcParser : public Parser {
 	public:
 		DbcParser() : version(""), version_re("^(VERSION)\\s\"(.*)\""),
-					  bit_timing_re("^(BS_:)"), name_space_re("^(_NS)\\s \\:") {
+					  bit_timing_re("^(BS_:)"), name_space_re("^(NS_)\\s\\:") {
 
 		}
 
@@ -50,37 +51,12 @@ namespace libdbc {
 		const std::regex name_space_re;
 
 		void parse_dbc_header(std::istream& file_stream) {
+			std::vector<std::string> lines;
+
 			std::string line;
 			std::smatch match;
 			bool is_blank = true;
 			bool not_blank = true;
-
-			std::vector<std::string> symbols = {"CM_",
-											   "BA_DEF_",
-											   "BA_",
-											   "VAL",
-											   "CAT_DEF_",
-											   "CAT_",
-											   "FILTER",
-											   "BA_DEF_DEF_",
-											   "EV_DATA_",
-											   "ENVVAR_DATA_",
-											   "SGTYPE_",
-											   "SGTYPE_VALTYPE_",
-											   "BA_DEF_SGTYPE_",
-											   "BA_SGTYPE_",
-											   "SIG_TYPE_REF_",
-											   "VAL_TABLE_",
-											   "SIG_GROUP_",
-											   "SIG_VALTYPE_",
-											   "SIGTYPE_VALTYPE_",
-											   "BO_TX_BU_",
-											   "BA_DEF_REL_",
-											   "BA_REL_",
-											   "BA_DEF_DEF_REL_",
-											   "BU_SG_REL_",
-											   "BU_EV_REL_",
-											   "BU_BO_REL_"};
 
 			utils::StreamHandler::get_line(file_stream, line);
 
@@ -100,8 +76,16 @@ namespace libdbc {
 				throw validity_error();
 
 		}
+		std::string trim(const std::string& line)
+		{
+			const char* WhiteSpace = " \t\v\r\n";
+			std::size_t start = line.find_first_not_of(WhiteSpace);
+			std::size_t end = line.find_last_not_of(WhiteSpace);
+			return start == end ? std::string() : line.substr(start, end - start + 1);
+		}
 
 	};
+
 
 	struct Message {
 

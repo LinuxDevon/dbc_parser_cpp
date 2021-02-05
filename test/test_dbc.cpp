@@ -16,6 +16,12 @@ TEST_CASE("Testing dbc file loading error issues", "[fileio][error]") {
 	SECTION("Loading a dbc without the required bit timing section (BS_:)", "[error]") {
 		REQUIRE_THROWS_AS(parser->parse_file(MISSING_BIT_TIMING_DBC_FILE), libdbc::validity_error);
 	}
+
+	SECTION("Loading a dbc with some missing namespace section tags (_NS :)", "[error]") {
+		// Confusion about this type of error. it appears that the header isn't
+		// very well standardized for now we ignore this type of error.
+		CHECK_NOTHROW(parser->parse_file(MISSING_NEW_SYMBOLS_DBC_FILE));
+	}
 }
 
 TEST_CASE("Testing dbc file loading", "[fileio]") {
