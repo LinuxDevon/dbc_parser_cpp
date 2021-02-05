@@ -2,6 +2,8 @@
 #include "defines.hpp"
 #include "util/utils.hpp"
 
+#include <sstream>
+
 using namespace utils;
 
 TEST_CASE("Basic file input with safe get_line that is non line ending specific", "") {
@@ -13,16 +15,62 @@ TEST_CASE("Basic file input with safe get_line that is non line ending specific"
 		CHECK(TextFile.is_open());
 
 		if(TextFile.is_open()) {
-			SafeString::get_line(TextFile, test);
+			StreamHandler::get_line(TextFile, test);
 			REQUIRE(test == "This is a non dbc formatted file.");
-			SafeString::get_line(TextFile, test);
+			StreamHandler::get_line(TextFile, test);
 			REQUIRE(test == "");
-			SafeString::get_line(TextFile, test);
+			StreamHandler::get_line(TextFile, test);
 			REQUIRE(test == "Make sure things pass with this");
-			SafeString::get_line(TextFile, test);
+			StreamHandler::get_line(TextFile, test);
 			REQUIRE(test == "Who knows 	what might happen.");
 
 			TextFile.close();
+		}
+	}
+}
+
+TEST_CASE("Test line finding utility functions", "") {
+	std::string line;
+	std::string test_string = \
+"hello\n\
+	\n\
+		 \n\
+  \n\
+this is not blank\n\
+maybe not this one either\n\
+\n\
+Someone wrote something....\n\
+   b\n\
+end";
+
+	std::istringstream stream(test_string);
+
+	SECTION("Test skipping empty lines") {
+		StreamHandler::get_line(stream, line);
+
+		CHECK(line == "hello");
+
+		StreamHandler::get_next_non_blank_line(stream, line);
+		REQUIRE(line == "this is not blank");
+
+		StreamHandler::skip_to_next_blank_line(stream, line);
+		REQUIRE(line == "");
+
+		StreamHandler::get_next_non_blank_line(stream, line);
+		REQUIRE(line == "Someone wrote something....");
+
+		StreamHandler::get_next_non_blank_line(stream, line);
+		REQUIRE(line == "   b");
+
+		StreamHandler::get_next_non_blank_line(stream, line);
+		REQUIRE(line == "end");
+
+		SECTION("Test end of the files", "[edge case]") {
+			StreamHandler::get_next_non_blank_line(stream, line);
+			REQUIRE(line == "");
+
+			StreamHandler::skip_to_next_blank_line(stream, line);
+			REQUIRE(line == "");
 		}
 	}
 }

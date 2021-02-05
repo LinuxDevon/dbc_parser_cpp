@@ -4,7 +4,7 @@
 
 namespace utils {
 
-	class SafeString {
+	class StreamHandler {
 	public:
 		/**
 		 * This is a safe non line ending specific get_ine function. This is to help with files
@@ -16,6 +16,11 @@ namespace utils {
 		 * @return        [description]
 		 */
 		static std::istream & get_line( std::istream & stream, std::string & line );
+
+
+		static std::istream & get_next_non_blank_line( std::istream & stream, std::string & line );
+
+		static std::istream & skip_to_next_blank_line( std::istream & stream, std::string & line );
 
 	};
 
