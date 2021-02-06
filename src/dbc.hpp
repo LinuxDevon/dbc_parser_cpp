@@ -2,7 +2,6 @@
 #include "util/utils.hpp"
 
 #include <regex>
-#include <iostream>
 
 namespace libdbc {
 
@@ -51,8 +50,6 @@ namespace libdbc {
 		const std::regex name_space_re;
 
 		void parse_dbc_header(std::istream& file_stream) {
-			std::vector<std::string> lines;
-
 			std::string line;
 			std::smatch match;
 			bool is_blank = true;
