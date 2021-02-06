@@ -1,3 +1,7 @@
+
+#ifndef __UTILS_HPP__
+#define __UTILS_HPP__
+
 #include <string>
 #include <fstream>
 #include <iostream>
@@ -24,4 +28,13 @@ namespace utils {
 
 	};
 
+	class String {
+	public:
+
+		static std::string trim(const std::string& line);
+
+	};
+
 }
+
+#endif // __UTILS_HPP__

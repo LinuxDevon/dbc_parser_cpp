@@ -1,3 +1,6 @@
+#ifndef __ERROR_HPP__
+#define __ERROR_HPP__
+
 #include <sstream>
 
 namespace libdbc {
@@ -32,3 +35,5 @@ namespace libdbc {
 	};
 
 } // libdbc
+
+#endif // __ERROR_HPP__
