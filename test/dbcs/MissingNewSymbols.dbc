@@ -24,6 +24,3 @@ NS_ :
 BS_:
 
 BU_: DBG DRIVER IO MOTOR SENSOR
-
-BO_ 500 IO_DEBUG: 4 IO
- SG_ IO_DEBUG_test_unsigned : 0|8@1+ (1,0) [0|0] "" DBG
