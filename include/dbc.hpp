@@ -29,15 +29,19 @@ namespace libdbc {
 		virtual void parse_file(const std::string& file) final override;
 
 		std::string get_version() const;
+		std::vector<std::string> get_nodes() const;
 
 	private:
 		std::string version;
+		std::vector<std::string> nodes;
 
 		const std::regex version_re;
 		const std::regex bit_timing_re;
 		const std::regex name_space_re;
+		const std::regex node_re;
 
 		void parse_dbc_header(std::istream& file_stream);
+		void parse_dbc_nodes(std::istream& file_stream);
 
 	};
 

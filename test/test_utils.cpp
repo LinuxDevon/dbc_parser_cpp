@@ -81,3 +81,14 @@ TEST_CASE("Test the string trim feature", "[string]") {
 	REQUIRE(String::trim(s) == "there might be some white space....");
 }
 
+TEST_CASE("Test string split feature", "[string]") {
+	std::string s = "name1 name2 name3 name4 name5 ";
+	std::vector<std::string> vs = {"name1", "name2", "name3", "name4", "name5"};
+
+	std::vector<std::string> v;
+
+	String::split(s, v);
+
+	REQUIRE(v == vs);
+}
+

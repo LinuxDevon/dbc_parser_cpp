@@ -28,11 +28,13 @@ TEST_CASE("Testing dbc file loading", "[fileio]") {
 	auto parser = std::unique_ptr<libdbc::DbcParser>(new libdbc::DbcParser());
 
 	SECTION("Loading a single simple dbc file", "[dbc]") {
-		std::vector<libdbc::Message> messages;
+		std::vector<std::string> nodes = {"DBG", "DRIVER", "IO", "MOTOR", "SENSOR"};
 
 		parser->parse_file(SIMPLE_DBC_FILE);
 
 		REQUIRE(parser->get_version() == "1.0.0");
+
+		REQUIRE(parser->get_nodes() == nodes);
 	}
 
 }

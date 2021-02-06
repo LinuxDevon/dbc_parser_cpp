@@ -6,8 +6,9 @@
 
 namespace libdbc {
 
-	DbcParser::DbcParser() : version(""), version_re("^(VERSION)\\s\"(.*)\""),
-				  bit_timing_re("^(BS_:)"), name_space_re("^(NS_)\\s\\:") {
+	DbcParser::DbcParser() : version(""), nodes(),
+				version_re("^(VERSION)\\s\"(.*)\""), bit_timing_re("^(BS_:)"),
+				name_space_re("^(NS_)\\s\\:"), node_re("^(BU_:)\\s((?:[\\w]+?\\s?)*)") {
 
 	}
 
@@ -17,9 +18,10 @@ namespace libdbc {
 
 		parse_dbc_header(s);
 
-		while(!s.eof()) {
-			utils::StreamHandler::get_line(s, line);
+		parse_dbc_nodes(s);
 
+		while(!s.eof()) {
+			utils::StreamHandler::get_line( s, line );
 		}
 
 	}
@@ -28,11 +30,14 @@ namespace libdbc {
 		return version;
 	}
 
+	std::vector<std::string> DbcParser::get_nodes() const {
+		return nodes;
+	}
+
+
 	void DbcParser::parse_dbc_header(std::istream& file_stream) {
 		std::string line;
 		std::smatch match;
-		bool is_blank = true;
-		bool not_blank = true;
 
 		utils::StreamHandler::get_line(file_stream, line);
 
@@ -52,5 +57,23 @@ namespace libdbc {
 			throw validity_error();
 
 	}
+
+	void DbcParser::parse_dbc_nodes(std::istream& file_stream) {
+		std::string line;
+		std::smatch match;
+
+		utils::StreamHandler::get_next_non_blank_line( file_stream, line );
+
+		if(!std::regex_search(line, match, node_re))
+			throw validity_error();
+
+		if(match.length() > 2) {
+			std::string n = match.str(2);
+			utils::String::split(n, nodes);
+		}
+
+	}
+
+
 
 }

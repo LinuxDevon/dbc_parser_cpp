@@ -5,6 +5,9 @@
 #include <string>
 #include <fstream>
 #include <iostream>
+#include <sstream>
+#include <algorithm>
+#include <iterator>
 
 namespace utils {
 
@@ -32,6 +35,17 @@ namespace utils {
 	public:
 
 		static std::string trim(const std::string& line);
+
+		template <class Container>
+		static void split(const std::string& str, Container& cont, char delim = ' ') {
+			std::stringstream ss(str);
+			std::string token;
+
+			while (std::getline(ss, token, delim)) {
+				cont.push_back(token);
+			}
+		}
+
 
 	};
 
