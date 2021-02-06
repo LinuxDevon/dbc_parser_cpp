@@ -74,3 +74,10 @@ end";
 		}
 	}
 }
+
+TEST_CASE("Test the string trim feature", "[string]") {
+	std::string s = "    	there might be some white space....   ";
+
+	REQUIRE(String::trim(s) == "there might be some white space....");
+}
+
