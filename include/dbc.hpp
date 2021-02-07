@@ -45,6 +45,7 @@ namespace libdbc {
 
 
 	std::ostream& operator<< (std::ostream &out, const Message& msg);
+	std::ostream& operator<< (std::ostream &out, const Signal& sig);
 
 
 	class Parser {

@@ -35,6 +35,21 @@ namespace libdbc {
 	}
 
 
+	std::ostream& operator<< (std::ostream &out, const Signal& sig) {
+		out << "Signal {name: " << sig.name << ", ";
+		out << "Multiplexed: " << (sig.is_multiplexed ? "True" : "False") << ", ";
+		out << "Start bit: " << sig.start_bit << ", ";
+		out << "Size: " << sig.size << ", ";
+		out << "Endianness: " << (sig.is_bigendian ? "Big endian" : "Little endian") << ", ";
+		out << "Value Type: " << (sig.is_signed ? "Signed" : "Unsigned") << ", ";
+		out << "Min: " << sig.min << ", Max: " << sig.max << ", ";
+		out << "Unit: (" << sig.unit << "), ";
+		out << "receivers: ";
+		for(const auto &r : sig.receivers)
+			out << r;
+		return out << "}";
+	}
+
 
 	DbcParser::DbcParser() : version(""), nodes(),
 				version_re("^(VERSION)\\s\"(.*)\""), bit_timing_re("^(BS_:)"),
