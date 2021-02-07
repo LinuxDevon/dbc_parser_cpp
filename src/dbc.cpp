@@ -23,6 +23,18 @@ namespace libdbc {
 	}
 
 
+	Signal::Signal(std::string name, bool is_multiplexed, uint32_t start_bit, uint32_t size, bool is_bigendian, bool is_signed, double factor, double offset, double min, double max, std::string unit, std::vector<std::string> receivers) :
+		name(name), is_multiplexed(is_multiplexed), start_bit(start_bit), size(size), is_bigendian(is_bigendian), is_signed(is_signed), offset(offset), min(min), max(max), unit(unit), receivers(receivers) {}
+
+	bool Signal::operator==(const Signal& rhs) const {
+		return (this->name == rhs.name) && (this->is_multiplexed == rhs.is_multiplexed) &&
+			   (this->start_bit == rhs.start_bit) && (this->size == rhs.size) &&
+			   (this->is_bigendian == rhs.is_bigendian) && (this->is_signed == rhs.is_signed) &&
+			   (this->offset == rhs.offset) && (this->min == rhs.min) && (this->max == rhs.max) &&
+			   (this->unit == rhs.unit) && (this->receivers == rhs.receivers);
+	}
+
+
 
 	DbcParser::DbcParser() : version(""), nodes(),
 				version_re("^(VERSION)\\s\"(.*)\""), bit_timing_re("^(BS_:)"),

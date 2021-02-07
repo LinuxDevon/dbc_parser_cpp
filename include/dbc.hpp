@@ -10,17 +10,39 @@
 
 namespace libdbc {
 
+	struct Signal {
+		std::string name;
+		bool is_multiplexed;
+		uint32_t start_bit;
+		uint32_t size;
+		bool is_bigendian;
+		bool is_signed;
+		double factor;
+		double offset;
+		double min;
+		double max;
+		std::string unit;
+		std::vector<std::string> receivers;
+
+		Signal() = delete;
+		explicit Signal(std::string name, bool is_multiplexed, uint32_t start_bit, uint32_t size, bool is_bigendian, bool is_signed, double factor, double offset, double min, double max, std::string unit, std::vector<std::string> recievers);
+
+		virtual bool operator==(const Signal& rhs) const;
+	};
+
 	struct Message {
 		uint32_t id;
 		std::string name;
 		uint8_t size;
 		std::string node;
+		std::vector<Signal> signals;
 
 		Message() = delete;
 		explicit Message(uint32_t id, const std::string& name, uint8_t size, const std::string& node);
 
 		virtual bool operator==(const Message& rhs) const;
 	};
+
 
 	std::ostream& operator<< (std::ostream &out, const Message& msg);
 
@@ -58,6 +80,7 @@ namespace libdbc {
 		const std::regex name_space_re;
 		const std::regex node_re;
 		const std::regex message_re;
+		const std::regex signal_re;
 
 		void parse_dbc_header(std::istream& file_stream);
 		void parse_dbc_nodes(std::istream& file_stream);
