@@ -54,7 +54,9 @@ namespace libdbc {
 	DbcParser::DbcParser() : version(""), nodes(),
 				version_re("^(VERSION)\\s\"(.*)\""), bit_timing_re("^(BS_:)"),
 				name_space_re("^(NS_)\\s\\:"), node_re("^(BU_:)\\s((?:[\\w]+?\\s?)*)"),
-				message_re("^(BO_)\\s(\\d+)\\s(\\w+)\\:\\s(\\d+)\\s(\\w+|Vector__XXX)") {
+				message_re("^(BO_)\\s(\\d+)\\s(\\w+)\\:\\s(\\d+)\\s(\\w+|Vector__XXX)"),
+				// NOTE: No multiplex support yet
+				signal_re("\\s(SG_)\\s(\\w+)\\s\\:\\s(\\d+)\\|(\\d+)\\@(\\d+)(\\+|\\-)\\s\\((\\d+\\.?(\\d+)?)\\,(\\d+\\.?(\\d+)?)\\)\\s\\[(\\d+\\.?(\\d+)?)\\|(\\d+\\.?(\\d+)?)\\]\\s\"(\\w*)\"\\s([\\w\\,]+|Vector__XXX)*") {
 
 	}
 
@@ -141,6 +143,27 @@ namespace libdbc {
 				Message msg(id, name, size, node);
 
 				messages.push_back(msg);
+			}
+
+			if(std::regex_search(line, match, signal_re)) {
+				std::string name = match.str(2);
+				bool is_multiplexed = false; // No support yet
+				uint32_t start_bit = std::stoul(match.str(3));
+				uint32_t size = std::stoul(match.str(4));
+				bool is_bigendian = (std::stoul(match.str(5)) == 1);
+				bool is_signed = (match.str(6) == "-");
+				// Alternate groups because a group is for the decimal portion
+				double factor = std::stod(match.str(7));
+				double offset = std::stod(match.str(9));
+				double min = std::stod(match.str(11));
+				double max = std::stod(match.str(13));
+				std::string unit = match.str(15);
+
+				std::vector<std::string> receivers;
+				utils::String::split(match.str(16), receivers, ',');
+
+				Signal sig(name, is_multiplexed, start_bit, size, is_bigendian, is_signed, factor, offset, min, max, unit, receivers);
+				messages.back().signals.push_back(sig);
 			}
 		}
 
