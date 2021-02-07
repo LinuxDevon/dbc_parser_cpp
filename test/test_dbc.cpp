@@ -32,6 +32,10 @@ TEST_CASE("Testing dbc file loading", "[fileio]") {
 
 		libdbc::Message msg(500, "IO_DEBUG", 4, "IO");
 
+		std::vector<std::string> receivers{"DBG"};
+		libdbc::Signal sig("IO_DEBUG_test_unsigned", false, 0, 8, true, false, 1, 0, 0, 0, "", receivers);
+ 		msg.signals.push_back(sig);
+
 		std::vector<libdbc::Message> msgs = {msg};
 
 		parser->parse_file(SIMPLE_DBC_FILE);
@@ -41,6 +45,8 @@ TEST_CASE("Testing dbc file loading", "[fileio]") {
 		REQUIRE(parser->get_nodes() == nodes);
 
 		REQUIRE(parser->get_messages() == msgs);
+
+		REQUIRE(parser->get_messages().front().signals == msg.signals);
 	}
 
 }
