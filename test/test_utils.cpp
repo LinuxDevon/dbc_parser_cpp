@@ -1,6 +1,6 @@
 #include <catch2/catch.hpp>
 #include "defines.hpp"
-#include "utils/utils.hpp"
+#include <libdbc/utils/utils.hpp>
 
 #include <sstream>
 

@@ -1,6 +1,6 @@
 #include <catch2/catch.hpp>
 #include "defines.hpp"
-#include "dbc.hpp"
+#include <libdbc/dbc.hpp>
 
 TEST_CASE("Testing dbc file loading error issues", "[fileio][error]") {
 	auto parser = std::unique_ptr<libdbc::DbcParser>(new libdbc::DbcParser());

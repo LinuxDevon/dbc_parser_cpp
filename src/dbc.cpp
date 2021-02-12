@@ -1,6 +1,6 @@
-#include "exceptions/error.hpp"
-#include "utils/utils.hpp"
-#include "dbc.hpp"
+#include <libdbc/exceptions/error.hpp>
+#include <libdbc/utils/utils.hpp>
+#include <libdbc/dbc.hpp>
 
 #include <regex>
 

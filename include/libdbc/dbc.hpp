@@ -2,8 +2,8 @@
 #ifndef __DBC_HPP__
 #define __DBC_HPP__
 
-#include "exceptions/error.hpp"
-#include "utils/utils.hpp"
+#include <libdbc/exceptions/error.hpp>
+#include <libdbc/utils/utils.hpp>
 
 #include <regex>
 #include <iostream>
