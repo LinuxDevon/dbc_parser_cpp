@@ -6,51 +6,6 @@
 
 namespace libdbc {
 
-	Message::Message(uint32_t id, const std::string& name, uint8_t size, const std::string& node) :
-		id(id), name(name), size(size), node(node) {}
-
-	bool Message::operator==(const Message& rhs) const {
-		return (this->id == rhs.id) && (this->name == rhs.name) &&
-			   (this->size == rhs.size) && (this->node == rhs.node);
-	}
-
-	std::ostream& operator<< (std::ostream &out, const Message& msg) {
-		out << "Message: {id: " << msg.id << ", ";
-		out << "name: " << msg.name << ", ";
-		out << "size: " << msg.size << ", ";
-		out << "node: " << msg.node << "}";
-		return out;
-	}
-
-
-	Signal::Signal(std::string name, bool is_multiplexed, uint32_t start_bit, uint32_t size, bool is_bigendian, bool is_signed, double factor, double offset, double min, double max, std::string unit, std::vector<std::string> receivers) :
-		name(name), is_multiplexed(is_multiplexed), start_bit(start_bit), size(size), is_bigendian(is_bigendian), is_signed(is_signed), offset(offset), min(min), max(max), unit(unit), receivers(receivers) {}
-
-	bool Signal::operator==(const Signal& rhs) const {
-		return (this->name == rhs.name) && (this->is_multiplexed == rhs.is_multiplexed) &&
-			   (this->start_bit == rhs.start_bit) && (this->size == rhs.size) &&
-			   (this->is_bigendian == rhs.is_bigendian) && (this->is_signed == rhs.is_signed) &&
-			   (this->offset == rhs.offset) && (this->min == rhs.min) && (this->max == rhs.max) &&
-			   (this->unit == rhs.unit) && (this->receivers == rhs.receivers);
-	}
-
-
-	std::ostream& operator<< (std::ostream &out, const Signal& sig) {
-		out << "Signal {name: " << sig.name << ", ";
-		out << "Multiplexed: " << (sig.is_multiplexed ? "True" : "False") << ", ";
-		out << "Start bit: " << sig.start_bit << ", ";
-		out << "Size: " << sig.size << ", ";
-		out << "Endianness: " << (sig.is_bigendian ? "Big endian" : "Little endian") << ", ";
-		out << "Value Type: " << (sig.is_signed ? "Signed" : "Unsigned") << ", ";
-		out << "Min: " << sig.min << ", Max: " << sig.max << ", ";
-		out << "Unit: (" << sig.unit << "), ";
-		out << "receivers: ";
-		for(const auto &r : sig.receivers)
-			out << r;
-		return out << "}";
-	}
-
-
 	DbcParser::DbcParser() : version(""), nodes(),
 				version_re("^(VERSION)\\s\"(.*)\""), bit_timing_re("^(BS_:)"),
 				name_space_re("^(NS_)\\s\\:"), node_re("^(BU_:)\\s((?:[\\w]+?\\s?)*)"),
