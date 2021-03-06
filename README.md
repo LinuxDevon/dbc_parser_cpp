@@ -32,6 +32,14 @@ cmake ..
 make
 ```
 
+## Scripts
+
+To use the scripts in `scripts/` you will need to install the requirements
+from the top level directory.
+```bash
+pip install -r script-requirements.txt
+```
+
 ## Contributing
 
 I welcome all help! Please feel free to fork and start some pull requests!

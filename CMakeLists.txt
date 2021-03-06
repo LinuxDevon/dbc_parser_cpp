@@ -35,3 +35,8 @@ add_subdirectory(test)
 add_subdirectory(doc)
 
 add_library(${PROJECT_NAME} STATIC ${SOURCE})
+
+add_custom_target(release
+					WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+					COMMAND ${CMAKE_SOURCE_DIR}/scripts/create_single_header.sh
+					DEPENDS ${PROJECT_NAME})
