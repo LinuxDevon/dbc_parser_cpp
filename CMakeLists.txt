@@ -1,4 +1,5 @@
-cmake_minimum_required(VERSION 3.10)
+cmake_minimum_required(VERSION 3.23)
+# FILE_SET needs cmake 3.23
 
 project(dbc VERSION 0.1.1 DESCRIPTION "C++ DBC Parser")
 
@@ -39,6 +40,14 @@ list(APPEND SOURCE ${PROJECT_SOURCE_DIR}/src/utils.cpp
 				   ${PROJECT_SOURCE_DIR}/src/signal.cpp
 				   ${PROJECT_SOURCE_DIR}/src/dbc.cpp)
 
+set(HEADER_FILES
+  ${PROJECT_SOURCE_DIR}/include/libdbc/dbc.hpp
+  ${PROJECT_SOURCE_DIR}/include/libdbc/message.hpp
+  ${PROJECT_SOURCE_DIR}/include/libdbc/signal.hpp
+  ${PROJECT_SOURCE_DIR}/include/libdbc/utils/utils.hpp
+  ${PROJECT_SOURCE_DIR}/include/libdbc/exceptions/error.hpp
+)
+
 include_directories(src)
 include_directories(include)
 
@@ -46,11 +55,27 @@ add_subdirectory(test)
 add_subdirectory(doc)
 
 add_library(${PROJECT_NAME} STATIC ${SOURCE})
+target_sources(${PROJECT_NAME} INTERFACE FILE_SET HEADERS
+	TYPE HEADERS
+	BASE_DIRS ${PROJECT_SOURCE_DIR}/include/libdbc
+	FILES ${HEADER_FILES})
 
 add_custom_target(release
 					WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
 					COMMAND ${CMAKE_SOURCE_DIR}/scripts/create_single_header.sh
 					DEPENDS ${PROJECT_NAME})
+
+## Installation
+# install lib
+install(TARGETS ${PROJECT_NAME}
+		DESTINATION ${CMAKE_INSTALL_LIBDIR})
+
+# install headers
+install(TARGETS ${PROJECT_NAME}
+		FILE_SET HEADERS
+		DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/lib${PROJECT_NAME}
+		INCLUDES DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
+)
 
 # Generate pkg-config file
 configure_file(${PROJECT_NAME}.pc.in ${PROJECT_NAME}.pc @ONLY)
