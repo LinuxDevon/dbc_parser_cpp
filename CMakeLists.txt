@@ -3,6 +3,7 @@ cmake_minimum_required(VERSION 3.10)
 project(dbc)
 
 option(DEBUG "use debug flag" NO)
+option(ENABLE_TESTS "Enable Unittests" ON)
 
 # specify the C++ standard
 set(CMAKE_CXX_STANDARD 11)
@@ -31,7 +32,11 @@ list(APPEND SOURCE ${PROJECT_SOURCE_DIR}/src/utils.cpp
 include_directories(src)
 include_directories(include)
 
-add_subdirectory(test)
+if(ENABLE_TESTS)
+    include(CTest)
+    add_subdirectory(test)
+endif()
+
 add_subdirectory(doc)
 
 add_library(${PROJECT_NAME} STATIC ${SOURCE})

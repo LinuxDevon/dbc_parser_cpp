@@ -1,4 +1,4 @@
-project(tests VERSION 0.1.0)
+enable_testing()
 
 # Download and build Catch2 test framework
 Include(FetchContent)
@@ -14,9 +14,11 @@ list(APPEND TEST_SOURCES
 			 test_utils.cpp)
 
 add_executable(tests ${TEST_SOURCES} ${SOURCE})
+target_compile_definitions(tests PRIVATE TESTDBCFILES_PATH="${CMAKE_CURRENT_SOURCE_DIR}/dbcs")
 target_link_libraries(tests PRIVATE Catch2::Catch2WithMain)
+target_sources(tests INTERFACE FILE_SET HEADERS
+                               TYPE HEADERS
+                               BASE_DIRS ${CMAKE_CURRENT_SOURCE_DIR}
+                               FILES defines.hpp)
 
-add_custom_target(test
-					COMMAND ${PROJECT_NAME}
-					WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}
-					DEPENDS ${PROJECT_NAME})
+add_test(NAME tests COMMAND $<TARGET_FILE:tests>)

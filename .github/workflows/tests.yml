@@ -17,13 +17,18 @@ jobs:
     - uses: actions/checkout@v3
 
     - name: Configure CMake
-      run: cmake -B ${{github.workspace}}/build -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}}
+      run: |
+        mkdir build
+        cd build
+        cmake -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} ..
 
     - name: Build
-      run: cmake --build ${{github.workspace}}/build --config ${{env.BUILD_TYPE}} -- -j
+      run: |
+        cd build
+        make
 
     - name: Test
-      working-directory: ${{github.workspace}}/build
-      # Didn't configure to use ctest. Opted for a custom target to run instead
-      run: cmake --build ${{github.workspace}}/build --target test -- -j
+      run: |
+        cd build
+        ctest --output-on-failure
 
