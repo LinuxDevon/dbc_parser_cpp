@@ -9,7 +9,7 @@ FetchContent_Declare(
 )
 FetchContent_MakeAvailable(Catch2)
 
-list(APPEND TEST_SOURCES main.cpp
+list(APPEND TEST_SOURCES
 			 test_dbc.cpp
 			 test_utils.cpp)
 
