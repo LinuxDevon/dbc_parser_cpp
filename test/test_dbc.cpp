@@ -50,3 +50,44 @@ TEST_CASE("Testing dbc file loading", "[fileio]") {
 	}
 
 }
+
+TEST_CASE("Testing negative values") {
+  const auto* filename = std::tmpnam(NULL);
+
+  auto* file = std::fopen(filename, "w");
+  CHECK(file);
+
+  std::fputs(PRIMITIVE_DBC.c_str(), file);
+  std::fputs(R"(BO_ 234 MSG1: 8 Vector__XXX
+ SG_ Sig1 : 55|16@0- (0.1,0) [-3276.8|-3276.7] "C" Vector__XXX
+ SG_ Sig2 : 39|16@0- (0.1,0) [-3276.8|-3276.7] "C" Vector__XXX
+ SG_ Sig3 : 23|16@0- (0.1,0) [-3276.8|-3276.7] "C" Vector__XXX
+ SG_ Sig4 : 7|16@0- (1,0) [0|32767] "" Vector__XXX)", file);
+  std::fclose(file);
+
+  auto parser = libdbc::DbcParser();
+  parser.parse_file(std::string(filename));
+
+  REQUIRE(parser.get_messages().size() == 1);
+  REQUIRE(parser.get_messages().at(0).signals.size() == 4);
+  {
+    const auto signal = parser.get_messages().at(0).signals.at(0);
+    REQUIRE(signal.min == -3276.8);
+    REQUIRE(signal.max == -3276.7);
+  }
+  {
+    const auto signal = parser.get_messages().at(1).signals.at(0);
+    REQUIRE(signal.min == -3276.8);
+    REQUIRE(signal.max == -3276.7);
+  }
+  {
+    const auto signal = parser.get_messages().at(2).signals.at(0);
+    REQUIRE(signal.min == -3276.8);
+    REQUIRE(signal.max == -3276.7);
+  }
+  {
+    const auto signal = parser.get_messages().at(3).signals.at(0);
+    REQUIRE(signal.min == -3276.8);
+    REQUIRE(signal.max == -3276.7);
+  }
+}
