@@ -25,5 +25,5 @@ jobs:
     - name: Test
       working-directory: ${{github.workspace}}/build
       # Didn't configure to use ctest. Opted for a custom target to run instead
-      run: cmake --build build --target test -- -j
+      run: cmake --build ${{github.workspace}}/build --target test -- -j
 
