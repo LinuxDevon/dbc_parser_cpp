@@ -6,19 +6,21 @@
 
 namespace {
 
+const auto floatPattern = "(-?\\d+\\.?(\\d+)?)"; // Can be negative
+
 const auto signalIdentifierPattern = "(SG_)";
 const auto namePattern = "(\\w+)";
 const auto bitStartPattern = "(\\d+)"; // Cannot be negative
 const auto lengthPattern = "(\\d+)"; // Cannot be negative
 const auto byteOrderPattern = "([0-1])";
 const auto signPattern = "(\\+|\\-)";
-const auto scalePattern = "(\\d+\\.?(\\d+)?)";
-const auto offsetPattern = "(-?\\d+\\.?(\\d+)?)"; // Can be negative
+const auto scalePattern = "(\\d+\\.?(\\d+)?)"; // Non negative float
+const auto offsetPattern = floatPattern;
 const auto offsetScalePattern = std::string("\\(") + scalePattern + "\\," + offsetPattern + "\\)";
-const auto minPattern = "(-?\\d+\\.?(\\d+)?)";
-const auto maxPattern = "(-?\\d+\\.?(\\d+)?)";
+const auto minPattern = floatPattern;
+const auto maxPattern = floatPattern;
 const auto minMaxPattern = std::string("\\[") + minPattern + "\\|" + maxPattern + "\\]";
-const auto unitPattern = "\"(\\w*)\"";
+const auto unitPattern = "\"(\\w*)\""; // Random string
 const auto receiverPattern = "([\\w\\,]+|Vector__XXX)*";
 const auto whiteSpace = "\\s";
 
