@@ -41,3 +41,12 @@ jobs:
         cd build
         ctest --output-on-failure
 
+  format:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+    - name: Test format
+      run: |
+        ./scripts/fmt.sh
+        git diff --exit-code
+
