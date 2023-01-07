@@ -12,6 +12,9 @@ namespace libdbc {
 			   (this->unit == rhs.unit) && (this->receivers == rhs.receivers);
 	}
 
+    bool Signal::operator< (const Signal& rhs) const {
+        return start_bit < rhs.start_bit;
+    }
 
 	std::ostream& operator<< (std::ostream &out, const Signal& sig) {
 		out << "Signal {name: " << sig.name << ", ";
