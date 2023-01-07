@@ -13,9 +13,9 @@ list(APPEND TEST_SOURCES
 			 test_dbc.cpp
 			 test_utils.cpp)
 
-add_executable(tests ${TEST_SOURCES} ${SOURCE})
+add_executable(tests ${TEST_SOURCES})
 target_compile_definitions(tests PRIVATE TESTDBCFILES_PATH="${CMAKE_CURRENT_SOURCE_DIR}/dbcs")
-target_link_libraries(tests PRIVATE Catch2::Catch2WithMain)
+target_link_libraries(tests PRIVATE dbc Catch2::Catch2WithMain)
 target_sources(tests INTERFACE FILE_SET HEADERS
                                TYPE HEADERS
                                BASE_DIRS ${CMAKE_CURRENT_SOURCE_DIR}
