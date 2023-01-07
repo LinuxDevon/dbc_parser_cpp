@@ -103,3 +103,26 @@ TEST_CASE("Testing negative values") {
     REQUIRE(signal.max == 32767);
   }
 }
+
+
+TEST_CASE("Special characters in unit") {
+    const auto* filename = std::tmpnam(NULL);
+
+    auto* file = std::fopen(filename, "w");
+    CHECK(file);
+
+    std::fputs(PRIMITIVE_DBC.c_str(), file);
+    std::fputs(R"(BO_ 234 MSG1: 8 Vector__XXX
+ SG_ Speed : 0|8@1+ (1,0) [0|204] "Km/h"  DEVICE1,DEVICE2,DEVICE3)", file);
+    std::fclose(file);
+
+    auto parser = libdbc::DbcParser();
+    parser.parse_file(std::string(filename));
+
+    REQUIRE(parser.get_messages().size() == 1);
+    REQUIRE(parser.get_messages().at(0).signals.size() == 1);
+    {
+      const auto signal = parser.get_messages().at(0).signals.at(0);
+      REQUIRE(signal.unit.compare("Km/h") == 0);
+    }
+}

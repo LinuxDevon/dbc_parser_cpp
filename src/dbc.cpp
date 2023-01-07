@@ -20,7 +20,7 @@ const auto offsetScalePattern = std::string("\\(") + scalePattern + "\\," + offs
 const auto minPattern = floatPattern;
 const auto maxPattern = floatPattern;
 const auto minMaxPattern = std::string("\\[") + minPattern + "\\|" + maxPattern + "\\]";
-const auto unitPattern = "\"(\\w*)\""; // Random string
+const auto unitPattern = "\"(.*)\""; // Random string
 const auto receiverPattern = "([\\w\\,]+|Vector__XXX)*";
 const auto whiteSpace = "\\s";
 
