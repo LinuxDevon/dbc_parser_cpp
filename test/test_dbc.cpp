@@ -97,7 +97,7 @@ TEST_CASE("Testing negative values") {
   }
   {
     const auto signal = parser.get_messages().at(0).signals.at(3);
-    REQUIRE(signal.factor == 0.1);
+    REQUIRE(signal.factor == 1);
     REQUIRE(signal.offset == -10);
     REQUIRE(signal.min == 0);
     REQUIRE(signal.max == 32767);
