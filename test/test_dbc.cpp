@@ -47,7 +47,7 @@ TEST_CASE("Testing dbc file loading", "[fileio]") {
 
 		std::vector<std::string> receivers{"DBG"};
 		libdbc::Signal sig("IO_DEBUG_test_unsigned", false, 0, 8, false, false, 1, 0, 0, 0, "", receivers);
- 		msg.signals.push_back(sig);
+        msg.appendSignal(sig);
 
 		std::vector<libdbc::Message> msgs = {msg};
 
@@ -59,7 +59,7 @@ TEST_CASE("Testing dbc file loading", "[fileio]") {
 
 		REQUIRE(parser->get_messages() == msgs);
 
-		REQUIRE(parser->get_messages().front().signals == msg.signals);
+        REQUIRE(parser->get_messages().front().signals() == msg.signals());
 	}
 
 }
@@ -82,13 +82,13 @@ TEST_CASE("Testing  big endian, little endian") {
   parser.parse_file(filename);
 
   REQUIRE(parser.get_messages().size() == 1);
-  REQUIRE(parser.get_messages().at(0).signals.size() == 2);
+  REQUIRE(parser.get_messages().at(0).signals().size() == 2);
   {
-    const auto signal = parser.get_messages().at(0).signals.at(0);
+    const auto signal = parser.get_messages().at(0).signals().at(0);
     REQUIRE(signal.is_bigendian == true);
   }
   {
-    const auto signal = parser.get_messages().at(0).signals.at(1);
+    const auto signal = parser.get_messages().at(0).signals().at(1);
     REQUIRE(signal.is_bigendian == false);
   }
 }
@@ -106,31 +106,31 @@ TEST_CASE("Testing negative values") {
   parser.parse_file(filename);
 
   REQUIRE(parser.get_messages().size() == 1);
-  REQUIRE(parser.get_messages().at(0).signals.size() == 4);
+  REQUIRE(parser.get_messages().at(0).signals().size() == 4);
 
   SECTION("Evaluating first message") {
-    const auto signal = parser.get_messages().at(0).signals.at(0);
+    const auto signal = parser.get_messages().at(0).signals().at(0);
     REQUIRE(signal.factor == 0.1);
     REQUIRE(signal.offset == 0);
     REQUIRE(signal.min == -3276.8);
     REQUIRE(signal.max == -3276.7);
   }
   SECTION("Evaluating second message") {
-    const auto signal = parser.get_messages().at(0).signals.at(1);
+    const auto signal = parser.get_messages().at(0).signals().at(1);
     REQUIRE(signal.factor == 0.1);
     REQUIRE(signal.offset == 0);
     REQUIRE(signal.min == -3276.8);
     REQUIRE(signal.max == -3276.7);
   }
   SECTION("Evaluating third message"){
-    const auto signal = parser.get_messages().at(0).signals.at(2);
+    const auto signal = parser.get_messages().at(0).signals().at(2);
     REQUIRE(signal.factor == 10);
     REQUIRE(signal.offset == 0);
     REQUIRE(signal.min == -3276.8);
     REQUIRE(signal.max == -3276.7);
   }
   SECTION("Evaluating fourth message"){
-    const auto signal = parser.get_messages().at(0).signals.at(3);
+    const auto signal = parser.get_messages().at(0).signals().at(3);
     REQUIRE(signal.factor == 1);
     REQUIRE(signal.offset == -10);
     REQUIRE(signal.min == 0);
@@ -149,9 +149,9 @@ TEST_CASE("Special characters in unit") {
     parser.parse_file(filename);
 
     REQUIRE(parser.get_messages().size() == 1);
-    REQUIRE(parser.get_messages().at(0).signals.size() == 1);
+    REQUIRE(parser.get_messages().at(0).signals().size() == 1);
     SECTION("Checking that signal with special characters as unit is parsed correctly") {
-      const auto signal = parser.get_messages().at(0).signals.at(0);
+      const auto signal = parser.get_messages().at(0).signals().at(0);
       REQUIRE(signal.unit.compare("Km/h") == 0);
     }
 }
@@ -181,7 +181,6 @@ TEST_CASE("Parse Message little endian") {
     REQUIRE(Catch::Approx(result_values.at(1)) == 88.67);
     REQUIRE(Catch::Approx(result_values.at(2)) == 81.65);
     REQUIRE(Catch::Approx(result_values.at(3)) == 11.89);
-
 }
 
 TEST_CASE("Parse Message big endian") {

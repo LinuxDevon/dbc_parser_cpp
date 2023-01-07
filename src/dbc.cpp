@@ -95,7 +95,7 @@ namespace libdbc {
 
     bool DbcParser::parseMessage(const uint32_t id, const std::vector<uint8_t>& data, std::vector<double>& out_values) {
         for (const auto& message: messages) {
-            if (message.id == id)
+            if (message.id() == id)
                 return message.parseSignals(data, out_values);
         }
         return false;
@@ -174,7 +174,7 @@ namespace libdbc {
 				utils::String::split(match.str(16), receivers, ',');
 
 				Signal sig(name, is_multiplexed, start_bit, size, is_bigendian, is_signed, factor, offset, min, max, unit, receivers);
-				messages.back().signals.push_back(sig);
+                messages.back().appendSignal(sig);
 			}
 		}
 

@@ -8,16 +8,14 @@
 
 namespace libdbc {
 	struct Message {
-		uint32_t id;
-		std::string name;
-		uint8_t size;
-		std::string node;
-		std::vector<Signal> signals;
-
 		Message() = delete;
 		explicit Message(uint32_t id, const std::string& name, uint8_t size, const std::string& node);
 
         bool parseSignals(const std::vector<uint8_t> data, std::vector<double> &values) const;
+
+        void appendSignal(const Signal& signal);
+        const std::vector<Signal> signals() const;
+        uint32_t id() const;
 
         /*!
          * \brief prepareMessage
@@ -28,15 +26,25 @@ namespace libdbc {
         virtual bool operator==(const Message& rhs) const;
 
     private:
-        bool prepared{false}; // indicates if the message is prepared for parsing signals
+        uint32_t m_id;
+        std::string m_name;
+        uint8_t m_size;
+        std::string m_node;
+        std::vector<Signal> m_signals; // when changing this vector m_prepared must be set to false!
+
+
+        bool m_prepared{false}; // indicates if the message is prepared for parsing signals
         struct BitStruct {
-            BitStruct(const std::string& name, uint32_t size, bool padding): name(name), size(size), padding(padding) {}
+            BitStruct(uint32_t size): size(size), padding(true) {}
+            BitStruct(int index, uint32_t size): index(index), size(size), padding(false) {}
             BitStruct() = delete;
-            std::string name;
+            int index;
             uint32_t size;
             bool padding;
         };
         std::vector<BitStruct> bitstruct;
+
+        friend std::ostream& operator<<(std::ostream& os, const Message& dt);
 	};
 
 	std::ostream& operator<< (std::ostream &out, const Message& msg);
