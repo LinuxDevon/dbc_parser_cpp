@@ -26,4 +26,13 @@ jobs:
       working-directory: ${{github.workspace}}/build
       # Didn't configure to use ctest. Opted for a custom target to run instead
       run: cmake --build ${{github.workspace}}/build --target test -- -j
+      
+  format:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+    - name: Test format
+      run: |
+        ./scripts/cl-fmt.sh
+        git diff --exit-code
 
