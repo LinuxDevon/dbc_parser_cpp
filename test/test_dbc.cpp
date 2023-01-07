@@ -51,6 +51,10 @@ TEST_CASE("Testing dbc file loading", "[fileio]") {
 
 }
 
+/*!
+ * \brief TEST_CASE
+ * Test negative values in offset, min, max
+ */
 TEST_CASE("Testing negative values") {
   const auto* filename = std::tmpnam(NULL);
 
@@ -61,8 +65,8 @@ TEST_CASE("Testing negative values") {
   std::fputs(R"(BO_ 234 MSG1: 8 Vector__XXX
  SG_ Sig1 : 55|16@0- (0.1,0) [-3276.8|-3276.7] "C" Vector__XXX
  SG_ Sig2 : 39|16@0- (0.1,0) [-3276.8|-3276.7] "C" Vector__XXX
- SG_ Sig3 : 23|16@0- (0.1,0) [-3276.8|-3276.7] "C" Vector__XXX
- SG_ Sig4 : 7|16@0- (1,0) [0|32767] "" Vector__XXX)", file);
+ SG_ Sig3 : 23|16@0- (10,0) [-3276.8|-3276.7] "C" Vector__XXX
+ SG_ Sig4 : 7|16@0- (1,-10) [0|32767] "" Vector__XXX)", file);
   std::fclose(file);
 
   auto parser = libdbc::DbcParser();
@@ -72,22 +76,30 @@ TEST_CASE("Testing negative values") {
   REQUIRE(parser.get_messages().at(0).signals.size() == 4);
   {
     const auto signal = parser.get_messages().at(0).signals.at(0);
+    REQUIRE(signal.factor == 0.1);
+    REQUIRE(signal.offset == 0);
     REQUIRE(signal.min == -3276.8);
     REQUIRE(signal.max == -3276.7);
   }
   {
-    const auto signal = parser.get_messages().at(1).signals.at(0);
+    const auto signal = parser.get_messages().at(0).signals.at(1);
+    REQUIRE(signal.factor == 0.1);
+    REQUIRE(signal.offset == 0);
     REQUIRE(signal.min == -3276.8);
     REQUIRE(signal.max == -3276.7);
   }
   {
-    const auto signal = parser.get_messages().at(2).signals.at(0);
+    const auto signal = parser.get_messages().at(0).signals.at(2);
+    REQUIRE(signal.factor == 10);
+    REQUIRE(signal.offset == 0);
     REQUIRE(signal.min == -3276.8);
     REQUIRE(signal.max == -3276.7);
   }
   {
-    const auto signal = parser.get_messages().at(3).signals.at(0);
-    REQUIRE(signal.min == -3276.8);
-    REQUIRE(signal.max == -3276.7);
+    const auto signal = parser.get_messages().at(0).signals.at(3);
+    REQUIRE(signal.factor == 0.1);
+    REQUIRE(signal.offset == -10);
+    REQUIRE(signal.min == 0);
+    REQUIRE(signal.max == 32767);
   }
 }
