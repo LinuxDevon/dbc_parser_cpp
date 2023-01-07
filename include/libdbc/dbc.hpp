@@ -24,7 +24,7 @@ namespace libdbc {
 
 	class DbcParser : public Parser {
 	public:
-		DbcParser();
+        DbcParser(bool sortSignals = false);
 
 		virtual ~DbcParser() = default;
 
@@ -33,6 +33,8 @@ namespace libdbc {
 		std::string get_version() const;
 		std::vector<std::string> get_nodes() const;
 		std::vector<libdbc::Message> get_messages() const;
+
+        bool parseMessage(const uint32_t id, const std::vector<uint8_t>& data, std::vector<double>& out_values);
 
 	private:
 		std::string version;
@@ -45,6 +47,8 @@ namespace libdbc {
 		const std::regex node_re;
 		const std::regex message_re;
 		const std::regex signal_re;
+
+        bool sortSignals{false};
 
 		void parse_dbc_header(std::istream& file_stream);
 		void parse_dbc_nodes(std::istream& file_stream);

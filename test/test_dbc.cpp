@@ -1,4 +1,6 @@
 #include <catch2/catch_test_macros.hpp>
+#include <catch2/catch_approx.hpp>
+#include <catch2/matchers/catch_matchers.hpp>
 #include "defines.hpp"
 #include <libdbc/dbc.hpp>
 
@@ -101,7 +103,7 @@ TEST_CASE("Testing negative values") {
  SG_ Sig4 : 7|16@0- (1,-10) [0|32767] "" Vector__XXX)");
 
   auto parser = libdbc::DbcParser();
-  parser.parse_file(std::string(filename));
+  parser.parse_file(filename);
 
   REQUIRE(parser.get_messages().size() == 1);
   REQUIRE(parser.get_messages().at(0).signals.size() == 4);
@@ -136,7 +138,6 @@ TEST_CASE("Testing negative values") {
   }
 }
 
-
 TEST_CASE("Special characters in unit") {
     const auto* filename = std::tmpnam(NULL);
 
@@ -145,7 +146,7 @@ TEST_CASE("Special characters in unit") {
 
 
     auto parser = libdbc::DbcParser();
-    parser.parse_file(std::string(filename));
+    parser.parse_file(filename);
 
     REQUIRE(parser.get_messages().size() == 1);
     REQUIRE(parser.get_messages().at(0).signals.size() == 1);
@@ -153,4 +154,59 @@ TEST_CASE("Special characters in unit") {
       const auto signal = parser.get_messages().at(0).signals.at(0);
       REQUIRE(signal.unit.compare("Km/h") == 0);
     }
+}
+
+TEST_CASE("Parse Message little endian") {
+    const auto* filename = std::tmpnam(NULL);
+
+    auto* file = std::fopen(filename, "w");
+    CHECK(file);
+
+    std::fputs(PRIMITIVE_DBC.c_str(), file);
+    std::fputs(R"(BO_ 541 STATUS: 8 DEVICE1
+ SG_ Temperature : 48|16@1+ (0.01,-40) [-40|125] "C"  DEVICE1
+ SG_ SOH : 0|16@1+ (0.01,0) [0|100] "%"  DEVICE1
+ SG_ SOE : 32|16@1+ (0.01,0) [0|100] "%"  DEVICE1
+ SG_ SOC : 16|16@1+ (0.01,0) [0|100] "%"  DEVICE1)", file);
+    std::fclose(file);
+
+    libdbc::DbcParser p(true);
+    p.parse_file(filename);
+
+    std::vector<uint8_t> data{0x27, 0x08, 0x22, 0xa3, 0x1f, 0xe5, 0x14, 0x45}; // little endian
+    std::vector<double> result_values;
+    REQUIRE(p.parseMessage(0x21d, data, result_values) == true);
+    REQUIRE(result_values.size() == 4);
+    REQUIRE(Catch::Approx(result_values.at(0)) == 99.92);
+    REQUIRE(Catch::Approx(result_values.at(1)) == 88.67);
+    REQUIRE(Catch::Approx(result_values.at(2)) == 81.65);
+    REQUIRE(Catch::Approx(result_values.at(3)) == 11.89);
+
+}
+
+TEST_CASE("Parse Message big endian") {
+    const auto* filename = std::tmpnam(NULL);
+
+    auto* file = std::fopen(filename, "w");
+    CHECK(file);
+
+    std::fputs(PRIMITIVE_DBC.c_str(), file);
+    std::fputs(R"(BO_ 541 STATUS: 8 DEVICE1
+ SG_ Temperature : 48|16@0+ (0.01,-40) [-40|125] "C"  DEVICE1
+ SG_ SOH : 0|16@0+ (0.01,0) [0|100] "%"  DEVICE1
+ SG_ SOE : 32|16@0+ (0.01,0) [0|100] "%"  DEVICE1
+ SG_ SOC : 16|16@0+ (0.01,0) [0|100] "%"  DEVICE1)", file);
+    std::fclose(file);
+
+    libdbc::DbcParser p(true);
+    p.parse_file(filename);
+
+    std::vector<uint8_t> data{0x08, 0x27, 0xa3, 0x22, 0xe5, 0x1f, 0x45, 0x14}; // big endian
+    std::vector<double> result_values;
+    REQUIRE(p.parseMessage(0x21d, data, result_values) == true);
+    REQUIRE(result_values.size() == 4);
+    REQUIRE(Catch::Approx(result_values.at(0)) == 99.92);
+    REQUIRE(Catch::Approx(result_values.at(1)) == 88.67);
+    REQUIRE(Catch::Approx(result_values.at(2)) == 81.65);
+    REQUIRE(Catch::Approx(result_values.at(3)) == 11.89);
 }

@@ -28,7 +28,7 @@ const auto whiteSpace = "\\s";
 
 namespace libdbc {
 
-	DbcParser::DbcParser() : version(""), nodes(),
+    DbcParser::DbcParser(bool sortSignals) : version(""), nodes(),
 				version_re("^(VERSION)\\s\"(.*)\""), bit_timing_re("^(BS_:)"),
 				name_space_re("^(NS_)\\s\\:"), node_re("^(BU_:)\\s((?:[\\w]+?\\s?)*)"),
 				message_re("^(BO_)\\s(\\d+)\\s(\\w+)\\:\\s(\\d+)\\s(\\w+|Vector__XXX)"),
@@ -53,7 +53,8 @@ namespace libdbc {
                           whiteSpace +
                           unitPattern +
                           whiteSpace +
-                          receiverPattern) {
+                          receiverPattern),
+						  sortSignals(sortSignals) {
 
 	}
 
@@ -73,6 +74,11 @@ namespace libdbc {
 
 		parse_dbc_messages(lines);
 
+        if (sortSignals) {
+            for (auto& message: messages) {
+                message.prepareMessage();
+            }
+        }
 	}
 
 	std::string DbcParser::get_version() const {
@@ -86,6 +92,14 @@ namespace libdbc {
 	std::vector<libdbc::Message> DbcParser::get_messages() const {
 		return messages;
 	}
+
+    bool DbcParser::parseMessage(const uint32_t id, const std::vector<uint8_t>& data, std::vector<double>& out_values) {
+        for (const auto& message: messages) {
+            if (message.id == id)
+                return message.parseSignals(data, out_values);
+        }
+        return false;
+    }
 
 
 	void DbcParser::parse_dbc_header(std::istream& file_stream) {

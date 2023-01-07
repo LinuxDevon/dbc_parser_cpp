@@ -29,6 +29,8 @@ list(APPEND SOURCE ${PROJECT_SOURCE_DIR}/src/utils.cpp
 				   ${PROJECT_SOURCE_DIR}/src/signal.cpp
 				   ${PROJECT_SOURCE_DIR}/src/dbc.cpp)
 
+add_subdirectory(third_party/bitstream)
+
 include_directories(src)
 include_directories(include)
 
@@ -40,6 +42,7 @@ endif()
 add_subdirectory(doc)
 
 add_library(${PROJECT_NAME} STATIC ${SOURCE})
+target_link_libraries(${PROJECT_NAME} bitstream)
 
 add_custom_target(release
 					WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
