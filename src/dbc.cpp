@@ -1,6 +1,7 @@
 #include <libdbc/exceptions/error.hpp>
 #include <libdbc/utils/utils.hpp>
 #include <libdbc/dbc.hpp>
+#include <fast_float/fast_float.h>
 
 #include <regex>
 
@@ -166,10 +167,14 @@ namespace libdbc {
 				bool is_bigendian = (std::stoul(match.str(5)) == 0);
 				bool is_signed = (match.str(6) == "-");
 				// Alternate groups because a group is for the decimal portion
-				double factor = std::stod(match.str(7));
-				double offset = std::stod(match.str(9));
-				double min = std::stod(match.str(11));
-				double max = std::stod(match.str(13));
+                double factor;
+                fast_float::from_chars(match.str(7).data(), match.str(7).data() + match.str(7).size(), factor);
+                double offset;
+                fast_float::from_chars(match.str(9).data(), match.str(9).data() + match.str(9).size(), offset);
+                double min;
+                fast_float::from_chars(match.str(11).data(), match.str(11).data() + match.str(11).size(), min);
+                double max;
+                fast_float::from_chars(match.str(13).data(), match.str(13).data() + match.str(13).size(), max);
 				std::string unit = match.str(15);
 
 				std::vector<std::string> receivers;

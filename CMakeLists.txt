@@ -9,6 +9,8 @@ option(ENABLE_TESTS "Enable Unittests" ON)
 set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
 
+find_package(FastFloat REQUIRED)
+
 set(GCC_COMPILE_FLAGS "-Wextra -Wall -Wfloat-equal -Wundef -Wshadow \
 -Wpointer-arith -Wcast-align -Wstrict-prototypes -Wwrite-strings \
 -Waggregate-return -Wcast-qual -Wswitch-default -Wswitch-enum -Wconversion \
