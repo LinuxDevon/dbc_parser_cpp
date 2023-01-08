@@ -58,10 +58,12 @@ namespace libdbc {
 
 	}
 
-	void DbcParser::parse_file(const std::string& file) {
+    void DbcParser::parse_file(const std::string& file) {
 		std::ifstream s(file.c_str());
 		std::string line;
 		std::vector<std::string> lines;
+
+        messages.clear();
 
 		parse_dbc_header(s);
 
