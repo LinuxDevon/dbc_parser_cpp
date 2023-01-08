@@ -142,7 +142,7 @@ namespace libdbc {
         std::sort(m_signals.begin(), m_signals.end());
 
         uint32_t curr_bit = 0;
-        for (int i=0; i < m_signals.size(); i++) {
+        for (std::vector<Signal>::size_type i=0; i < m_signals.size(); i++) {
             const auto& signal = m_signals.at(i);
             if (signal.is_multiplexed)
                 break; // Not supported yet
