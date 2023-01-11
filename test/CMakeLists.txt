@@ -8,6 +8,7 @@ FetchContent_Declare(
   GIT_TAG        v3.2.1
 )
 FetchContent_MakeAvailable(Catch2)
+include(Catch)
 
 list(APPEND TEST_SOURCES
 			 test_dbc.cpp
@@ -20,5 +21,4 @@ target_sources(tests INTERFACE FILE_SET HEADERS
                                TYPE HEADERS
                                BASE_DIRS ${CMAKE_CURRENT_SOURCE_DIR}
                                FILES defines.hpp)
-
-add_test(NAME tests COMMAND $<TARGET_FILE:tests>)
+catch_discover_tests(tests)
