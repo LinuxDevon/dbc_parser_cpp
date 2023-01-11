@@ -74,28 +74,29 @@ TEST_CASE("Testing negative values") {
 
   REQUIRE(parser.get_messages().size() == 1);
   REQUIRE(parser.get_messages().at(0).signals.size() == 4);
-  {
+
+  SECTION("Evaluating first message") {
     const auto signal = parser.get_messages().at(0).signals.at(0);
     REQUIRE(signal.factor == 0.1);
     REQUIRE(signal.offset == 0);
     REQUIRE(signal.min == -3276.8);
     REQUIRE(signal.max == -3276.7);
   }
-  {
+  SECTION("Evaluating second message") {
     const auto signal = parser.get_messages().at(0).signals.at(1);
     REQUIRE(signal.factor == 0.1);
     REQUIRE(signal.offset == 0);
     REQUIRE(signal.min == -3276.8);
     REQUIRE(signal.max == -3276.7);
   }
-  {
+  SECTION("Evaluating third message"){
     const auto signal = parser.get_messages().at(0).signals.at(2);
     REQUIRE(signal.factor == 10);
     REQUIRE(signal.offset == 0);
     REQUIRE(signal.min == -3276.8);
     REQUIRE(signal.max == -3276.7);
   }
-  {
+  SECTION("Evaluating fourth message"){
     const auto signal = parser.get_messages().at(0).signals.at(3);
     REQUIRE(signal.factor == 1);
     REQUIRE(signal.offset == -10);
