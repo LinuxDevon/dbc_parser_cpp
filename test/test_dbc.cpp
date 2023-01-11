@@ -63,10 +63,6 @@ TEST_CASE("Testing dbc file loading", "[fileio]") {
 
 }
 
-/*!
- * \brief TEST_CASE
- * Test negative values in offset, min, max
- */
 TEST_CASE("Testing negative values") {
   const auto* filename = std::tmpnam(NULL);
 
@@ -125,7 +121,7 @@ TEST_CASE("Special characters in unit") {
 
     REQUIRE(parser.get_messages().size() == 1);
     REQUIRE(parser.get_messages().at(0).signals.size() == 1);
-    {
+    SECTION("Checking that signal with special characters as unit is parsed correctly") {
       const auto signal = parser.get_messages().at(0).signals.at(0);
       REQUIRE(signal.unit.compare("Km/h") == 0);
     }
