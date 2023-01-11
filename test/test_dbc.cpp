@@ -1,6 +1,18 @@
 #include <catch2/catch_test_macros.hpp>
 #include "defines.hpp"
 #include <libdbc/dbc.hpp>
+#include <string_view>
+
+void create_tmp_dbc_with(const char* filename, const char* content)
+{
+  auto* file = std::fopen(filename, "w");
+  CHECK(file);
+
+  std::fputs(PRIMITIVE_DBC.c_str(), file);
+  std::fputs(content, file);
+  std::fclose(file);
+}
+
 
 TEST_CASE("Testing dbc file loading error issues", "[fileio][error]") {
 	auto parser = std::unique_ptr<libdbc::DbcParser>(new libdbc::DbcParser());
@@ -58,16 +70,11 @@ TEST_CASE("Testing dbc file loading", "[fileio]") {
 TEST_CASE("Testing negative values") {
   const auto* filename = std::tmpnam(NULL);
 
-  auto* file = std::fopen(filename, "w");
-  CHECK(file);
-
-  std::fputs(PRIMITIVE_DBC.c_str(), file);
-  std::fputs(R"(BO_ 234 MSG1: 8 Vector__XXX
+  create_tmp_dbc_with(filename, R"(BO_ 234 MSG1: 8 Vector__XXX
  SG_ Sig1 : 55|16@0- (0.1,0) [-3276.8|-3276.7] "C" Vector__XXX
  SG_ Sig2 : 39|16@0- (0.1,0) [-3276.8|-3276.7] "C" Vector__XXX
  SG_ Sig3 : 23|16@0- (10,0) [-3276.8|-3276.7] "C" Vector__XXX
- SG_ Sig4 : 7|16@0- (1,-10) [0|32767] "" Vector__XXX)", file);
-  std::fclose(file);
+ SG_ Sig4 : 7|16@0- (1,-10) [0|32767] "" Vector__XXX)");
 
   auto parser = libdbc::DbcParser();
   parser.parse_file(std::string(filename));
@@ -109,13 +116,9 @@ TEST_CASE("Testing negative values") {
 TEST_CASE("Special characters in unit") {
     const auto* filename = std::tmpnam(NULL);
 
-    auto* file = std::fopen(filename, "w");
-    CHECK(file);
+    create_tmp_dbc_with(filename, R"(BO_ 234 MSG1: 8 Vector__XXX
+ SG_ Speed : 0|8@1+ (1,0) [0|204] "Km/h"  DEVICE1,DEVICE2,DEVICE3)");
 
-    std::fputs(PRIMITIVE_DBC.c_str(), file);
-    std::fputs(R"(BO_ 234 MSG1: 8 Vector__XXX
- SG_ Speed : 0|8@1+ (1,0) [0|204] "Km/h"  DEVICE1,DEVICE2,DEVICE3)", file);
-    std::fclose(file);
 
     auto parser = libdbc::DbcParser();
     parser.parse_file(std::string(filename));
