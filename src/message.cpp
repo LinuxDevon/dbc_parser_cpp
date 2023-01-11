@@ -27,7 +27,45 @@ namespace libdbc {
             } else {
                 const auto& signal = m_signals.at(bs.index);
                 if (signal.is_bigendian) {
-
+                    switch (bs.size) {
+                        case 1:
+                        v = static_cast<double>(bitstream_reader_read_bit(&reader)); break;
+                    case 8:
+                        if (signal.is_signed)
+                            v = static_cast<double>(static_cast<int8_t>(bitstream_reader_read_u8(&reader)));
+                        else
+                            v = static_cast<double>(bitstream_reader_read_u8(&reader));
+                        break;
+                    case 16:
+                        if (signal.is_signed)
+                            v = static_cast<double>(static_cast<int16_t>(bitstream_reader_read_u16(&reader)));
+                        else
+                            v = static_cast<double>(bitstream_reader_read_u16(&reader));
+                        break;
+                    case 32:
+                        if (signal.is_signed)
+                            v = static_cast<double>(static_cast<int32_t>(bitstream_reader_read_u32(&reader)));
+                        else
+                            v = static_cast<double>(bitstream_reader_read_u32(&reader));
+                        break;
+                    case 64:
+                        if (signal.is_signed)
+                            v = static_cast<double>(static_cast<int64_t>(bitstream_reader_read_u64(&reader)));
+                        else
+                            v = static_cast<double>(bitstream_reader_read_u64(&reader));
+                        break;
+                    default: {
+                        // TODO: possible to implement bigendian and sign?
+                        uint64_t value = 0;
+                        for (uint32_t i=0; i < bs.size; i++) {
+                            value |= bitstream_reader_read_bit(&reader) << i;
+                        }
+                        v = static_cast<double>(value);
+                        break;
+                    }
+                    }
+                } else {
+                    // little endian
                     switch (bs.size) {
                         case 1: v = static_cast<double>(bitstream_reader_read_bit(&reader)); break;
                     case 8: v = static_cast<double>(bitstream_reader_read_u8(&reader)); break;
@@ -66,45 +104,6 @@ namespace libdbc {
                             v = static_cast<double>(tmp);
                         break;
                     }
-                    default: {
-                        // TODO: possible to implement bigendian and sign?
-                        uint64_t value = 0;
-                        for (uint32_t i=0; i < bs.size; i++) {
-                            value |= bitstream_reader_read_bit(&reader) << i;
-                        }
-                        v = static_cast<double>(value);
-                        break;
-                    }
-                    }
-                } else {
-                    // little endian
-                    switch (bs.size) {
-                        case 1:
-                        v = static_cast<double>(bitstream_reader_read_bit(&reader)); break;
-                    case 8:
-                        if (signal.is_signed)
-                            v = static_cast<double>(static_cast<int8_t>(bitstream_reader_read_u8(&reader)));
-                        else
-                            v = static_cast<double>(bitstream_reader_read_u8(&reader));
-                        break;
-                    case 16:
-                        if (signal.is_signed)
-                            v = static_cast<double>(static_cast<int16_t>(bitstream_reader_read_u16(&reader)));
-                        else
-                            v = static_cast<double>(bitstream_reader_read_u16(&reader));
-                        break;
-                    case 32:
-                        if (signal.is_signed)
-                            v = static_cast<double>(static_cast<int32_t>(bitstream_reader_read_u32(&reader)));
-                        else
-                            v = static_cast<double>(bitstream_reader_read_u32(&reader));
-                        break;
-                    case 64:
-                        if (signal.is_signed)
-                            v = static_cast<double>(static_cast<int64_t>(bitstream_reader_read_u64(&reader)));
-                        else
-                            v = static_cast<double>(bitstream_reader_read_u64(&reader));
-                        break;
                     default: {
                         // TODO: possible to implement bigendian and sign?
                         uint64_t value = 0;

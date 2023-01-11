@@ -173,7 +173,7 @@ TEST_CASE("Parse Message little endian") {
     libdbc::DbcParser p(true);
     p.parse_file(filename);
 
-    std::vector<uint8_t> data{0x27, 0x08, 0x22, 0xa3, 0x1f, 0xe5, 0x14, 0x45}; // little endian
+    std::vector<uint8_t> data{0x08, 0x27, 0xa3, 0x22, 0xe5, 0x1f, 0x45, 0x14}; // little endian
     std::vector<double> result_values;
     REQUIRE(p.parseMessage(0x21d, data, result_values) == true);
     REQUIRE(result_values.size() == 4);
@@ -200,7 +200,7 @@ TEST_CASE("Parse Message big endian") {
     libdbc::DbcParser p(true);
     p.parse_file(filename);
 
-    std::vector<uint8_t> data{0x08, 0x27, 0xa3, 0x22, 0xe5, 0x1f, 0x45, 0x14}; // big endian
+    std::vector<uint8_t> data{0x27, 0x08, 0x22, 0xa3, 0x1f, 0xe5, 0x14, 0x45}; // big endian
     std::vector<double> result_values;
     REQUIRE(p.parseMessage(0x21d, data, result_values) == true);
     REQUIRE(result_values.size() == 4);
