@@ -35,6 +35,15 @@ TEST_CASE("Testing dbc file loading error issues", "[fileio][error]") {
 		// very well standardized for now we ignore this type of error.
 		CHECK_NOTHROW(parser->parse_file(MISSING_NEW_SYMBOLS_DBC_FILE));
 	}
+
+	SECTION("Verify that what() method is accessible for all exceptions", "[error]")
+	{
+		auto generic_error = libdbc::exception();
+		REQUIRE(generic_error.what() == "libdbc exception occurred");
+
+		auto validity_check = libdbc::validity_error();
+		REQUIRE(validity_check.what() == "Invalid DBC file");
+	}
 }
 
 TEST_CASE("Testing dbc file loading", "[fileio]") {
