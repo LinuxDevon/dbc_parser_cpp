@@ -64,7 +64,7 @@ endif()
 add_subdirectory(doc)
 
 add_library(${PROJECT_NAME} STATIC ${SOURCE})
-target_link_libraries(${PROJECT_NAME} bitstream)
+target_link_libraries(${PROJECT_NAME} bitstream FastFloat::fast_float)
 target_sources(${PROJECT_NAME} INTERFACE FILE_SET HEADERS
 	TYPE HEADERS
 	BASE_DIRS ${PROJECT_SOURCE_DIR}/include/libdbc
