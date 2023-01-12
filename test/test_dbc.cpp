@@ -1,7 +1,6 @@
 #include <catch2/catch_test_macros.hpp>
 #include "defines.hpp"
 #include <libdbc/dbc.hpp>
-#include <string_view>
 
 void create_tmp_dbc_with(const char* filename, const char* content)
 {
