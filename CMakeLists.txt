@@ -12,6 +12,7 @@ set(CPACK_RESOURCE_FILE_README ${CMAKE_CURRENT_SOURCE_DIR}/README.md)
 include(CPack)
 
 option(DEBUG "use debug flag" NO)
+option(ENABLE_TESTS "Enable Unittests" ON)
 
 # defines variables used in the dbc.pc.in
 include(GNUInstallDirs)
@@ -51,7 +52,11 @@ set(HEADER_FILES
 include_directories(src)
 include_directories(include)
 
-add_subdirectory(test)
+if(ENABLE_TESTS)
+    include(CTest)
+    add_subdirectory(test)
+endif()
+
 add_subdirectory(doc)
 
 add_library(${PROJECT_NAME} STATIC ${SOURCE})

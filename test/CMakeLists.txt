@@ -1,4 +1,4 @@
-project(tests VERSION 0.1.0)
+enable_testing()
 
 # Download and build Catch2 test framework
 Include(FetchContent)
@@ -8,15 +8,17 @@ FetchContent_Declare(
   GIT_TAG        v3.2.1
 )
 FetchContent_MakeAvailable(Catch2)
+include(Catch)
 
 list(APPEND TEST_SOURCES
 			 test_dbc.cpp
 			 test_utils.cpp)
 
-add_executable(tests ${TEST_SOURCES} ${SOURCE})
-target_link_libraries(tests PRIVATE Catch2::Catch2WithMain)
-
-add_custom_target(test
-					COMMAND ${PROJECT_NAME}
-					WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}
-					DEPENDS ${PROJECT_NAME})
+add_executable(tests ${TEST_SOURCES})
+target_compile_definitions(tests PRIVATE TESTDBCFILES_PATH="${CMAKE_CURRENT_SOURCE_DIR}/dbcs")
+target_link_libraries(tests PRIVATE dbc Catch2::Catch2WithMain)
+target_sources(tests INTERFACE FILE_SET HEADERS
+                               TYPE HEADERS
+                               BASE_DIRS ${CMAKE_CURRENT_SOURCE_DIR}
+                               FILES defines.hpp)
+catch_discover_tests(tests)

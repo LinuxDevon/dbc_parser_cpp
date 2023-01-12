@@ -4,6 +4,28 @@
 
 #include <regex>
 
+namespace {
+
+const auto floatPattern = "(-?\\d+\\.?(\\d+)?)"; // Can be negative
+
+const auto signalIdentifierPattern = "(SG_)";
+const auto namePattern = "(\\w+)";
+const auto bitStartPattern = "(\\d+)"; // Cannot be negative
+const auto lengthPattern = "(\\d+)"; // Cannot be negative
+const auto byteOrderPattern = "([0-1])";
+const auto signPattern = "(\\+|\\-)";
+const auto scalePattern = "(\\d+\\.?(\\d+)?)"; // Non negative float
+const auto offsetPattern = floatPattern;
+const auto offsetScalePattern = std::string("\\(") + scalePattern + "\\," + offsetPattern + "\\)";
+const auto minPattern = floatPattern;
+const auto maxPattern = floatPattern;
+const auto minMaxPattern = std::string("\\[") + minPattern + "\\|" + maxPattern + "\\]";
+const auto unitPattern = "\"(.*)\""; // Random string
+const auto receiverPattern = "([\\w\\,]+|Vector__XXX)*";
+const auto whiteSpace = "\\s";
+
+} // anonymous namespace
+
 namespace libdbc {
 
 	DbcParser::DbcParser() : version(""), nodes(),
@@ -11,7 +33,27 @@ namespace libdbc {
 				name_space_re("^(NS_)\\s\\:"), node_re("^(BU_:)\\s((?:[\\w]+?\\s?)*)"),
 				message_re("^(BO_)\\s(\\d+)\\s(\\w+)\\:\\s(\\d+)\\s(\\w+|Vector__XXX)"),
 				// NOTE: No multiplex support yet
-				signal_re("\\s(SG_)\\s(\\w+)\\s\\:\\s(\\d+)\\|(\\d+)\\@(\\d+)(\\+|\\-)\\s\\((\\d+\\.?(\\d+)?)\\,(\\d+\\.?(\\d+)?)\\)\\s\\[(-?\\d+\\.?(\\d+)?)\\|(-?\\d+\\.?(\\d+)?)\\]\\s\"(\\w*)\"\\s([\\w\\,]+|Vector__XXX)*") {
+                signal_re(std::string(whiteSpace) +
+                          signalIdentifierPattern +
+                          whiteSpace +
+                          namePattern +
+                          whiteSpace +
+                          "\\:" +
+                          whiteSpace +
+                          bitStartPattern +
+                          "\\|" +
+                          lengthPattern +
+                          "\\@" +
+                          byteOrderPattern +
+                          signPattern +
+                          whiteSpace +
+                          offsetScalePattern +
+                          whiteSpace +
+                          minMaxPattern +
+                          whiteSpace +
+                          unitPattern +
+                          whiteSpace +
+                          receiverPattern) {
 
 	}
 
