@@ -12,12 +12,12 @@ namespace libdbc {
                (m_size == rhs.m_size) && (m_node == rhs.m_node);
     }
 
-    bool Message::parseSignals(const std::vector<uint8_t> data, std::vector<double>& values) const {
+    bool Message::parseSignals(const uint8_t* data, std::vector<double>& values) const {
         if (!m_prepared)
             return false;
 
         bitstream_reader_t reader;
-        bitstream_reader_init(&reader, data.data());
+        bitstream_reader_init(&reader, data);
 
         double v;
         for (const auto& bs: bitstruct) {
@@ -120,6 +120,14 @@ namespace libdbc {
             }
         }
         return true;
+    }
+
+    bool Message::parseSignals(const std::array<uint8_t,8>& data, std::vector<double>& values) const {
+        return parseSignals(data.data(), values);
+    }
+
+    bool Message::parseSignals(const std::vector<uint8_t> &data, std::vector<double>& values) const {
+        return parseSignals(data.data(), values);
     }
 
     void Message::appendSignal(const Signal& signal) {
