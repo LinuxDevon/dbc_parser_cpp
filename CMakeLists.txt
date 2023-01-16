@@ -21,7 +21,16 @@ include(GNUInstallDirs)
 set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
 
-find_package(FastFloat REQUIRED)
+find_package(FastFloat QUIET)
+if (NOT ${FastFloat_FOUND})
+    include(FetchContent)
+    FetchContent_Declare(
+      FastFloat
+      GIT_REPOSITORY https://github.com/fastfloat/fast_float.git
+      GIT_TAG 1ea4f27b2aeee2859a1354a3c24cff52a116cad1
+    )
+    FetchContent_MakeAvailable(FastFloat)
+endif()
 
 set(GCC_COMPILE_FLAGS "-Wextra -Wall -Wfloat-equal -Wundef -Wshadow \
 -Wpointer-arith -Wcast-align -Wstrict-prototypes -Wwrite-strings \
