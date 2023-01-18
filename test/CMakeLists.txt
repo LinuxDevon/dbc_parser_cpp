@@ -14,15 +14,15 @@ list(APPEND TEST_SOURCES
 			 test_dbc.cpp
 			 test_utils.cpp)
 
-add_executable(tests ${TEST_SOURCES})
-target_compile_definitions(tests PRIVATE TESTDBCFILES_PATH="${CMAKE_CURRENT_SOURCE_DIR}/dbcs")
-target_link_libraries(tests PRIVATE dbc Catch2::Catch2WithMain)
+add_executable(dbcParserTests ${TEST_SOURCES})
+target_compile_definitions(dbcParserTests PRIVATE TESTDBCFILES_PATH="${CMAKE_CURRENT_SOURCE_DIR}/dbcs")
+target_link_libraries(dbcParserTests PRIVATE dbc Catch2::Catch2WithMain)
 if (${CMAKE_MINOR_VERSION} GREATER_EQUAL 23)
-    target_sources(tests PRIVATE FILE_SET HEADERS
+    target_sources(dbcParserTests PRIVATE FILE_SET HEADERS
                                    TYPE HEADERS
                                    BASE_DIRS ${CMAKE_CURRENT_SOURCE_DIR}
                                    FILES defines.hpp)
 else()
-    target_include_directories(tests PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
+    target_include_directories(dbcParserTests PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
 endif()
-catch_discover_tests(tests)
+catch_discover_tests(dbcParserTests)
