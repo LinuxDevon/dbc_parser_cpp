@@ -1,5 +1,4 @@
-cmake_minimum_required(VERSION 3.23)
-# FILE_SET needs cmake 3.23
+cmake_minimum_required(VERSION 3.16)
 
 project(dbc VERSION 0.1.1 DESCRIPTION "C++ DBC Parser")
 
@@ -74,10 +73,13 @@ add_subdirectory(doc)
 
 add_library(${PROJECT_NAME} STATIC ${SOURCE})
 target_link_libraries(${PROJECT_NAME} bitstream FastFloat::fast_float)
-target_sources(${PROJECT_NAME} INTERFACE FILE_SET HEADERS
-	TYPE HEADERS
-	BASE_DIRS ${PROJECT_SOURCE_DIR}/include/libdbc
-	FILES ${HEADER_FILES})
+
+if (${CMAKE_MINOR_VERSION} GREATER_EQUAL 23)
+    target_sources(${PROJECT_NAME} INTERFACE FILE_SET HEADERS
+            TYPE HEADERS
+            BASE_DIRS ${PROJECT_SOURCE_DIR}/include/libdbc
+            FILES ${HEADER_FILES})
+endif()
 
 add_custom_target(release
 					WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
@@ -90,11 +92,15 @@ install(TARGETS ${PROJECT_NAME}
 		DESTINATION ${CMAKE_INSTALL_LIBDIR})
 
 # install headers
-install(TARGETS ${PROJECT_NAME}
-		FILE_SET HEADERS
-		DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/lib${PROJECT_NAME}
-		INCLUDES DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
-)
+if (${CMAKE_MINOR_VERSION} GREATER_EQUAL 23)
+    install(TARGETS ${PROJECT_NAME}
+                    FILE_SET HEADERS
+                    DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/lib${PROJECT_NAME}
+                    INCLUDES DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
+    )
+else()
+    install(DIRECTORY ${PROJECT_SOURCE_DIR}/include/libdbc DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
+endif()
 
 # Generate pkg-config file
 configure_file(${PROJECT_NAME}.pc.in ${PROJECT_NAME}.pc @ONLY)

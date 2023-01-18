@@ -17,8 +17,10 @@ list(APPEND TEST_SOURCES
 add_executable(tests ${TEST_SOURCES})
 target_compile_definitions(tests PRIVATE TESTDBCFILES_PATH="${CMAKE_CURRENT_SOURCE_DIR}/dbcs")
 target_link_libraries(tests PRIVATE dbc Catch2::Catch2WithMain)
-target_sources(tests INTERFACE FILE_SET HEADERS
-                               TYPE HEADERS
-                               BASE_DIRS ${CMAKE_CURRENT_SOURCE_DIR}
-                               FILES defines.hpp)
+if (${CMAKE_MINOR_VERSION} GREATER_EQUAL 23)
+    target_sources(tests INTERFACE FILE_SET HEADERS
+                                   TYPE HEADERS
+                                   BASE_DIRS ${CMAKE_CURRENT_SOURCE_DIR}
+                                   FILES defines.hpp)
+endif()
 catch_discover_tests(tests)
