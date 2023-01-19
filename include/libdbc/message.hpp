@@ -20,7 +20,7 @@ namespace libdbc {
          */
         bool parseSignals(const std::vector<uint8_t>& data, std::vector<double> &values) const;
         bool parseSignals(const std::array<uint8_t,8>& data, std::vector<double>& values) const;
-        bool parseSignals(const uint8_t* data, std::vector<double>& values) const;
+        bool parseSignals(const uint8_t* data, int size, std::vector<double>& values) const;
 
         void appendSignal(const Signal& signal);
         const std::vector<Signal> signals() const;

@@ -12,122 +12,43 @@ namespace libdbc {
                (m_size == rhs.m_size) && (m_node == rhs.m_node);
     }
 
-    bool Message::parseSignals(const uint8_t* data, std::vector<double>& values) const {
+    bool Message::parseSignals(const uint8_t* data, int size, std::vector<double>& values) const {
         if (!m_prepared)
             return false;
 
-        bitstream_reader_t reader;
-        bitstream_reader_init(&reader, data);
+        if (size > 8)
+            return false; // not supported yet
 
-        double v;
-        for (const auto& bs: bitstruct) {
-            if (bs.padding) {
-                for (uint32_t i=0; i < bs.size; i++)
-                    bitstream_reader_read_bit(&reader);
-            } else {
-                const auto& signal = m_signals.at(bs.index);
-                if (signal.is_bigendian) {
-                    switch (bs.size) {
-                        case 1:
-                        v = static_cast<double>(bitstream_reader_read_bit(&reader)); break;
-                    case 8:
-                        if (signal.is_signed)
-                            v = static_cast<double>(static_cast<int8_t>(bitstream_reader_read_u8(&reader)));
-                        else
-                            v = static_cast<double>(bitstream_reader_read_u8(&reader));
-                        break;
-                    case 16:
-                        if (signal.is_signed)
-                            v = static_cast<double>(static_cast<int16_t>(bitstream_reader_read_u16(&reader)));
-                        else
-                            v = static_cast<double>(bitstream_reader_read_u16(&reader));
-                        break;
-                    case 32:
-                        if (signal.is_signed)
-                            v = static_cast<double>(static_cast<int32_t>(bitstream_reader_read_u32(&reader)));
-                        else
-                            v = static_cast<double>(bitstream_reader_read_u32(&reader));
-                        break;
-                    case 64:
-                        if (signal.is_signed)
-                            v = static_cast<double>(static_cast<int64_t>(bitstream_reader_read_u64(&reader)));
-                        else
-                            v = static_cast<double>(bitstream_reader_read_u64(&reader));
-                        break;
-                    default: {
-                        // TODO: possible to implement bigendian and sign?
-                        uint64_t value = 0;
-                        for (uint32_t i=0; i < bs.size; i++) {
-                            value |= bitstream_reader_read_bit(&reader) << i;
-                        }
-                        v = static_cast<double>(value);
-                        break;
-                    }
-                    }
-                } else {
-                    // little endian
-                    switch (bs.size) {
-                        case 1: v = static_cast<double>(bitstream_reader_read_bit(&reader)); break;
-                    case 8: v = static_cast<double>(bitstream_reader_read_u8(&reader)); break;
-                    case 16: {
-                        uint16_t tmp = bitstream_reader_read_u8(&reader);
-                        tmp |= (uint16_t)bitstream_reader_read_u8(&reader) << 8;
-                        if (signal.is_signed)
-                            v = static_cast<double>(static_cast<int16_t>(tmp));
-                        else
-                            v = static_cast<double>(tmp);
-                        break;
-                    }
-                    case 32: {
-                        uint32_t tmp = bitstream_reader_read_u8(&reader);
-                        tmp |= (uint32_t)bitstream_reader_read_u8(&reader) << 8;
-                        tmp |= (uint32_t)bitstream_reader_read_u8(&reader) << 16;
-                        tmp |= (uint32_t)bitstream_reader_read_u8(&reader) << 24;
-                        if (signal.is_signed)
-                            v = static_cast<double>(static_cast<int32_t>(tmp));
-                        else
-                            v = static_cast<double>(tmp);
-                        break;
-                    }
-                    case 64: {
-                        uint64_t tmp = bitstream_reader_read_u8(&reader);
-                        tmp |= (uint64_t)bitstream_reader_read_u8(&reader) << 8;
-                        tmp |= (uint64_t)bitstream_reader_read_u8(&reader) << 16;
-                        tmp |= (uint64_t)bitstream_reader_read_u8(&reader) << 24;
-                        tmp |= (uint64_t)bitstream_reader_read_u8(&reader) << 32;
-                        tmp |= (uint64_t)bitstream_reader_read_u8(&reader) << 40;
-                        tmp |= (uint64_t)bitstream_reader_read_u8(&reader) << 48;
-                        tmp |= (uint64_t)bitstream_reader_read_u8(&reader) << 56;
-                        if (signal.is_signed)
-                            v = static_cast<double>(static_cast<int64_t>(tmp));
-                        else
-                            v = static_cast<double>(tmp);
-                        break;
-                    }
-                    default: {
-                        // TODO: possible to implement bigendian and sign?
-                        uint64_t value = 0;
-                        for (uint32_t i=0; i < bs.size; i++) {
-                            value |= bitstream_reader_read_bit(&reader) << i;
-                        }
-                        v = static_cast<double>(value);
-                        break;
-                    }
-                    }
-                }
+        // Only little endian supported yet!
+        // All signals must be little endian
+        for (const auto& signal: m_signals) {
+            if (signal.is_bigendian)
+                return false;
+        }
 
-                values.push_back(v * signal.factor + signal.offset);
-            }
+        const uint32_t len = size * 8;
+
+        uint64_t d = 0;
+        for (int i=0; i < size; i++) {
+            d |= ((uint64_t)data[i]) << i * 8;
+        }
+
+        uint64_t v = 0;
+        for (const auto& signal: m_signals) {
+            const uint32_t shiftLeft = (len - (signal.size + signal.start_bit));
+            v = d << shiftLeft;
+            v = v >> (shiftLeft + signal.start_bit);
+            values.push_back(v * signal.factor + signal.offset);
         }
         return true;
     }
 
     bool Message::parseSignals(const std::array<uint8_t,8>& data, std::vector<double>& values) const {
-        return parseSignals(data.data(), values);
+        return parseSignals(data.data(), data.size(), values);
     }
 
     bool Message::parseSignals(const std::vector<uint8_t> &data, std::vector<double>& values) const {
-        return parseSignals(data.data(), values);
+        return parseSignals(data.data(), data.size(), values);
     }
 
     void Message::appendSignal(const Signal& signal) {
