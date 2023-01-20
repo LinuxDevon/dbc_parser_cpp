@@ -19,25 +19,27 @@ namespace libdbc {
         if (size > 8)
             return false; // not supported yet
 
-        // Only little endian supported yet!
-        // All signals must be little endian
-        for (const auto& signal: m_signals) {
-            if (signal.is_bigendian)
-                return false;
+        uint64_t data_little_endian = 0;
+        uint64_t data_big_endian = 0;
+        for (int i=0; i < size; i++) {
+            data_little_endian |= ((uint64_t)data[i]) << i * 8;
+            data_big_endian |= (uint64_t)data[i] << (size - 1 - i);
         }
+
+        // TODO: does this also work on a big endian machine?
 
         const uint32_t len = size * 8;
-
-        uint64_t d = 0;
-        for (int i=0; i < size; i++) {
-            d |= ((uint64_t)data[i]) << i * 8;
-        }
-
         uint64_t v = 0;
         for (const auto& signal: m_signals) {
-            const uint32_t shiftLeft = (len - (signal.size + signal.start_bit));
-            v = d << shiftLeft;
-            v = v >> (shiftLeft + signal.start_bit);
+            if (signal.is_bigendian) {
+                const uint32_t shiftLeft = signal.start_bit;
+                v = data_big_endian << shiftLeft;
+                v = v >> (shiftLeft + signal.start_bit);
+            } else {
+                const uint32_t shiftLeft = (len - (signal.size + signal.start_bit));
+                v = data_little_endian << shiftLeft;
+                v = v >> (shiftLeft + signal.start_bit);
+            }
             values.push_back(v * signal.factor + signal.offset);
         }
         return true;

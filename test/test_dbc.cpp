@@ -3,16 +3,7 @@
 #include <catch2/matchers/catch_matchers.hpp>
 #include "defines.hpp"
 #include <libdbc/dbc.hpp>
-
-void create_tmp_dbc_with(const char* filename, const char* content)
-{
-  auto* file = std::fopen(filename, "w");
-  CHECK(file);
-
-  std::fputs(PRIMITIVE_DBC.c_str(), file);
-  std::fputs(content, file);
-  std::fclose(file);
-}
+#include "common.hpp"
 
 
 TEST_CASE("Testing dbc file loading error issues", "[fileio][error]") {
