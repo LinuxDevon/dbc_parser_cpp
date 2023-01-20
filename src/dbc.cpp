@@ -147,7 +147,7 @@ namespace libdbc {
 				bool is_multiplexed = false; // No support yet
 				uint32_t start_bit = std::stoul(match.str(3));
 				uint32_t size = std::stoul(match.str(4));
-				bool is_bigendian = (std::stoul(match.str(5)) == 1);
+				bool is_bigendian = (std::stoul(match.str(5)) == 0);
 				bool is_signed = (match.str(6) == "-");
 				// Alternate groups because a group is for the decimal portion
 				double factor = std::stod(match.str(7));
