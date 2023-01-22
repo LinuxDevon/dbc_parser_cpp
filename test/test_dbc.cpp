@@ -53,7 +53,7 @@ TEST_CASE("Testing dbc file loading", "[fileio]") {
 		libdbc::Message msg(500, "IO_DEBUG", 4, "IO");
 
 		std::vector<std::string> receivers{"DBG"};
-		libdbc::Signal sig("IO_DEBUG_test_unsigned", false, 0, 8, true, false, 1, 0, 0, 0, "", receivers);
+		libdbc::Signal sig("IO_DEBUG_test_unsigned", false, 0, 8, false, false, 1, 0, 0, 0, "", receivers);
  		msg.signals.push_back(sig);
 
 		std::vector<libdbc::Message> msgs = {msg};
@@ -69,6 +69,35 @@ TEST_CASE("Testing dbc file loading", "[fileio]") {
 		REQUIRE(parser->get_messages().front().signals == msg.signals);
 	}
 
+}
+
+TEST_CASE("Testing  big endian, little endian") {
+  const auto* filename = std::tmpnam(NULL);
+
+  auto* file = std::fopen(filename, "w");
+  CHECK(file);
+
+  std::fputs(PRIMITIVE_DBC.c_str(), file);
+  // first big endian
+  // second little endian
+  std::fputs(R"(BO_ 234 MSG1: 8 Vector__XXX
+ SG_ Sig1 : 55|16@0- (0.1,0) [-3276.8|-3276.7] "C" Vector__XXX
+ SG_ Sig2 : 39|16@1- (0.1,0) [-3276.8|-3276.7] "C" Vector__XXX)", file);
+  std::fclose(file);
+
+  auto parser = libdbc::DbcParser();
+  parser.parse_file(filename);
+
+  REQUIRE(parser.get_messages().size() == 1);
+  REQUIRE(parser.get_messages().at(0).signals.size() == 2);
+  {
+    const auto signal = parser.get_messages().at(0).signals.at(0);
+    REQUIRE(signal.is_bigendian == true);
+  }
+  {
+    const auto signal = parser.get_messages().at(0).signals.at(1);
+    REQUIRE(signal.is_bigendian == false);
+  }
 }
 
 TEST_CASE("Testing negative values") {
