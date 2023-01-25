@@ -13,8 +13,9 @@ namespace libdbc {
     }
 
     bool Message::parseSignals(const uint8_t* data, int size, std::vector<double>& values) const {
-        if (!m_prepared)
-            return false;
+        // With the current approach it is not needed to prepare the message by sorting the signals
+//        if (!m_prepared)
+//            return false;
 
         if (size > 8)
             return false; // not supported yet
@@ -31,7 +32,7 @@ namespace libdbc {
         uint64_t data_big_endian = 0;
         for (int i=0; i < size; i++) {
             data_little_endian |= ((uint64_t)data[i]) << i * 8;
-            data_big_endian |= (uint64_t)data[i] << (size - 1 - i);
+            //data_big_endian |= (uint64_t)data[i] << (size - 1 - i);
         }
 
         // TODO: does this also work on a big endian machine?
@@ -40,9 +41,10 @@ namespace libdbc {
         uint64_t v = 0;
         for (const auto& signal: m_signals) {
             if (signal.is_bigendian) {
-                const uint32_t shiftLeft = signal.start_bit;
-                v = data_big_endian << shiftLeft;
-                v = v >> (shiftLeft + signal.start_bit);
+                // Not tested!
+                //  const uint32_t shiftLeft = signal.start_bit;
+                //  v = data_big_endian << shiftLeft;
+                //  v = v >> (shiftLeft + signal.start_bit);
             } else {
                 const uint32_t shiftLeft = (len - (signal.size + signal.start_bit));
                 v = data_little_endian << shiftLeft;
@@ -75,26 +77,26 @@ namespace libdbc {
     }
 
     void Message::prepareMessage() {
-        m_prepared = false;
-        // sort signals so that the signals are ordered by the startbit
+//        m_prepared = false;
+//        // sort signals so that the signals are ordered by the startbit
         std::sort(m_signals.begin(), m_signals.end());
 
-        uint32_t curr_bit = 0;
-        for (std::vector<Signal>::size_type i=0; i < m_signals.size(); i++) {
-            const auto& signal = m_signals.at(i);
-            if (signal.is_multiplexed)
-                break; // Not supported yet
+//        uint32_t curr_bit = 0;
+//        for (std::vector<Signal>::size_type i=0; i < m_signals.size(); i++) {
+//            const auto& signal = m_signals.at(i);
+//            if (signal.is_multiplexed)
+//                break; // Not supported yet
 
-            if (curr_bit < signal.start_bit) {
-                // padding needed
-                bitstruct.push_back(BitStruct(signal.start_bit - curr_bit));
-            }
-            bitstruct.push_back(BitStruct(i, signal.size));
-            curr_bit = signal.start_bit + signal.size;
-        }
-        // Check if correct
-        if (curr_bit > m_size * 8)
-            return;
+//            if (curr_bit < signal.start_bit) {
+//                // padding needed
+//                bitstruct.push_back(BitStruct(signal.start_bit - curr_bit));
+//            }
+//            bitstruct.push_back(BitStruct(i, signal.size));
+//            curr_bit = signal.start_bit + signal.size;
+//        }
+//        // Check if correct
+//        if (curr_bit > m_size * 8)
+//            return;
 
         m_prepared = true;
     }
