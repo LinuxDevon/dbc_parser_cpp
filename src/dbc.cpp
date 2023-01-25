@@ -29,7 +29,7 @@ const auto whiteSpace = "\\s";
 
 namespace libdbc {
 
-    DbcParser::DbcParser(bool sortSignals) : version(""), nodes(),
+    DbcParser::DbcParser() : version(""), nodes(),
 				version_re("^(VERSION)\\s\"(.*)\""), bit_timing_re("^(BS_:)"),
 				name_space_re("^(NS_)\\s\\:"), node_re("^(BU_:)\\s((?:[\\w]+?\\s?)*)"),
 				message_re("^(BO_)\\s(\\d+)\\s(\\w+)\\:\\s(\\d+)\\s(\\w+|Vector__XXX)"),
@@ -54,8 +54,7 @@ namespace libdbc {
                           whiteSpace +
                           unitPattern +
                           whiteSpace +
-                          receiverPattern),
-						  sortSignals(sortSignals) {
+                          receiverPattern) {
 
 	}
 
@@ -75,14 +74,14 @@ namespace libdbc {
 			lines.push_back(line);
 		}
 
-		parse_dbc_messages(lines);
-
-        if (sortSignals) {
-            for (auto& message: messages) {
-                message.prepareMessage();
-            }
-        }
+		parse_dbc_messages(lines);       
 	}
+
+    void DbcParser::sortSignals() {
+        for (auto& message: messages) {
+            message.prepareMessage();
+        }
+    }
 
 	std::string DbcParser::get_version() const {
 		return version;
