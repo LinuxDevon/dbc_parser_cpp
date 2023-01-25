@@ -95,20 +95,20 @@ namespace libdbc {
 		return messages;
 	}
 
-    bool DbcParser::parseMessage(const uint32_t id, const std::vector<uint8_t>& data, std::vector<double>& out_values) {
+    Message::ParseSignalsStatus DbcParser::parseMessage(const uint32_t id, const std::vector<uint8_t>& data, std::vector<double>& out_values) {
         for (const auto& message: messages) {
             if (message.id() == id)
                 return message.parseSignals(data, out_values);
         }
-        return false;
+        return Message::ParseSignalsStatus::ErrorUnknownID;
     }
 
-    bool DbcParser::parseMessage(const uint32_t id, const std::array<uint8_t, 8>& data, std::vector<double>& out_values) {
+    Message::ParseSignalsStatus DbcParser::parseMessage(const uint32_t id, const std::array<uint8_t, 8>& data, std::vector<double>& out_values) {
         for (const auto& message: messages) {
             if (message.id() == id)
                 return message.parseSignals(data, out_values);
         }
-        return false;
+        return Message::ParseSignalsStatus::ErrorUnknownID;
     }
 
 

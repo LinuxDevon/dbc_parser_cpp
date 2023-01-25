@@ -12,20 +12,20 @@ namespace libdbc {
                (m_size == rhs.m_size) && (m_node == rhs.m_node);
     }
 
-    bool Message::parseSignals(const uint8_t* data, int size, std::vector<double>& values) const {
+    Message::ParseSignalsStatus Message::parseSignals(const uint8_t* data, int size, std::vector<double>& values) const {
         // With the current approach it is not needed to prepare the message by sorting the signals
 //        if (!m_prepared)
 //            return false;
 
         if (size > 8)
-            return false; // not supported yet
+            return ParseSignalsStatus::ErrorMessageToLong; // not supported yet
 
         // Currently only little endian will be supported, because
         // The code below was not tested with bigendian!
         // All signals must be little endian
         for (const auto& signal: m_signals) {
             if (signal.is_bigendian)
-                return false;
+                return ParseSignalsStatus::ErrorBigEndian;
         }
 
         uint64_t data_little_endian = 0;
@@ -52,14 +52,14 @@ namespace libdbc {
             }
             values.push_back(v * signal.factor + signal.offset);
         }
-        return true;
+        return ParseSignalsStatus::Success;
     }
 
-    bool Message::parseSignals(const std::array<uint8_t,8>& data, std::vector<double>& values) const {
+    Message::ParseSignalsStatus Message::parseSignals(const std::array<uint8_t,8>& data, std::vector<double>& values) const {
         return parseSignals(data.data(), data.size(), values);
     }
 
-    bool Message::parseSignals(const std::vector<uint8_t> &data, std::vector<double>& values) const {
+    Message::ParseSignalsStatus Message::parseSignals(const std::vector<uint8_t> &data, std::vector<double>& values) const {
         return parseSignals(data.data(), data.size(), values);
     }
 

@@ -23,7 +23,7 @@ TEST_CASE("Parse Message 1 Big Endian") {
 
     SECTION("Evaluating first message") {
         std::vector<double> out_values;
-        CHECK(parser.parseMessage(234, std::vector<uint8_t>({0x01, 0x02}), out_values) == false);
+        CHECK(parser.parseMessage(234, std::vector<uint8_t>({0x01, 0x02}), out_values) == libdbc::Message::ParseSignalsStatus::ErrorBigEndian);
         // Big endian not supported
 //        CHECK(out_values.size() == 2);
 //        CHECK(out_values.at(0) == 0x01 * 0.1 - 3);
@@ -50,7 +50,7 @@ BO_ 123 MSG2: 8 Vector__XXX
 
     SECTION("Evaluating first message") {
         std::vector<double> out_values;
-        CHECK(parser.parseMessage(234, std::vector<uint8_t>({0x01, 0x02}), out_values) == false);
+        CHECK(parser.parseMessage(234, std::vector<uint8_t>({0x01, 0x02}), out_values) == libdbc::Message::ParseSignalsStatus::ErrorBigEndian);
         // Big endian not supported
 //        std::vector<double> refData{0x01, 0x02};
 //        CHECK(refData.size() == 2);
@@ -62,7 +62,7 @@ BO_ 123 MSG2: 8 Vector__XXX
 
     SECTION("Evaluating unknown message id") {
         std::vector<double> out_values;
-        CHECK(parser.parseMessage(578, std::vector<uint8_t>({0xFF, 0xA2}), out_values) == false);
+        CHECK(parser.parseMessage(578, std::vector<uint8_t>({0xFF, 0xA2}), out_values) == libdbc::Message::ParseSignalsStatus::ErrorUnknownID);
     }
 }
 
@@ -87,7 +87,7 @@ TEST_CASE("Parse Message Big Number not aligned little endian") {
 
     SECTION("Evaluating first message") {
         std::vector<double> out_values;
-        CHECK(parser.parseMessage(337, std::vector<uint8_t>({0, 4, 252, 19, 0, 0, 0, 0}), out_values) == true);
+        CHECK(parser.parseMessage(337, std::vector<uint8_t>({0, 4, 252, 19, 0, 0, 0, 0}), out_values) == libdbc::Message::ParseSignalsStatus::Success);
         std::vector<double> refData{0, 0, 1, 0, 0, 2, 0};
         CHECK(refData.size() == 7);
         CHECK(out_values.size() == refData.size());
@@ -98,7 +98,7 @@ TEST_CASE("Parse Message Big Number not aligned little endian") {
 
     SECTION("Evaluating second message") {
         std::vector<double> out_values;
-        CHECK(parser.parseMessage(337, std::vector<uint8_t>({47, 4, 60, 29, 0, 0, 0, 0}), out_values) == true);
+        CHECK(parser.parseMessage(337, std::vector<uint8_t>({47, 4, 60, 29, 0, 0, 0, 0}), out_values) == libdbc::Message::ParseSignalsStatus::Success);
         std::vector<double> refData{47, 0, 1, 0, 32, 3, 0};
         CHECK(refData.size() == 7);
         CHECK(out_values.size() == refData.size());
@@ -109,7 +109,7 @@ TEST_CASE("Parse Message Big Number not aligned little endian") {
 
     SECTION("Evaluating third message") {
         std::vector<double> out_values;
-        CHECK(parser.parseMessage(337, std::vector<uint8_t>({57, 4, 250, 29, 0, 0, 0, 0}), out_values) == true);
+        CHECK(parser.parseMessage(337, std::vector<uint8_t>({57, 4, 250, 29, 0, 0, 0, 0}), out_values) == libdbc::Message::ParseSignalsStatus::Success);
         std::vector<double> refData{57, 0, 1, 0, 51, 3, 0};
         CHECK(refData.size() == 7);
         CHECK(out_values.size() == refData.size());

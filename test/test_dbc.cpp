@@ -170,7 +170,7 @@ TEST_CASE("Parse Message little endian") {
 
     std::vector<uint8_t> data{0x08, 0x27, 0xa3, 0x22, 0xe5, 0x1f, 0x45, 0x14}; // little endian
     std::vector<double> result_values;
-    REQUIRE(p.parseMessage(0x21d, data, result_values) == true);
+    REQUIRE(p.parseMessage(0x21d, data, result_values) == libdbc::Message::ParseSignalsStatus::Success);
     REQUIRE(result_values.size() == 4);
     REQUIRE(Catch::Approx(result_values.at(0)) == 99.92);
     REQUIRE(Catch::Approx(result_values.at(1)) == 88.67);
@@ -191,7 +191,7 @@ TEST_CASE("Parse Message big endian") {
 
     std::vector<uint8_t> data{0x27, 0x08, 0x22, 0xa3, 0x1f, 0xe5, 0x14, 0x45}; // big endian
     std::vector<double> result_values;
-    REQUIRE(p.parseMessage(0x21d, data, result_values) == false);
+    REQUIRE(p.parseMessage(0x21d, data, result_values) == libdbc::Message::ParseSignalsStatus::ErrorBigEndian);
     // Big endian not yet supported
 //    REQUIRE(result_values.size() == 4);
 //    REQUIRE(Catch::Approx(result_values.at(0)) == 99.92);

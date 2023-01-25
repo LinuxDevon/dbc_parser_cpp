@@ -12,15 +12,22 @@ namespace libdbc {
 		Message() = delete;
 		explicit Message(uint32_t id, const std::string& name, uint8_t size, const std::string& node);
 
+        enum class ParseSignalsStatus {
+            Success = 0,
+            ErrorMessageToLong = -1,
+            ErrorBigEndian = -2,
+            ErrorUnknownID = -3,
+        };
+
         /*!
          * \brief parseSignals
          * \param data
          * \param values
          * \return
          */
-        bool parseSignals(const std::vector<uint8_t>& data, std::vector<double> &values) const;
-        bool parseSignals(const std::array<uint8_t,8>& data, std::vector<double>& values) const;
-        bool parseSignals(const uint8_t* data, int size, std::vector<double>& values) const;
+        ParseSignalsStatus parseSignals(const std::vector<uint8_t>& data, std::vector<double> &values) const;
+        ParseSignalsStatus parseSignals(const std::array<uint8_t,8>& data, std::vector<double>& values) const;
+        ParseSignalsStatus parseSignals(const uint8_t* data, int size, std::vector<double>& values) const;
 
         void appendSignal(const Signal& signal);
         const std::vector<Signal> signals() const;

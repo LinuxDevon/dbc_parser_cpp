@@ -34,8 +34,8 @@ namespace libdbc {
 		std::vector<std::string> get_nodes() const;
 		std::vector<libdbc::Message> get_messages() const;
 
-        bool parseMessage(const uint32_t id, const std::vector<uint8_t>& data, std::vector<double>& out_values);
-        bool parseMessage(const uint32_t id, const std::array<uint8_t, 8>& data, std::vector<double>& out_values);
+        Message::ParseSignalsStatus parseMessage(const uint32_t id, const std::vector<uint8_t>& data, std::vector<double>& out_values);
+        Message::ParseSignalsStatus parseMessage(const uint32_t id, const std::array<uint8_t, 8>& data, std::vector<double>& out_values);
 
         void sortSignals();
 
