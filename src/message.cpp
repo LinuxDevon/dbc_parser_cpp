@@ -19,6 +19,14 @@ namespace libdbc {
         if (size > 8)
             return false; // not supported yet
 
+        // Currently only little endian will be supported, because
+        // The code below was not tested with bigendian!
+        // All signals must be little endian
+        for (const auto& signal: m_signals) {
+            if (signal.is_bigendian)
+                return false;
+        }
+
         uint64_t data_little_endian = 0;
         uint64_t data_big_endian = 0;
         for (int i=0; i < size; i++) {
