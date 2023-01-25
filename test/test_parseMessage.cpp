@@ -9,7 +9,7 @@
 // Testing of parsing messages
 
 TEST_CASE("Parse Message 1 Big Endian") {
-    libdbc::DbcParser parser(true);
+    libdbc::DbcParser parser;
 
     const auto dbcContent = R"(BO_ 234 MSG1: 8 Vector__XXX
  SG_ Sig1 : 0|8@0- (0.1,-3) [-3276.8|-3276.7] "C" Vector__XXX
@@ -23,16 +23,17 @@ TEST_CASE("Parse Message 1 Big Endian") {
 
     SECTION("Evaluating first message") {
         std::vector<double> out_values;
-        CHECK(parser.parseMessage(234, std::vector<uint8_t>({0x01, 0x02}), out_values) == true);
-        CHECK(out_values.size() == 2);
-        CHECK(out_values.at(0) == 0x01 * 0.1 - 3);
-        CHECK(out_values.at(1) == 0x02 * 0.15 + 7);
+        CHECK(parser.parseMessage(234, std::vector<uint8_t>({0x01, 0x02}), out_values) == false);
+        // Big endian not supported
+//        CHECK(out_values.size() == 2);
+//        CHECK(out_values.at(0) == 0x01 * 0.1 - 3);
+//        CHECK(out_values.at(1) == 0x02 * 0.15 + 7);
     }
 
 }
 
 TEST_CASE("Parse Message 2 Big Endian") {
-    libdbc::DbcParser parser(true);
+    libdbc::DbcParser parser;
 
     const auto dbcContent = R"(BO_ 234 MSG1: 8 Vector__XXX
  SG_ Msg1Sig1 : 0|8@0+ (1,0) [-3276.8|-3276.7] "C" Vector__XXX
@@ -49,13 +50,14 @@ BO_ 123 MSG2: 8 Vector__XXX
 
     SECTION("Evaluating first message") {
         std::vector<double> out_values;
-        CHECK(parser.parseMessage(234, std::vector<uint8_t>({0x01, 0x02}), out_values) == true);
-        std::vector<double> refData{0x01, 0x02};
-        CHECK(refData.size() == 2);
-        CHECK(out_values.size() == refData.size());
-        for (int i=0; i < refData.size(); i++) {
-            CHECK(out_values.at(i) == refData.at(i));
-        }
+        CHECK(parser.parseMessage(234, std::vector<uint8_t>({0x01, 0x02}), out_values) == false);
+        // Big endian not supported
+//        std::vector<double> refData{0x01, 0x02};
+//        CHECK(refData.size() == 2);
+//        CHECK(out_values.size() == refData.size());
+//        for (int i=0; i < refData.size(); i++) {
+//            CHECK(out_values.at(i) == refData.at(i));
+//        }
     }
 
     SECTION("Evaluating unknown message id") {
@@ -65,7 +67,7 @@ BO_ 123 MSG2: 8 Vector__XXX
 }
 
 TEST_CASE("Parse Message Big Number not aligned little endian") {
-    libdbc::DbcParser parser(true);
+    libdbc::DbcParser parser;
 
     const auto dbcContent = R"(BO_ 337 STATUS: 8 Vector__XXX
  SG_ Value6 : 27|3@1+ (1,0) [0|7] ""  Vector__XXX
@@ -81,6 +83,7 @@ TEST_CASE("Parse Message Big Number not aligned little endian") {
     CHECK(create_tmp_dbc_with(filename, dbcContent));
 
     parser.parse_file(filename);
+    parser.sortSignals();
 
     SECTION("Evaluating first message") {
         std::vector<double> out_values;
