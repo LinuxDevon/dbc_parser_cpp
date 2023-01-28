@@ -130,6 +130,7 @@ TEST_CASE("Parse Message little endian") {
 
     libdbc::DbcParser p;
     p.parse_file(filename);
+    p.sortSignals();
 
     std::vector<uint8_t> data{0x08, 0x27, 0xa3, 0x22, 0xe5, 0x1f, 0x45, 0x14}; // little endian
     std::vector<double> result_values;
