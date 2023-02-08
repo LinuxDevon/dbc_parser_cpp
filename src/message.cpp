@@ -1,8 +1,6 @@
 #include <algorithm>
 #include <libdbc/message.hpp>
 
-#include <bitstream.h>
-
 namespace libdbc {
 	Message::Message(uint32_t id, const std::string& name, uint8_t size, const std::string& node) :
         m_id(id), m_name(name), m_size(size), m_node(node) {}

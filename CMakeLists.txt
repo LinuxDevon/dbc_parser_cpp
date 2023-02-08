@@ -44,8 +44,6 @@ endif()
 
 set(CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS} ${GCC_COVERAGE_COMPILE_FLAGS}")
 
-add_subdirectory(third_party/bitstream)
-
 # add where to find the source files
 # file(GLOB_RECURSE SOURCE ${PROJECT_SOURCE_DIR}/src/ *.cpp)
 list(APPEND SOURCE ${PROJECT_SOURCE_DIR}/src/utils.cpp
@@ -72,7 +70,7 @@ endif()
 add_subdirectory(doc)
 
 add_library(${PROJECT_NAME} STATIC ${SOURCE})
-target_link_libraries(${PROJECT_NAME} bitstream FastFloat::fast_float)
+target_link_libraries(${PROJECT_NAME} FastFloat::fast_float)
 
 if (${CMAKE_MINOR_VERSION} GREATER_EQUAL 23)
     target_sources(${PROJECT_NAME} INTERFACE FILE_SET HEADERS
