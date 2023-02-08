@@ -77,12 +77,6 @@ namespace libdbc {
 		parse_dbc_messages(lines);       
 	}
 
-    void DbcParser::sortSignals() {
-        for (auto& message: messages) {
-            message.prepareMessage();
-        }
-    }
-
 	std::string DbcParser::get_version() const {
 		return version;
 	}

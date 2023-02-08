@@ -32,12 +32,6 @@ namespace libdbc {
         const std::vector<Signal> signals() const;
         uint32_t id() const;
 
-        /*!
-         * \brief prepareMessage
-         * Preparing message to be able to parse signals afterwards. This speeds up parsing
-         */
-        void prepareMessage();
-
         virtual bool operator==(const Message& rhs) const;
 
     private:

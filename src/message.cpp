@@ -65,10 +65,6 @@ namespace libdbc {
         return m_id;
     }
 
-    void Message::prepareMessage() {
-        std::sort(m_signals.begin(), m_signals.end());
-    }
-
     std::ostream& operator<< (std::ostream &out, const Message& msg) {
         out << "Message: {id: " << msg.id() << ", ";
         out << "name: " << msg.m_name << ", ";
