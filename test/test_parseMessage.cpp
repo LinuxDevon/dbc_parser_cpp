@@ -8,31 +8,7 @@
 
 // Testing of parsing messages
 
-TEST_CASE("Parse Message 1 Big Endian") {
-    libdbc::DbcParser parser;
-
-    const auto dbcContent = R"(BO_ 234 MSG1: 8 Vector__XXX
- SG_ Sig1 : 0|8@0- (0.1,-3) [-3276.8|-3276.7] "C" Vector__XXX
- SG_ Sig2 : 8|8@0- (0.15,7) [-3276.8|-3276.7] "C" Vector__XXX
-)";
-
-    const auto* filename = std::tmpnam(NULL);
-    CHECK(create_tmp_dbc_with(filename, dbcContent));
-
-    parser.parse_file(filename);
-
-    SECTION("Evaluating first message") {
-        std::vector<double> out_values;
-        CHECK(parser.parseMessage(234, std::vector<uint8_t>({0x01, 0x02}), out_values) == libdbc::Message::ParseSignalsStatus::ErrorBigEndian);
-        // Big endian not supported
-//        CHECK(out_values.size() == 2);
-//        CHECK(out_values.at(0) == 0x01 * 0.1 - 3);
-//        CHECK(out_values.at(1) == 0x02 * 0.15 + 7);
-    }
-
-}
-
-TEST_CASE("Parse Message 2 Big Endian") {
+TEST_CASE("Parse Message Unknown ID") {
     libdbc::DbcParser parser;
 
     const auto dbcContent = R"(BO_ 234 MSG1: 8 Vector__XXX
@@ -47,18 +23,6 @@ BO_ 123 MSG2: 8 Vector__XXX
     CHECK(create_tmp_dbc_with(filename, dbcContent));
 
     parser.parse_file(filename);
-
-    SECTION("Evaluating first message") {
-        std::vector<double> out_values;
-        CHECK(parser.parseMessage(234, std::vector<uint8_t>({0x01, 0x02}), out_values) == libdbc::Message::ParseSignalsStatus::ErrorBigEndian);
-        // Big endian not supported
-//        std::vector<double> refData{0x01, 0x02};
-//        CHECK(refData.size() == 2);
-//        CHECK(out_values.size() == refData.size());
-//        for (int i=0; i < refData.size(); i++) {
-//            CHECK(out_values.at(i) == refData.at(i));
-//        }
-    }
 
     SECTION("Evaluating unknown message id") {
         std::vector<double> out_values;
@@ -130,38 +94,51 @@ TEST_CASE("Parse Message little endian") {
 
     libdbc::DbcParser p;
     p.parse_file(filename);
-    p.sortSignals();
 
     std::vector<uint8_t> data{0x08, 0x27, 0xa3, 0x22, 0xe5, 0x1f, 0x45, 0x14}; // little endian
     std::vector<double> result_values;
     REQUIRE(p.parseMessage(0x21d, data, result_values) == libdbc::Message::ParseSignalsStatus::Success);
     REQUIRE(result_values.size() == 4);
-    REQUIRE(Catch::Approx(result_values.at(0)) == 99.92);
-    REQUIRE(Catch::Approx(result_values.at(1)) == 88.67);
+
+    REQUIRE(Catch::Approx(result_values.at(0)) == 11.89);
+    REQUIRE(Catch::Approx(result_values.at(1)) == 99.92);
     REQUIRE(Catch::Approx(result_values.at(2)) == 81.65);
-    REQUIRE(Catch::Approx(result_values.at(3)) == 11.89);
+    REQUIRE(Catch::Approx(result_values.at(3)) == 88.67);
 }
 
-TEST_CASE("Parse Message big endian") {
+TEST_CASE("Parse Message big endian signed values") {
     const auto* filename = std::tmpnam(NULL);
-    create_tmp_dbc_with(filename, R"(BO_ 541 STATUS: 8 DEVICE1
- SG_ Temperature : 48|16@0+ (0.01,-40) [-40|125] "C"  DEVICE1
- SG_ SOH : 0|16@0+ (0.01,0) [0|100] "%"  DEVICE1
- SG_ SOE : 32|16@0+ (0.01,0) [0|100] "%"  DEVICE1
- SG_ SOC : 16|16@0+ (0.01,0) [0|100] "%"  DEVICE1)");
+    create_tmp_dbc_with(filename, R"(BO_ 545 MSG: 8 BMS2
+ SG_ Sig1 : 62|1@0+ (1,0) [0|0] "" Vector__XXX
+ SG_ Sig2 : 49|2@0+ (1,0) [0|0] "" Vector__XXX
+ SG_ Sig3 : 39|16@0- (0.1,0) [0|0] "A" Vector__XXX
+ SG_ Sig4 : 60|1@0+ (1,0) [0|0] "" Vector__XXX
+ SG_ Sig5 : 55|1@0+ (1,0) [0|0] "" Vector__XXX
+ SG_ Sig6 : 58|1@0+ (1,0) [0|0] "" Vector__XXX
+ SG_ Sig7 : 59|1@0+ (1,0) [0|0] "" Vector__XXX
+ SG_ Sig8 : 57|1@0+ (1,0) [0|0] "" Vector__XXX
+ SG_ Sig9 : 56|1@0+ (1,0) [0|0] "" Vector__XXX
+ SG_ Sig10 : 61|1@0+ (1,0) [0|0] "" Vector__XXX
+ SG_ Sig11 : 7|16@0+ (0.001,0) [0|65.535] "V" Vector__XXX
+ SG_ Sig12 : 23|16@0+ (0.1,0) [0|6553.5] "A" Vector__XXX)");
 
     libdbc::DbcParser p;
     p.parse_file(filename);
 
-    std::vector<uint8_t> data{0x27, 0x08, 0x22, 0xa3, 0x1f, 0xe5, 0x14, 0x45}; // big endian
+    std::vector<uint8_t> data{13, 177, 0, 216, 251, 180, 0, 31}; // big endian
     std::vector<double> result_values;
-    REQUIRE(p.parseMessage(0x21d, data, result_values) == libdbc::Message::ParseSignalsStatus::ErrorBigEndian);
-    // Big endian not yet supported
-//    REQUIRE(result_values.size() == 4);
-//    REQUIRE(Catch::Approx(result_values.at(0)) == 99.92);
-//    REQUIRE(Catch::Approx(result_values.at(1)) == 88.67);
-//    REQUIRE(Catch::Approx(result_values.at(2)) == 81.65);
-//    REQUIRE(Catch::Approx(result_values.at(3)) == 11.89);
+    REQUIRE(p.parseMessage(545, data, result_values) == libdbc::Message::ParseSignalsStatus::Success);
+    REQUIRE(result_values.size() == 12);
+    REQUIRE(Catch::Approx(result_values.at(0)) == 0);
+    REQUIRE(Catch::Approx(result_values.at(1)) == 0);
+    REQUIRE(Catch::Approx(result_values.at(2)) == -110);
+    REQUIRE(Catch::Approx(result_values.at(3)) == 1);
+    REQUIRE(Catch::Approx(result_values.at(4)) == 0);
+    REQUIRE(Catch::Approx(result_values.at(5)) == 1);
+    REQUIRE(Catch::Approx(result_values.at(6)) == 1);
+    REQUIRE(Catch::Approx(result_values.at(7)) == 1);
+    REQUIRE(Catch::Approx(result_values.at(8)) == 1);
+    REQUIRE(Catch::Approx(result_values.at(9)) == 0);
+    REQUIRE(Catch::Approx(result_values.at(10)) == 3.5050);
+    REQUIRE(Catch::Approx(result_values.at(11)) == 21.6);
 }
-
-// TODO: create also for big endian!

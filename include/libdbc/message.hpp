@@ -13,10 +13,11 @@ namespace libdbc {
 		explicit Message(uint32_t id, const std::string& name, uint8_t size, const std::string& node);
 
         enum class ParseSignalsStatus {
-            Success = 0,
-            ErrorMessageToLong = -1,
-            ErrorBigEndian = -2,
-            ErrorUnknownID = -3,
+            Success,
+            ErrorMessageToLong,
+            ErrorBigEndian,
+            ErrorUnknownID,
+            ErrorInvalidConversion,
         };
 
         /*!
@@ -26,8 +27,6 @@ namespace libdbc {
          * \return
          */
         ParseSignalsStatus parseSignals(const std::vector<uint8_t>& data, std::vector<double> &values) const;
-        ParseSignalsStatus parseSignals(const std::array<uint8_t,8>& data, std::vector<double>& values) const;
-        ParseSignalsStatus parseSignals(const uint8_t* data, int size, std::vector<double>& values) const;
 
         void appendSignal(const Signal& signal);
         const std::vector<Signal> signals() const;
@@ -46,19 +45,7 @@ namespace libdbc {
         std::string m_name;
         uint8_t m_size;
         std::string m_node;
-        std::vector<Signal> m_signals; // when changing this vector m_prepared must be set to false!
-
-
-        bool m_prepared{false}; // indicates if the message is prepared for parsing signals
-        struct BitStruct {
-            BitStruct(uint32_t size): size(size), padding(true) {}
-            BitStruct(int index, uint32_t size): index(index), size(size), padding(false) {}
-            BitStruct() = delete;
-            int index;
-            uint32_t size;
-            bool padding;
-        };
-        std::vector<BitStruct> bitstruct;
+        std::vector<Signal> m_signals;
 
         friend std::ostream& operator<<(std::ostream& os, const Message& dt);
 	};

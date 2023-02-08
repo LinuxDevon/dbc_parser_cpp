@@ -12,27 +12,16 @@ namespace libdbc {
                (m_size == rhs.m_size) && (m_node == rhs.m_node);
     }
 
-    Message::ParseSignalsStatus Message::parseSignals(const uint8_t* data, int size, std::vector<double>& values) const {
-        // With the current approach it is not needed to prepare the message by sorting the signals
-//        if (!m_prepared)
-//            return false;
-
+    Message::ParseSignalsStatus Message::parseSignals(const std::vector<uint8_t>& data, std::vector<double>& values) const {
+        int size = data.size();
         if (size > 8)
             return ParseSignalsStatus::ErrorMessageToLong; // not supported yet
-
-        // Currently only little endian will be supported, because
-        // The code below was not tested with bigendian!
-        // All signals must be little endian
-        for (const auto& signal: m_signals) {
-            if (signal.is_bigendian)
-                return ParseSignalsStatus::ErrorBigEndian;
-        }
 
         uint64_t data_little_endian = 0;
         uint64_t data_big_endian = 0;
         for (int i=0; i < size; i++) {
             data_little_endian |= ((uint64_t)data[i]) << i * 8;
-            //data_big_endian |= (uint64_t)data[i] << (size - 1 - i);
+            data_big_endian = (data_big_endian << 8) | (uint64_t)data[i];
         }
 
         // TODO: does this also work on a big endian machine?
@@ -41,30 +30,30 @@ namespace libdbc {
         uint64_t v = 0;
         for (const auto& signal: m_signals) {
             if (signal.is_bigendian) {
-                // Not tested!
-                //  const uint32_t shiftLeft = signal.start_bit;
-                //  v = data_big_endian << shiftLeft;
-                //  v = v >> (shiftLeft + signal.start_bit);
+                uint32_t start_bit = 8* (signal.start_bit / 8) + (7 - (signal.start_bit % 8)); // Calculation taken from python CAN
+                v = data_big_endian << start_bit;
+                v = v >> (len - signal.size);
             } else {
                 const uint32_t shiftLeft = (len - (signal.size + signal.start_bit));
                 v = data_little_endian << shiftLeft;
                 v = v >> (shiftLeft + signal.start_bit);
             }
-            values.push_back(v * signal.factor + signal.offset);
+
+            if (signal.is_signed && signal.size > 1) {
+                switch (signal.size) {
+                case 8: values.push_back((int8_t)v * signal.factor + signal.offset); break;
+                case 16: values.push_back((int16_t)v * signal.factor + signal.offset); break;
+                case 32: values.push_back((int32_t)v * signal.factor + signal.offset); break;
+                case 64: values.push_back((int64_t)v * signal.factor + signal.offset); break;
+                default: return ParseSignalsStatus::ErrorInvalidConversion;
+                }
+            } else
+              values.push_back(v * signal.factor + signal.offset);
         }
         return ParseSignalsStatus::Success;
     }
 
-    Message::ParseSignalsStatus Message::parseSignals(const std::array<uint8_t,8>& data, std::vector<double>& values) const {
-        return parseSignals(data.data(), data.size(), values);
-    }
-
-    Message::ParseSignalsStatus Message::parseSignals(const std::vector<uint8_t> &data, std::vector<double>& values) const {
-        return parseSignals(data.data(), data.size(), values);
-    }
-
     void Message::appendSignal(const Signal& signal) {
-        m_prepared = false;
         m_signals.push_back(signal);
     }
 
@@ -77,28 +66,7 @@ namespace libdbc {
     }
 
     void Message::prepareMessage() {
-//        m_prepared = false;
-//        // sort signals so that the signals are ordered by the startbit
         std::sort(m_signals.begin(), m_signals.end());
-
-//        uint32_t curr_bit = 0;
-//        for (std::vector<Signal>::size_type i=0; i < m_signals.size(); i++) {
-//            const auto& signal = m_signals.at(i);
-//            if (signal.is_multiplexed)
-//                break; // Not supported yet
-
-//            if (curr_bit < signal.start_bit) {
-//                // padding needed
-//                bitstruct.push_back(BitStruct(signal.start_bit - curr_bit));
-//            }
-//            bitstruct.push_back(BitStruct(i, signal.size));
-//            curr_bit = signal.start_bit + signal.size;
-//        }
-//        // Check if correct
-//        if (curr_bit > m_size * 8)
-//            return;
-
-        m_prepared = true;
     }
 
     std::ostream& operator<< (std::ostream &out, const Message& msg) {

@@ -103,15 +103,6 @@ namespace libdbc {
         return Message::ParseSignalsStatus::ErrorUnknownID;
     }
 
-    Message::ParseSignalsStatus DbcParser::parseMessage(const uint32_t id, const std::array<uint8_t, 8>& data, std::vector<double>& out_values) {
-        for (const auto& message: messages) {
-            if (message.id() == id)
-                return message.parseSignals(data, out_values);
-        }
-        return Message::ParseSignalsStatus::ErrorUnknownID;
-    }
-
-
 	void DbcParser::parse_dbc_header(std::istream& file_stream) {
 		std::string line;
 		std::smatch match;
