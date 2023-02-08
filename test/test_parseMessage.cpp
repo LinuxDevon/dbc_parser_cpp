@@ -51,7 +51,6 @@ TEST_CASE("Parse Message Big Number not aligned little endian") {
     SECTION("Evaluating first message") {
         std::vector<double> out_values;
         CHECK(parser.parseMessage(337, std::vector<uint8_t>({0, 4, 252, 19, 0, 0, 0, 0}), out_values) == libdbc::Message::ParseSignalsStatus::Success);
-        //std::vector<double> refData{0, 0, 1, 0, 0, 2, 0};
         std::vector<double> refData{2, 0, 0, 1, 0, 0, 0};
         CHECK(refData.size() == 7);
         CHECK(out_values.size() == refData.size());
