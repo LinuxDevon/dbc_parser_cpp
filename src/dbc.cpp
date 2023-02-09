@@ -34,7 +34,7 @@ namespace libdbc {
 				name_space_re("^(NS_)\\s\\:"), node_re("^(BU_:)\\s((?:[\\w]+?\\s?)*)"),
 				message_re("^(BO_)\\s(\\d+)\\s(\\w+)\\:\\s(\\d+)\\s(\\w+|Vector__XXX)"),
 				// NOTE: No multiplex support yet
-                signal_re(std::string(whiteSpace) +
+                signal_re(std::string("^") + whiteSpace +
                           signalIdentifierPattern +
                           whiteSpace +
                           namePattern +
