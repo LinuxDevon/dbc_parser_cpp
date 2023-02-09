@@ -1,5 +1,4 @@
-cmake_minimum_required(VERSION 3.23)
-# FILE_SET needs cmake 3.23
+cmake_minimum_required(VERSION 3.16)
 
 project(dbc VERSION 0.1.1 DESCRIPTION "C++ DBC Parser")
 
@@ -20,6 +19,17 @@ include(GNUInstallDirs)
 # specify the C++ standard
 set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
+
+find_package(FastFloat QUIET)
+if (NOT ${FastFloat_FOUND})
+    include(FetchContent)
+    FetchContent_Declare(
+      FastFloat
+      GIT_REPOSITORY https://github.com/fastfloat/fast_float.git
+      GIT_TAG 1ea4f27b2aeee2859a1354a3c24cff52a116cad1
+    )
+    FetchContent_MakeAvailable(FastFloat)
+endif()
 
 set(GCC_COMPILE_FLAGS "-Wextra -Wall -Wfloat-equal -Wundef -Wshadow \
 -Wpointer-arith -Wcast-align -Wstrict-prototypes -Wwrite-strings \
@@ -60,10 +70,14 @@ endif()
 add_subdirectory(doc)
 
 add_library(${PROJECT_NAME} STATIC ${SOURCE})
-target_sources(${PROJECT_NAME} INTERFACE FILE_SET HEADERS
-	TYPE HEADERS
-	BASE_DIRS ${PROJECT_SOURCE_DIR}/include/libdbc
-	FILES ${HEADER_FILES})
+target_link_libraries(${PROJECT_NAME} FastFloat::fast_float)
+
+if (${CMAKE_MINOR_VERSION} GREATER_EQUAL 23)
+    target_sources(${PROJECT_NAME} INTERFACE FILE_SET HEADERS
+            TYPE HEADERS
+            BASE_DIRS ${PROJECT_SOURCE_DIR}/include/libdbc
+            FILES ${HEADER_FILES})
+endif()
 
 add_custom_target(release
 					WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
@@ -76,11 +90,15 @@ install(TARGETS ${PROJECT_NAME}
 		DESTINATION ${CMAKE_INSTALL_LIBDIR})
 
 # install headers
-install(TARGETS ${PROJECT_NAME}
-		FILE_SET HEADERS
-		DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/lib${PROJECT_NAME}
-		INCLUDES DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
-)
+if (${CMAKE_MINOR_VERSION} GREATER_EQUAL 23)
+    install(TARGETS ${PROJECT_NAME}
+                    FILE_SET HEADERS
+                    DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/lib${PROJECT_NAME}
+                    INCLUDES DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
+    )
+else()
+    install(DIRECTORY ${PROJECT_SOURCE_DIR}/include/libdbc DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
+endif()
 
 # Generate pkg-config file
 configure_file(${PROJECT_NAME}.pc.in ${PROJECT_NAME}.pc @ONLY)

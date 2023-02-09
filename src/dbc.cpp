@@ -1,6 +1,7 @@
 #include <libdbc/exceptions/error.hpp>
 #include <libdbc/utils/utils.hpp>
 #include <libdbc/dbc.hpp>
+#include <fast_float/fast_float.h>
 
 #include <regex>
 
@@ -28,12 +29,12 @@ const auto whiteSpace = "\\s";
 
 namespace libdbc {
 
-	DbcParser::DbcParser() : version(""), nodes(),
+    DbcParser::DbcParser() : version(""), nodes(),
 				version_re("^(VERSION)\\s\"(.*)\""), bit_timing_re("^(BS_:)"),
 				name_space_re("^(NS_)\\s\\:"), node_re("^(BU_:)\\s((?:[\\w]+?\\s?)*)"),
 				message_re("^(BO_)\\s(\\d+)\\s(\\w+)\\:\\s(\\d+)\\s(\\w+|Vector__XXX)"),
 				// NOTE: No multiplex support yet
-                signal_re(std::string(whiteSpace) +
+                signal_re(std::string("^") + whiteSpace +
                           signalIdentifierPattern +
                           whiteSpace +
                           namePattern +
@@ -57,10 +58,12 @@ namespace libdbc {
 
 	}
 
-	void DbcParser::parse_file(const std::string& file) {
+    void DbcParser::parse_file(const std::string& file) {
 		std::ifstream s(file.c_str());
 		std::string line;
 		std::vector<std::string> lines;
+
+        messages.clear();
 
 		parse_dbc_header(s);
 
@@ -71,8 +74,7 @@ namespace libdbc {
 			lines.push_back(line);
 		}
 
-		parse_dbc_messages(lines);
-
+		parse_dbc_messages(lines);       
 	}
 
 	std::string DbcParser::get_version() const {
@@ -87,6 +89,13 @@ namespace libdbc {
 		return messages;
 	}
 
+    Message::ParseSignalsStatus DbcParser::parseMessage(const uint32_t id, const std::vector<uint8_t>& data, std::vector<double>& out_values) {
+        for (const auto& message: messages) {
+            if (message.id() == id)
+                return message.parseSignals(data, out_values);
+        }
+        return Message::ParseSignalsStatus::ErrorUnknownID;
+    }
 
 	void DbcParser::parse_dbc_header(std::istream& file_stream) {
 		std::string line;
@@ -150,17 +159,21 @@ namespace libdbc {
 				bool is_bigendian = (std::stoul(match.str(5)) == 0);
 				bool is_signed = (match.str(6) == "-");
 				// Alternate groups because a group is for the decimal portion
-				double factor = std::stod(match.str(7));
-				double offset = std::stod(match.str(9));
-				double min = std::stod(match.str(11));
-				double max = std::stod(match.str(13));
+                double factor;
+                fast_float::from_chars(match.str(7).data(), match.str(7).data() + match.str(7).size(), factor);
+                double offset;
+                fast_float::from_chars(match.str(9).data(), match.str(9).data() + match.str(9).size(), offset);
+                double min;
+                fast_float::from_chars(match.str(11).data(), match.str(11).data() + match.str(11).size(), min);
+                double max;
+                fast_float::from_chars(match.str(13).data(), match.str(13).data() + match.str(13).size(), max);
 				std::string unit = match.str(15);
 
 				std::vector<std::string> receivers;
 				utils::String::split(match.str(16), receivers, ',');
 
 				Signal sig(name, is_multiplexed, start_bit, size, is_bigendian, is_signed, factor, offset, min, max, unit, receivers);
-				messages.back().signals.push_back(sig);
+                messages.back().appendSignal(sig);
 			}
 		}
 

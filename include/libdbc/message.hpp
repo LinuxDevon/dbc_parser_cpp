@@ -3,21 +3,45 @@
 
 #include <string>
 #include <vector>
+#include <array>
 #include <iostream>
 #include <libdbc/signal.hpp>
 
 namespace libdbc {
 	struct Message {
-		uint32_t id;
-		std::string name;
-		uint8_t size;
-		std::string node;
-		std::vector<Signal> signals;
-
 		Message() = delete;
 		explicit Message(uint32_t id, const std::string& name, uint8_t size, const std::string& node);
 
-		virtual bool operator==(const Message& rhs) const;
+        enum class ParseSignalsStatus {
+            Success,
+            ErrorMessageToLong,
+            ErrorBigEndian,
+            ErrorUnknownID,
+            ErrorInvalidConversion,
+        };
+
+        /*!
+         * \brief parseSignals
+         * \param data
+         * \param values
+         * \return
+         */
+        ParseSignalsStatus parseSignals(const std::vector<uint8_t>& data, std::vector<double> &values) const;
+
+        void appendSignal(const Signal& signal);
+        const std::vector<Signal> signals() const;
+        uint32_t id() const;
+
+        virtual bool operator==(const Message& rhs) const;
+
+    private:
+        uint32_t m_id;
+        std::string m_name;
+        uint8_t m_size;
+        std::string m_node;
+        std::vector<Signal> m_signals;
+
+        friend std::ostream& operator<<(std::ostream& os, const Message& dt);
 	};
 
 	std::ostream& operator<< (std::ostream &out, const Message& msg);

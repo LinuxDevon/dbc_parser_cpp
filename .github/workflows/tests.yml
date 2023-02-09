@@ -16,11 +16,20 @@ jobs:
     steps:
     - uses: actions/checkout@v3
 
+    - name: install fast_float dependency
+      run: |
+        cd ${{github.workspace}}
+        git clone https://github.com/fastfloat/fast_float.git
+        mkdir fast_float/build
+        cd fast_float/build
+        cmake -DCMAKE_INSTALL_PREFIX="${{github.workspace}}/installation" ..
+        make install
+
     - name: Configure CMake
       run: |
         mkdir build
         cd build
-        cmake -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} ..
+        cmake -DFastFloat_DIR="${{github.workspace}}/installation/share/cmake/FastFloat" -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} ..
 
     - name: Build
       run: |
