@@ -1,5 +1,10 @@
 #!/bin/bash
 # Used to format files to the given format using clang format.
+# example runs:
+# ./scripts/fmt.sh
+# ./scripts/fmt.sh format # This will write changes to file
+APPLY_FORMAT=${1:-""}
+
 
 # Variable that will hold the name of the clang-format command
 FMT=""
@@ -20,6 +25,11 @@ if [ -z "$FMT" ]; then
     exit 1
 fi
 
-files=$(find . \( -path ./build -prune -o -path ./.git -prune \) -o -type f -name "*[h|c]pp" -print)
+files=$(find . \( -path ./build -prune -o -path ./.git -prune -o -path ./third_party -prune \) -o -type f -name "*[h|c]pp" -print)
 
-${FMT} -i ${files}
+if [[ ${APPLY_FORMAT} = "format" ]]; then
+    ${FMT} -i ${files}
+else
+    ${FMT} --dry-run --Werror ${files}
+fi
+
