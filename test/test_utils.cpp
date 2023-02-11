@@ -1,5 +1,5 @@
-#include <catch2/catch_test_macros.hpp>
 #include "defines.hpp"
+#include <catch2/catch_test_macros.hpp>
 #include <libdbc/utils/utils.hpp>
 
 #include <sstream>
@@ -14,7 +14,7 @@ TEST_CASE("Basic file input with safe get_line that is non line ending specific"
 		TextFile.open(TEXT_FILE, std::ios::in);
 		CHECK(TextFile.is_open());
 
-		if(TextFile.is_open()) {
+		if (TextFile.is_open()) {
 			StreamHandler::get_line(TextFile, test);
 			REQUIRE(test == "This is a non dbc formatted file.");
 			StreamHandler::get_line(TextFile, test);
@@ -31,8 +31,8 @@ TEST_CASE("Basic file input with safe get_line that is non line ending specific"
 
 TEST_CASE("Test line finding utility functions", "") {
 	std::string line;
-	std::string test_string = \
-"hello\n\
+	std::string test_string =
+		"hello\n\
 	\n\
 		 \n\
   \n\
@@ -91,4 +91,3 @@ TEST_CASE("Test string split feature", "[string]") {
 
 	REQUIRE(v == vs);
 }
-

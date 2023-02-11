@@ -3,56 +3,53 @@
 #define __DBC_HPP__
 
 #include <libdbc/exceptions/error.hpp>
-#include <libdbc/utils/utils.hpp>
-#include <libdbc/signal.hpp>
 #include <libdbc/message.hpp>
+#include <libdbc/signal.hpp>
+#include <libdbc/utils/utils.hpp>
 
 #include <regex>
 
 namespace libdbc {
 
-	class Parser {
-	public:
-		virtual ~Parser() = default;
+class Parser {
+public:
+	virtual ~Parser() = default;
 
-		virtual void parse_file(const std::string& file) = 0;
+	virtual void parse_file(const std::string& file) = 0;
 
-	protected:
+protected:
+};
 
+class DbcParser : public Parser {
+public:
+	DbcParser();
 
-	};
+	virtual ~DbcParser() = default;
 
-	class DbcParser : public Parser {
-	public:
-        DbcParser();
+	virtual void parse_file(const std::string& file) final override;
 
-		virtual ~DbcParser() = default;
+	std::string get_version() const;
+	std::vector<std::string> get_nodes() const;
+	std::vector<libdbc::Message> get_messages() const;
 
-		virtual void parse_file(const std::string& file) final override;
+	Message::ParseSignalsStatus parseMessage(const uint32_t id, const std::vector<uint8_t>& data, std::vector<double>& out_values);
 
-		std::string get_version() const;
-		std::vector<std::string> get_nodes() const;
-		std::vector<libdbc::Message> get_messages() const;
+private:
+	std::string version;
+	std::vector<std::string> nodes;
+	std::vector<libdbc::Message> messages;
 
-        Message::ParseSignalsStatus parseMessage(const uint32_t id, const std::vector<uint8_t>& data, std::vector<double>& out_values);
+	const std::regex version_re;
+	const std::regex bit_timing_re;
+	const std::regex name_space_re;
+	const std::regex node_re;
+	const std::regex message_re;
+	const std::regex signal_re;
 
-	private:
-		std::string version;
-		std::vector<std::string> nodes;
-		std::vector<libdbc::Message> messages;
-
-		const std::regex version_re;
-		const std::regex bit_timing_re;
-		const std::regex name_space_re;
-		const std::regex node_re;
-		const std::regex message_re;
-		const std::regex signal_re;
-
-		void parse_dbc_header(std::istream& file_stream);
-		void parse_dbc_nodes(std::istream& file_stream);
-		void parse_dbc_messages(const std::vector<std::string>& lines);
-
-	};
+	void parse_dbc_header(std::istream& file_stream);
+	void parse_dbc_nodes(std::istream& file_stream);
+	void parse_dbc_messages(const std::vector<std::string>& lines);
+};
 
 }
 

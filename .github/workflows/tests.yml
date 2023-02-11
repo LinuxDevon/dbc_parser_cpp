@@ -2,7 +2,8 @@ name: Libdbc Tests
 
 on:
   push:
-    branches: [ "master" ]
+    branches:
+      - "master"
   pull_request:
 
 env:
@@ -10,34 +11,31 @@ env:
   BUILD_TYPE: Release
 
 jobs:
-  build:
+  build-and-test:
     runs-on: ubuntu-latest
 
     steps:
     - uses: actions/checkout@v3
 
-    - name: install fast_float dependency
-      run: |
-        cd ${{github.workspace}}
-        git clone https://github.com/fastfloat/fast_float.git
-        mkdir fast_float/build
-        cd fast_float/build
-        cmake -DCMAKE_INSTALL_PREFIX="${{github.workspace}}/installation" ..
-        make install
-
     - name: Configure CMake
-      run: |
-        mkdir build
-        cd build
-        cmake -DFastFloat_DIR="${{github.workspace}}/installation/share/cmake/FastFloat" -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} ..
+      run: cmake -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} -Bbuild -H.
 
-    - name: Build
+    - name: Build the library
       run: |
         cd build
-        make
+        make -j$(nproc)
 
-    - name: Test
+    - name: Run unit tests
       run: |
         cd build
         ctest --output-on-failure
+
+  format-check:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Test format with clang format
+      run: ./scripts/fmt.sh
 

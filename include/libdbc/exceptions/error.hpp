@@ -5,19 +5,19 @@
 
 namespace libdbc {
 
-	class exception : public std::exception {
-	public:
-		const char * what() const throw() {
-			return "libdbc exception occurred";
-		}
-	};
+class exception : public std::exception {
+public:
+	const char* what() const throw() {
+		return "libdbc exception occurred";
+	}
+};
 
-	class validity_error : public exception {
-	public:
-		const char * what() const throw() {
-			return "Invalid DBC file";
-		}
-	};
+class validity_error : public exception {
+public:
+	const char* what() const throw() {
+		return "Invalid DBC file";
+	}
+};
 
 } // libdbc
 
