@@ -220,8 +220,8 @@ TEST_CASE("Signal Value Multiple VAL_") {
 BO_ 123 MSG1: 8 Vector__XXX
  SG_ State1 : 0|8@1+ (1,0) [0|200] "Km/h"  DEVICE1,DEVICE2,DEVICE3
  SG_ State2 : 0|8@1+ (1,0) [0|204] ""  DEVICE1,DEVICE2,DEVICE3
-VAL_ 3221225472 State1 123 "Description 1" 0 "Description 2"
-VAL_ 123 State1 123 "Description 3" 0 "Description 4")");
+VAL_ 3221225472 State1 123 "Description 1" 0 "Description 2" ;
+VAL_ 123 State1 123 "Description 3" 0 "Description 4" ;)");
 
 	auto parser = libdbc::DbcParser();
 	parser.parse_file(filename);
