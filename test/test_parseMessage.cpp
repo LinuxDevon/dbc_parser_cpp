@@ -155,7 +155,7 @@ TEST_CASE("Parse Message with non byte aligned values") {
 
 	std::vector<uint8_t> data{131, 51, 33, 9, 33, 0, 0, 0};
 	std::vector<double> result_values;
-	REQUIRE(p.parseMessage(545, data, result_values) == libdbc::Message::ParseSignalsStatus::Success);
+	REQUIRE(p.parseMessage(403, data, result_values) == libdbc::Message::ParseSignalsStatus::Success);
 	REQUIRE(result_values.size() == 4);
 	REQUIRE(Catch::Approx(result_values.at(0)) == 26.4);
 	REQUIRE(Catch::Approx(result_values.at(1)) == 146);
