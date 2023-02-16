@@ -230,7 +230,9 @@ VAL_ 123 State1 123 "Description 3" 0 "Description 4")");
 	REQUIRE(parser.get_messages().at(0).getSignals().size() == 2);
 
 	REQUIRE(parser.get_messages().at(0).getSignals().at(0).svDescriptions.size() == 2);
-	REQUIRE(parser.get_messages().at(0).getSignals().at(1).svDescriptions.size() == 2);
+	REQUIRE(parser.get_messages().at(0).getSignals().at(1).svDescriptions.size() == 0);
+	REQUIRE(parser.get_messages().at(1).getSignals().at(0).svDescriptions.size() == 2);
+	REQUIRE(parser.get_messages().at(1).getSignals().at(1).svDescriptions.size() == 0);
 
 	const auto signal = parser.get_messages().at(0).getSignals().at(0);
 	REQUIRE(signal.svDescriptions.at(0).value == 123);
