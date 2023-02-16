@@ -226,7 +226,7 @@ VAL_ 123 State1 123 "Description 3" 0 "Description 4")");
 	auto parser = libdbc::DbcParser();
 	parser.parse_file(filename);
 
-	REQUIRE(parser.get_messages().size() == 1);
+	REQUIRE(parser.get_messages().size() == 2);
 	REQUIRE(parser.get_messages().at(0).getSignals().size() == 2);
 
 	REQUIRE(parser.get_messages().at(0).getSignals().at(0).svDescriptions.size() == 2);
@@ -238,7 +238,7 @@ VAL_ 123 State1 123 "Description 3" 0 "Description 4")");
 	REQUIRE(signal.svDescriptions.at(1).value == 0);
 	REQUIRE(signal.svDescriptions.at(1).description == "Description 2");
 
-	const auto signal2 = parser.get_messages().at(0).getSignals().at(0);
+	const auto signal2 = parser.get_messages().at(1).getSignals().at(0);
 	REQUIRE(signal2.svDescriptions.at(0).value == 123);
 	REQUIRE(signal2.svDescriptions.at(0).description == "Description 3");
 	REQUIRE(signal2.svDescriptions.at(1).value == 0);
