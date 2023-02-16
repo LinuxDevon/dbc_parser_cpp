@@ -54,8 +54,17 @@ Message::ParseSignalsStatus Message::parseSignals(const std::vector<uint8_t>& da
 			case 64:
 				values.push_back((int64_t)v * signal.factor + signal.offset);
 				break;
-			default:
-				return ParseSignalsStatus::ErrorInvalidConversion;
+			default: {
+				// 2 complement -> decimal
+				const int negative = (v & (1 << (signal.size - 1))) != 0;
+				int64_t nativeInt;
+				if (negative)
+					nativeInt = v | ~((1 << signal.size) - 1);
+				else
+					nativeInt = v;
+				values.push_back(nativeInt * signal.factor + signal.offset);
+				break;
+			}
 			}
 		} else
 			values.push_back(v * signal.factor + signal.offset);
