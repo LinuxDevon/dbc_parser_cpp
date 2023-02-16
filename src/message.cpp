@@ -59,7 +59,7 @@ Message::ParseSignalsStatus Message::parseSignals(const std::vector<uint8_t>& da
 				const int negative = (v & (1 << (signal.size - 1))) != 0;
 				int64_t nativeInt;
 				if (negative)
-					nativeInt = v | ~((1 << signal.size) - 1);
+					nativeInt = v | ~((1 << signal.size) - 1); // invert all bits above signal.size
 				else
 					nativeInt = v;
 				values.push_back(nativeInt * signal.factor + signal.offset);
