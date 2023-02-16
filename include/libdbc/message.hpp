@@ -29,8 +29,9 @@ struct Message {
 	ParseSignalsStatus parseSignals(const std::vector<uint8_t>& data, std::vector<double>& values) const;
 
 	void appendSignal(const Signal& signal);
-	const std::vector<Signal> signals() const;
+	const std::vector<Signal>& getSignals() const;
 	uint32_t id() const;
+	void addValueDescription(const std::string& signal_name, const std::vector<Signal::SignalValueDescriptions>&);
 
 	virtual bool operator==(const Message& rhs) const;
 

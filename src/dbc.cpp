@@ -25,6 +25,119 @@ const auto unitPattern = "\"(.*)\""; // Random string
 const auto receiverPattern = "([\\w\\,]+|Vector__XXX)*";
 const auto whiteSpace = "\\s";
 
+enum VALToken { Identifier = 0, CANId, SignalName, Value, Description };
+
+struct VALObject {
+	uint32_t can_id;
+	std::string signal_name;
+	std::vector<libdbc::Signal::SignalValueDescriptions> vd;
+};
+
+bool parseVal(const std::string& str, VALObject& obj) {
+	obj.signal_name = "";
+	obj.vd.clear();
+	auto state = Identifier;
+	const char* a = str.data();
+	libdbc::Signal::SignalValueDescriptions vd;
+	for (;;) {
+		switch (state) {
+		case Identifier: {
+			if (*a != 'V')
+				return false;
+			a++;
+			if (*a != 'A')
+				return false;
+			a++;
+			if (*a != 'L')
+				return false;
+			a++;
+			if (*a != '_')
+				return false;
+			a++;
+			if (*a != ' ')
+				return false;
+			a++; // skip whitespace
+			state = CANId;
+			break;
+		}
+		case CANId: {
+			std::string can_id_str;
+			while (*a >= '0' && *a <= '9') {
+				can_id_str += *a;
+				a++;
+			}
+			if (can_id_str.empty())
+				return false;
+			obj.can_id = std::stoul(can_id_str);
+			if (*a != ' ')
+				return false;
+			a++; // skip whitespace
+			state = SignalName;
+			break;
+		}
+		case SignalName: {
+			if ((*a >= 'a' && *a <= 'z') || (*a >= 'A' && *a <= 'Z') || *a == '_')
+				obj.signal_name += *a;
+			else
+				return false;
+			a++;
+			while ((*a >= 'a' && *a <= 'z') || (*a >= 'A' && *a <= 'Z') || *a == '_' || (*a >= '0' && *a <= '9')) {
+				obj.signal_name += *a;
+				a++;
+			}
+			if (*a != ' ')
+				return false;
+			a++; // skip whitespace
+			state = Value;
+			break;
+		}
+		case Value: {
+			std::string value_str;
+			while (*a >= '0' && *a <= '9') {
+				value_str += *a;
+				a++;
+			}
+			if (*a == ';') {
+				if (value_str.empty())
+					return true;
+				return false;
+			}
+			if (value_str.empty())
+				return false;
+
+			if (*a != ' ')
+				return false;
+			a++; // skip whitespace
+			vd.value = (uint32_t)std::stoul(value_str);
+			state = Description;
+			break;
+		}
+		case Description: {
+			std::string desc;
+			if (*a != '"')
+				return false;
+			a++;
+			while (*a != '"' && *a != 0) {
+				desc += *a;
+				a++;
+			}
+			if (*a == 0)
+				return false;
+			a++;
+			if (*a != ' ')
+				return false;
+			a++; // skip whitespace
+
+			vd.description = desc;
+			obj.vd.push_back(vd);
+
+			state = Value;
+			break;
+		}
+		}
+	}
+}
+
 } // anonymous namespace
 
 namespace libdbc {
@@ -123,6 +236,9 @@ void DbcParser::parse_dbc_nodes(std::istream& file_stream) {
 void DbcParser::parse_dbc_messages(const std::vector<std::string>& lines) {
 	std::smatch match;
 
+	std::vector<VALObject> sv;
+
+	VALObject obj;
 	for (const auto& line : lines) {
 		if (std::regex_search(line, match, message_re)) {
 			uint32_t id = std::stoul(match.str(2));
@@ -133,6 +249,7 @@ void DbcParser::parse_dbc_messages(const std::vector<std::string>& lines) {
 			Message msg(id, name, size, node);
 
 			messages.push_back(msg);
+			continue;
 		}
 
 		if (std::regex_search(line, match, signal_re)) {
@@ -158,6 +275,21 @@ void DbcParser::parse_dbc_messages(const std::vector<std::string>& lines) {
 
 			Signal sig(name, is_multiplexed, start_bit, size, is_bigendian, is_signed, factor, offset, min, max, unit, receivers);
 			messages.back().appendSignal(sig);
+			continue;
+		}
+
+		if (parseVal(line, obj)) {
+			sv.push_back(obj);
+			continue;
+		}
+	}
+
+	for (const auto& obj : sv) {
+		for (auto& msg : messages) {
+			if (msg.id() == obj.can_id) {
+				msg.addValueDescription(obj.signal_name, obj.vd);
+				break;
+			}
 		}
 	}
 }
