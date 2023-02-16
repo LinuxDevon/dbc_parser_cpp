@@ -66,8 +66,10 @@ Message::ParseSignalsStatus Message::parseSignals(const std::vector<uint8_t>& da
 				break;
 			}
 			}
-		} else
-			values.push_back(v * signal.factor + signal.offset);
+		} else {
+			// use only the relevant bits
+			values.push_back((v & ((1 << signal.size) - 1)) * signal.factor + signal.offset);
+		}
 	}
 	return ParseSignalsStatus::Success;
 }
