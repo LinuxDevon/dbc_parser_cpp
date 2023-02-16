@@ -136,6 +136,7 @@ bool parseVal(const std::string& str, VALObject& obj) {
 		}
 		}
 	}
+	return false;
 }
 
 } // anonymous namespace
