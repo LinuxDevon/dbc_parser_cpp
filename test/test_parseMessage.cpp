@@ -141,3 +141,24 @@ TEST_CASE("Parse Message big endian signed values") {
 	REQUIRE(Catch::Approx(result_values.at(10)) == 3.5050);
 	REQUIRE(Catch::Approx(result_values.at(11)) == 21.6);
 }
+
+TEST_CASE("Parse Message with non byte aligned values") {
+	const auto* filename = std::tmpnam(NULL);
+	create_tmp_dbc_with(filename, R"(BO_ 403 INFORMATION: 8 Vector__XXX
+ SG_ Voltage : 30|9@1+ (0.2,0) [0|102.2] "V"  Vector__XXX
+ SG_ Phase_Current : 20|10@1- (1,0) [-512|512] "A"  Vector__XXX
+ SG_ Iq_Current : 10|10@1- (1,0) [-512|512] "A"  Vector__XXX
+ SG_ Id_Current : 0|10@1- (1,0) [-512|512] "A"  Vector__XXX)");
+
+	libdbc::DbcParser p;
+	p.parse_file(filename);
+
+	std::vector<uint8_t> data{131, 51, 33, 9, 33, 0, 0, 0};
+	std::vector<double> result_values;
+	REQUIRE(p.parseMessage(545, data, result_values) == libdbc::Message::ParseSignalsStatus::Success);
+	REQUIRE(result_values.size() == 4);
+	REQUIRE(Catch::Approx(result_values.at(0)) == 26.4);
+	REQUIRE(Catch::Approx(result_values.at(1)) == 146);
+	REQUIRE(Catch::Approx(result_values.at(2)) == 76);
+	REQUIRE(Catch::Approx(result_values.at(3)) == -125);
+}
