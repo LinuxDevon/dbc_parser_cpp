@@ -1,0 +1,28 @@
+name: Libdbc Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      major:
+        required: true
+        type: string
+      minor:
+        required: true
+        type: string
+      patch:
+        required: true
+        type: string
+
+jobs:
+  create_release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: "Checkout the code"
+        uses: actions/checkout@v3
+
+      - name: "Run tests as a pre check"
+        uses: .github/workflows/tests.yml
+
+
+
+    
