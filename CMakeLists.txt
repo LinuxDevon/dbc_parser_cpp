@@ -14,6 +14,8 @@ include(CPack)
 
 option(DEBUG "use debug flag" NO)
 option(ENABLE_TESTS "Enable Unittests" ON)
+# Turn OFF, if you are using FetchContent to include it to your project
+option(INSTALL_HEADERS "Install header files if the library is used as dependency" ON)
 
 # defines variables used in the dbc.pc.in
 include(GNUInstallDirs)
@@ -92,13 +94,13 @@ install(TARGETS ${PROJECT_NAME}
 		DESTINATION ${CMAKE_INSTALL_LIBDIR})
 
 # install headers
-if (${CMAKE_MINOR_VERSION} GREATER_EQUAL 23)
+if (${CMAKE_MINOR_VERSION} GREATER_EQUAL 23 AND INSTALL_HEADERS)
     install(TARGETS ${PROJECT_NAME}
                     FILE_SET HEADERS
                     DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/lib${PROJECT_NAME}
                     INCLUDES DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
     )
-else()
+elseif(INSTALL_HEADERS)
     install(DIRECTORY ${PROJECT_SOURCE_DIR}/include/libdbc DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
 endif()
 
