@@ -15,7 +15,7 @@ include(CPack)
 option(DEBUG "use debug flag" NO)
 option(ENABLE_TESTS "Enable Unittests" ON)
 # Turn OFF, if you are using FetchContent to include it to your project
-option(INSTALL_HEADERS "Install header files if the library is used as dependency" ON)
+option(FETCH_CONTENT_INCLUSION "Include project with FetchContent_Declare in another project. In this case the headers and the cmake files are not needed, only the library" OFF)
 
 # defines variables used in the dbc.pc.in
 include(GNUInstallDirs)
@@ -96,18 +96,21 @@ install(TARGETS ${PROJECT_NAME}
 		DESTINATION ${CMAKE_INSTALL_LIBDIR})
 
 # install headers
-if (${CMAKE_MINOR_VERSION} GREATER_EQUAL 23 AND INSTALL_HEADERS)
+if (${CMAKE_MINOR_VERSION} GREATER_EQUAL 23 AND NOT FETCH_CONTENT_INCLUSION)
     install(TARGETS ${PROJECT_NAME}
                     FILE_SET HEADERS
                     DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/lib${PROJECT_NAME}
                     INCLUDES DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
     )
-elseif(INSTALL_HEADERS)
+elseif(NOT FETCH_CONTENT_INCLUSION)
     install(DIRECTORY ${PROJECT_SOURCE_DIR}/include/libdbc DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
 endif()
 
-# Generate pkg-config file
-configure_file(${PROJECT_NAME}.pc.in ${PROJECT_NAME}.pc @ONLY)
-install(
-    FILES ${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}.pc
-    DESTINATION ${CMAKE_INSTALL_LIBDIR}/pkgconfig)
+
+if (NOT FETCH_CONTENT_INCLUSION)
+    # Generate pkg-config file
+    configure_file(${PROJECT_NAME}.pc.in ${PROJECT_NAME}.pc @ONLY)
+    install(
+        FILES ${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}.pc
+        DESTINATION ${CMAKE_INSTALL_LIBDIR}/pkgconfig)
+endif()
