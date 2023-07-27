@@ -67,12 +67,21 @@ void Message::appendSignal(const Signal& signal) {
 	m_signals.push_back(signal);
 }
 
-const std::vector<Signal> Message::signals() const {
+const std::vector<Signal> Message::getSignals() const {
 	return m_signals;
 }
 
 uint32_t Message::id() const {
 	return m_id;
+}
+
+void Message::addValueDescription(const std::string& signal_name, const std::vector<Signal::SignalValueDescriptions>& vd) {
+	for (auto& s : m_signals) {
+		if (s.name.compare(signal_name) == 0) {
+			s.svDescriptions = vd;
+			return;
+		}
+	}
 }
 
 std::ostream& operator<<(std::ostream& out, const Message& msg) {

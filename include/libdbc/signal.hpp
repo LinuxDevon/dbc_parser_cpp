@@ -8,6 +8,11 @@
 
 namespace libdbc {
 struct Signal {
+	struct SignalValueDescriptions {
+		uint32_t value;
+		std::string description;
+	};
+
 	std::string name;
 	bool is_multiplexed;
 	uint32_t start_bit;
@@ -20,6 +25,7 @@ struct Signal {
 	double max;
 	std::string unit;
 	std::vector<std::string> receivers;
+	std::vector<SignalValueDescriptions> svDescriptions;
 
 	Signal() = delete;
 	explicit Signal(std::string name,
