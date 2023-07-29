@@ -2,10 +2,10 @@
 #ifndef __SIGNAL_HPP__
 #define __SIGNAL_HPP__
 
+#include <cstdint>
 #include <iostream>
 #include <string>
 #include <vector>
-#include <cstdint>
 
 namespace libdbc {
 struct Signal {
