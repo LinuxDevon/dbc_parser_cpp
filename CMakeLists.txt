@@ -14,6 +14,8 @@ include(CPack)
 
 option(DEBUG "use debug flag" NO)
 option(ENABLE_TESTS "Enable Unittests" ON)
+# Turn OFF, if you are using FetchContent to include it to your project
+option(FETCH_CONTENT_INCLUSION "Include project with FetchContent_Declare in another project. In this case the headers and the cmake files are not needed, only the library" OFF)
 
 # defines variables used in the dbc.pc.in
 include(GNUInstallDirs)
@@ -30,7 +32,9 @@ if (NOT ${FastFloat_FOUND})
       GIT_REPOSITORY https://github.com/fastfloat/fast_float.git
       GIT_TAG 1ea4f27b2aeee2859a1354a3c24cff52a116cad1
     )
-    FetchContent_MakeAvailable(FastFloat)
+    # FetchContent_MakeAvailable(FastFloat)
+    FetchContent_Populate(FastFloat)
+    add_subdirectory(${fastfloat_SOURCE_DIR} ${fastfloat_BINARY_DIR} EXCLUDE_FROM_ALL)
 endif()
 
 set(GCC_COMPILE_FLAGS "-Wextra -Wall -Wfloat-equal -Wundef -Wshadow \
@@ -92,18 +96,21 @@ install(TARGETS ${PROJECT_NAME}
 		DESTINATION ${CMAKE_INSTALL_LIBDIR})
 
 # install headers
-if (${CMAKE_MINOR_VERSION} GREATER_EQUAL 23)
+if (${CMAKE_MINOR_VERSION} GREATER_EQUAL 23 AND NOT FETCH_CONTENT_INCLUSION)
     install(TARGETS ${PROJECT_NAME}
                     FILE_SET HEADERS
                     DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/lib${PROJECT_NAME}
                     INCLUDES DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
     )
-else()
+elseif(NOT FETCH_CONTENT_INCLUSION)
     install(DIRECTORY ${PROJECT_SOURCE_DIR}/include/libdbc DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
 endif()
 
-# Generate pkg-config file
-configure_file(${PROJECT_NAME}.pc.in ${PROJECT_NAME}.pc @ONLY)
-install(
-    FILES ${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}.pc
-    DESTINATION ${CMAKE_INSTALL_LIBDIR}/pkgconfig)
+
+if (NOT FETCH_CONTENT_INCLUSION)
+    # Generate pkg-config file
+    configure_file(${PROJECT_NAME}.pc.in ${PROJECT_NAME}.pc @ONLY)
+    install(
+        FILES ${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}.pc
+        DESTINATION ${CMAKE_INSTALL_LIBDIR}/pkgconfig)
+endif()

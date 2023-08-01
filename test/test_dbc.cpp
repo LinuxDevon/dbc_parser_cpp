@@ -80,6 +80,7 @@ TEST_CASE("Testing  big endian, little endian") {
 	parser.parse_file(filename);
 
 	REQUIRE(parser.get_messages().size() == 1);
+	REQUIRE(parser.get_messages().at(0).name() == "MSG1");
 	REQUIRE(parser.get_messages().at(0).getSignals().size() == 2);
 	{
 		const auto signal = parser.get_messages().at(0).getSignals().at(0);
@@ -104,6 +105,7 @@ TEST_CASE("Testing negative values") {
 	parser.parse_file(filename);
 
 	REQUIRE(parser.get_messages().size() == 1);
+	REQUIRE(parser.get_messages().at(0).name() == "MSG1");
 	REQUIRE(parser.get_messages().at(0).getSignals().size() == 4);
 
 	SECTION("Evaluating first message") {
@@ -146,6 +148,7 @@ TEST_CASE("Special characters in unit") {
 	parser.parse_file(filename);
 
 	REQUIRE(parser.get_messages().size() == 1);
+	REQUIRE(parser.get_messages().at(0).name() == "MSG1");
 	REQUIRE(parser.get_messages().at(0).getSignals().size() == 1);
 	SECTION("Checking that signal with special characters as unit is parsed correctly") {
 		const auto signal = parser.get_messages().at(0).getSignals().at(0);
@@ -165,6 +168,7 @@ VAL_ 234 State1 123 "Description 1" 0 "Description 2" 90903489 "Big value and sp
 	parser.parse_file(filename);
 
 	REQUIRE(parser.get_messages().size() == 1);
+	REQUIRE(parser.get_messages().at(0).name() == "MSG1");
 	REQUIRE(parser.get_messages().at(0).getSignals().size() == 2);
 
 	REQUIRE(parser.get_messages().at(0).getSignals().at(0).svDescriptions.size() == 3);
@@ -194,6 +198,7 @@ VAL_ 3221225472 State1 123 "Description 1" 0 "Description 2" 4000000000 "Big val
 	parser.parse_file(filename);
 
 	REQUIRE(parser.get_messages().size() == 1);
+	REQUIRE(parser.get_messages().at(0).name() == "MSG1");
 	REQUIRE(parser.get_messages().at(0).getSignals().size() == 2);
 
 	REQUIRE(parser.get_messages().at(0).getSignals().at(0).svDescriptions.size() == 3);
@@ -217,7 +222,7 @@ TEST_CASE("Signal Value Multiple VAL_") {
 	create_tmp_dbc_with(filename, R"(BO_ 3221225472 MSG1: 8 Vector__XXX
  SG_ State1 : 0|8@1+ (1,0) [0|200] "Km/h"  DEVICE1,DEVICE2,DEVICE3
  SG_ State2 : 0|8@1+ (1,0) [0|204] ""  DEVICE1,DEVICE2,DEVICE3"
-BO_ 123 MSG1: 8 Vector__XXX
+BO_ 123 MSG2: 8 Vector__XXX
  SG_ State1 : 0|8@1+ (1,0) [0|200] "Km/h"  DEVICE1,DEVICE2,DEVICE3
  SG_ State2 : 0|8@1+ (1,0) [0|204] ""  DEVICE1,DEVICE2,DEVICE3
 VAL_ 3221225472 State1 123 "Description 1" 0 "Description 2" ;
@@ -227,6 +232,9 @@ VAL_ 123 State1 123 "Description 3" 0 "Description 4" ;)");
 	parser.parse_file(filename);
 
 	REQUIRE(parser.get_messages().size() == 2);
+	REQUIRE(parser.get_messages().at(0).name() == "MSG1");
+	REQUIRE(parser.get_messages().at(1).name() == "MSG2");
+
 	REQUIRE(parser.get_messages().at(0).getSignals().size() == 2);
 
 	REQUIRE(parser.get_messages().at(0).getSignals().at(0).svDescriptions.size() == 2);

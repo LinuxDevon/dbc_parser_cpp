@@ -34,11 +34,8 @@ Message::ParseSignalsStatus Message::parseSignals(const std::vector<uint8_t>& da
 			uint32_t start_bit = 8 * (signal.start_bit / 8) + (7 - (signal.start_bit % 8)); // Calculation taken from python CAN
 			v = data_big_endian << start_bit;
 			v = v >> (len - signal.size);
-		} else {
-			const uint32_t shiftLeft = (len - (signal.size + signal.start_bit));
-			v = data_little_endian << shiftLeft;
-			v = v >> (shiftLeft + signal.start_bit);
-		}
+		} else
+			v = data_little_endian >> signal.start_bit;
 
 		if (signal.is_signed && signal.size > 1) {
 			switch (signal.size) {
@@ -54,11 +51,23 @@ Message::ParseSignalsStatus Message::parseSignals(const std::vector<uint8_t>& da
 			case 64:
 				values.push_back((int64_t)v * signal.factor + signal.offset);
 				break;
-			default:
-				return ParseSignalsStatus::ErrorInvalidConversion;
+			default: {
+				// 2 complement -> decimal
+				const int negative = (v & (1 << (signal.size - 1))) != 0;
+				int64_t nativeInt;
+				if (negative)
+					nativeInt = v | ~((1 << signal.size) - 1); // invert all bits above signal.size
+				else
+					nativeInt = v & ((1 << signal.size) - 1); // masking
+				values.push_back(nativeInt * signal.factor + signal.offset);
+				break;
 			}
-		} else
+			}
+		} else {
+			// use only the relevant bits
+			v = v & ((1 << signal.size) - 1); // masking
 			values.push_back(v * signal.factor + signal.offset);
+		}
 	}
 	return ParseSignalsStatus::Success;
 }
