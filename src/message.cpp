@@ -15,8 +15,6 @@ bool Message::operator==(const Message& rhs) const {
 
 Message::ParseSignalsStatus Message::parseSignals(const std::vector<uint8_t>& data, std::vector<double>& values) const {
 	int size = data.size();
-	if (size > 8)
-		return ParseSignalsStatus::ErrorMessageToLong; // not supported yet
 
 	uint64_t data_little_endian = 0;
 	uint64_t data_big_endian = 0;
@@ -31,7 +29,7 @@ Message::ParseSignalsStatus Message::parseSignals(const std::vector<uint8_t>& da
 	uint64_t v = 0;
 	for (const auto& signal : m_signals) {
 		if (signal.is_bigendian) {
-			uint32_t start_bit = 8 * (signal.start_bit / 8) + (7 - (signal.start_bit % 8)); // Calculation taken from python CAN
+			uint32_t start_bit = 8 * ((uint32_t)std::floor(signal.start_bit / 8)) + (7 - (signal.start_bit % 8)); // Calculation taken from python CAN
 			v = data_big_endian << start_bit;
 			v = v >> (len - signal.size);
 		} else
