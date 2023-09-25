@@ -1,4 +1,5 @@
 #include <algorithm>
+#include <cmath>
 #include <libdbc/message.hpp>
 
 namespace libdbc {
@@ -29,7 +30,7 @@ Message::ParseSignalsStatus Message::parseSignals(const std::vector<uint8_t>& da
 	uint64_t v = 0;
 	for (const auto& signal : m_signals) {
 		if (signal.is_bigendian) {
-			uint32_t start_bit = 8 * ((uint32_t)floor(signal.start_bit / 8)) + (7 - (signal.start_bit % 8)); // Calculation taken from python CAN
+			uint32_t start_bit = 8 * ((uint32_t)std::floor(signal.start_bit / 8)) + (7 - (signal.start_bit % 8)); // Calculation taken from python CAN
 			v = data_big_endian << start_bit;
 			v = v >> (len - signal.size);
 		} else
