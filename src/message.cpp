@@ -8,6 +8,10 @@ Message::Message(uint32_t id, const std::string& name, uint8_t size, const std::
 	, m_name(name)
 	, m_size(size)
 	, m_node(node) {
+	// Test for endianness
+    short int number = 0x1;
+    char *numPtr = (char*)&number;
+    BIG_ENDIAN_SYS = numPtr[0] == 0;
 }
 
 bool Message::operator==(const Message& rhs) const {
@@ -15,26 +19,35 @@ bool Message::operator==(const Message& rhs) const {
 }
 
 Message::ParseSignalsStatus Message::parseSignals(const std::vector<uint8_t>& data, std::vector<double>& values) const {
-	int size = data.size();
+	int size = (int)data.size();
 
-	uint64_t data_little_endian = 0;
-	uint64_t data_big_endian = 0;
-	for (int i = 0; i < size; i++) {
-		data_little_endian |= ((uint64_t)data[i]) << i * 8;
-		data_big_endian = (data_big_endian << 8) | (uint64_t)data[i];
-	}
+    std::vector<uint8_t> data_little_endian(data);
+    std::vector<uint8_t> data_big_endian(data);
 
-	// TODO: does this also work on a big endian machine?
+    if(BIG_ENDIAN_SYS) {
+        std::reverse(data_big_endian.begin(), data_big_endian.end());
+    }
+    else {
+        std::reverse(data_little_endian.begin(), data_little_endian.end());
+    }
 
 	const uint32_t len = size * 8;
-	uint64_t v = 0;
-	for (const auto& signal : m_signals) {
-		if (signal.is_bigendian) {
-			uint32_t start_bit = 8 * ((uint32_t)std::floor(signal.start_bit / 8)) + (7 - (signal.start_bit % 8)); // Calculation taken from python CAN
-			v = data_big_endian << start_bit;
-			v = v >> (len - signal.size);
-		} else
-			v = data_little_endian >> signal.start_bit;
+    uint64_t v = 0;
+    std::vector<uint8_t> data_correct;
+    for (const auto &signal: m_signals) {
+        if (signal.is_bigendian) {
+            // Calculation taken from Python cantools library
+            uint32_t start_bit = 8 * ((uint32_t)std::floor(signal.start_bit / 8)) + (8 - (signal.start_bit % 8));
+            for (uint32_t i = 0; i < signal.size; i += 8) {
+                v = (v << 8) | data_big_endian[(start_bit + i) / 8];
+            }
+        }
+        else {
+            uint32_t start_bit = signal.start_bit;
+            for (uint32_t i = 0; i < signal.size; i += 8) {
+                v = (v << 8) | data_little_endian[(start_bit + i) / 8];
+            }
+        }
 
 		if (signal.is_signed && signal.size > 1) {
 			switch (signal.size) {

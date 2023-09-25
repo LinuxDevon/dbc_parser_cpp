@@ -12,10 +12,10 @@ struct Message {
 	Message() = delete;
 	explicit Message(uint32_t id, const std::string& name, uint8_t size, const std::string& node);
 
+	bool BIG_ENDIAN_SYS = false;
+
 	enum class ParseSignalsStatus {
 		Success,
-		ErrorMessageToLong,
-		ErrorBigEndian,
 		ErrorUnknownID,
 		ErrorInvalidConversion,
 	};
