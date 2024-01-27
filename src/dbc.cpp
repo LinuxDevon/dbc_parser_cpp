@@ -5,7 +5,7 @@
 
 #include <regex>
 
-namespace {
+namespace libdbc {
 
 const auto floatPattern = "(-?\\d+\\.?(\\d+)?)"; // Can be negative
 
@@ -139,9 +139,6 @@ bool parseVal(const std::string& str, VALObject& obj) {
 	return false;
 }
 
-} // anonymous namespace
-
-namespace libdbc {
 
 DbcParser::DbcParser()
 	: version("")
