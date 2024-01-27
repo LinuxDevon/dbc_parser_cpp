@@ -13,3 +13,6 @@ __pycache__/
 .idea/
 .vscode/
 *.sublime-*
+
+# -- Static Analyzers -- #
+.cache/
