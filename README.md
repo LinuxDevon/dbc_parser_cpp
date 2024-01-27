@@ -17,6 +17,19 @@ cmake -DCMAKE_BUILD_TYPE=Release -Bbuild -H.
 cmake --build build
 ```
 
+### Listing Build Options
+
+You can check the latest build options with cmake. After you configure cmake you can run this.
+```shell
+cd build
+
+# List this projects options
+cmake -LH .. | grep -B1 "DBC_"
+
+# To see all the included project cache variables and options
+cmake -LAH ..
+```
+
 ## Testing
 
 I am trying to always make sure that this is very well tested code. I am using Catch2 to do this
