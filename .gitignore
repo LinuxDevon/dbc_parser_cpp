@@ -4,3 +4,12 @@ build/
 
 # -- Git -- #
 *.bak
+
+# -- Python -- #
+venv*/
+__pycache__/
+
+# -- IDEs / Editors -- #
+.idea/
+.vscode/
+*.sublime-*

@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.16)
 
-project(dbc VERSION 0.1.1 DESCRIPTION "C++ DBC Parser")
+project(dbc VERSION 0.2.0 DESCRIPTION "C++ DBC Parser")
 
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
