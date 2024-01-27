@@ -2,6 +2,14 @@ cmake_minimum_required(VERSION 3.16)
 
 project(dbc VERSION 0.2.0 DESCRIPTION "C++ DBC Parser")
 
+# -- PROJECT OPTIONS  -- #
+option(DEBUG "use debug flag" NO)
+option(ENABLE_TESTS "Enable Unittests" ON)
+# Turn OFF, if you are using FetchContent to include it to your project
+option(FETCH_CONTENT_INCLUSION "Include project with FetchContent_Declare in another project. In this case the headers and the cmake files are not needed, only the library" OFF)
+option(GENERATE_DOCS "Use doxygen if installed to generated documentation files" OFF)
+# ---------------------- #
+
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 # package
@@ -11,11 +19,6 @@ set(CPACK_PACKAGE_VERSION_PATCH ${PROJECT_VERSION_PATCH})
 set(CPACK_RESOURCE_FILE_LICENSE ${CMAKE_CURRENT_SOURCE_DIR}/LICENSE)
 set(CPACK_RESOURCE_FILE_README ${CMAKE_CURRENT_SOURCE_DIR}/README.md)
 include(CPack)
-
-option(DEBUG "use debug flag" NO)
-option(ENABLE_TESTS "Enable Unittests" ON)
-# Turn OFF, if you are using FetchContent to include it to your project
-option(FETCH_CONTENT_INCLUSION "Include project with FetchContent_Declare in another project. In this case the headers and the cmake files are not needed, only the library" OFF)
 
 # defines variables used in the dbc.pc.in
 include(GNUInstallDirs)
@@ -73,7 +76,9 @@ if(ENABLE_TESTS)
     add_subdirectory(test)
 endif()
 
-add_subdirectory(doc)
+if(GENERATE_DOCS)
+    add_subdirectory(doc)
+endif()
 
 add_library(${PROJECT_NAME} STATIC ${SOURCE})
 target_link_libraries(${PROJECT_NAME} FastFloat::fast_float)
