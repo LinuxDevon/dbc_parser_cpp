@@ -4,10 +4,10 @@ project(dbc VERSION 0.2.0 DESCRIPTION "C++ DBC Parser")
 
 # -- PROJECT OPTIONS  -- #
 option(DEBUG "use debug flag" NO)
-option(ENABLE_TESTS "Enable Unittests" ON)
+option(DBC_ENABLE_TESTS "Enable Unittests" ON)
 # Turn OFF, if you are using FetchContent to include it to your project
-option(FETCH_CONTENT_INCLUSION "Include project with FetchContent_Declare in another project. In this case the headers and the cmake files are not needed, only the library" OFF)
-option(GENERATE_DOCS "Use doxygen if installed to generated documentation files" OFF)
+option(DBC_FETCH_CONTENT_INCLUSION "Include project with FetchContent_Declare in another project. In this case the headers and the cmake files are not needed, only the library" OFF)
+option(DBC_GENERATE_DOCS "Use doxygen if installed to generated documentation files" OFF)
 # ---------------------- #
 
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
@@ -68,27 +68,26 @@ set(HEADER_FILES
   ${PROJECT_SOURCE_DIR}/include/libdbc/exceptions/error.hpp
 )
 
-include_directories(src)
-include_directories(include)
-
-if(ENABLE_TESTS)
+if(DBC_ENABLE_TESTS)
     include(CTest)
     add_subdirectory(test)
 endif()
 
-if(GENERATE_DOCS)
+if(DBC_GENERATE_DOCS)
     add_subdirectory(doc)
 endif()
 
 add_library(${PROJECT_NAME} STATIC ${SOURCE})
 target_link_libraries(${PROJECT_NAME} FastFloat::fast_float)
+target_include_directories(${PROJECT_NAME} PUBLIC
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+    $<INSTALL_INTERFACE:include>
+)
 
-if (${CMAKE_MINOR_VERSION} GREATER_EQUAL 23)
-    target_sources(${PROJECT_NAME} INTERFACE FILE_SET HEADERS
-            TYPE HEADERS
-            BASE_DIRS ${PROJECT_SOURCE_DIR}/include/libdbc
-            FILES ${HEADER_FILES})
-endif()
+target_sources(${PROJECT_NAME} INTERFACE FILE_SET HEADERS
+        TYPE HEADERS
+        BASE_DIRS ${PROJECT_SOURCE_DIR}/include/libdbc
+        FILES ${HEADER_FILES})
 
 add_custom_target(release
 					WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
@@ -107,12 +106,12 @@ if (${CMAKE_MINOR_VERSION} GREATER_EQUAL 23 AND NOT FETCH_CONTENT_INCLUSION)
                     DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/lib${PROJECT_NAME}
                     INCLUDES DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
     )
-elseif(NOT FETCH_CONTENT_INCLUSION)
+elseif(NOT DBC_FETCH_CONTENT_INCLUSION)
     install(DIRECTORY ${PROJECT_SOURCE_DIR}/include/libdbc DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
 endif()
 
 
-if (NOT FETCH_CONTENT_INCLUSION)
+if (NOT DBC_FETCH_CONTENT_INCLUSION)
     # Generate pkg-config file
     configure_file(${PROJECT_NAME}.pc.in ${PROJECT_NAME}.pc @ONLY)
     install(
