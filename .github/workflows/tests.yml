@@ -22,14 +22,10 @@ jobs:
       run: cmake -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} -Bbuild -H.
 
     - name: Build the library
-      run: |
-        cd build
-        make -j$(nproc)
+      run: cmake --build build
 
     - name: Run unit tests
-      run: |
-        cd build
-        ctest --output-on-failure
+      run: ctest --output-on-failure --test-dir build
 
   format-check:
     runs-on: ubuntu-latest

@@ -1,6 +1,7 @@
 # Build folders
 bin/
 build/
+Testing/
 
 # -- Git -- #
 *.bak
@@ -16,3 +17,4 @@ __pycache__/
 
 # -- Static Analyzers -- #
 .cache/
+
