@@ -27,6 +27,7 @@ const auto whiteSpace = "\\s";
 
 enum VALToken { Identifier = 0, CANId, SignalName, Value, Description };
 
+struct VALObject;
 struct VALObject {
 	uint32_t can_id;
 	std::string signal_name;

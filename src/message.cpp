@@ -57,9 +57,9 @@ Message::ParseSignalsStatus Message::parseSignals(const std::vector<uint8_t>& da
 				const int negative = (v & (1ull << (signal.size - 1))) != 0;
 				int64_t nativeInt;
 				if (negative)
-					nativeInt = v | ~((1ull << signal.size) - 1); // invert all bits above signal.size
+					nativeInt = static_cast<int64_t>(v | ~((1ull << signal.size) - 1)); // invert all bits above signal.size
 				else
-					nativeInt = v & ((1ull << signal.size) - 1); // masking
+					nativeInt = static_cast<int64_t>(v & ((1ull << signal.size) - 1)); // masking
 				values.push_back(static_cast<double>(nativeInt) * signal.factor + signal.offset);
 				break;
 			}
