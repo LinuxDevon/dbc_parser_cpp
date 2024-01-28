@@ -40,8 +40,8 @@ jobs:
       if: ${{ matrix.gcc_version }}
       run: |
         sudo add-apt-repository ppa:ubuntu-toolchain-r/test
-        apt-get update
-        apt-get install -y ${{ matrix.gcc_version }}
+        sudo apt-get update
+        sudo apt-get install -y ${{ matrix.gcc_version }}
 
         gcc --version
 
