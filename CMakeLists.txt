@@ -8,8 +8,6 @@ project(dbc
 # -- PROJECT OPTIONS  -- #
 option(DBC_ENABLE_TESTS "Enable Unittests" ON)
 option(DBC_TEST_LOCALE_INDEPENDENCE "Used to deterime if the libary is locale agnostic when it comes to converting floats. You need `de_DE.UTF-8` locale installed for this testing." OFF)
-# Turn OFF, if you are using FetchContent to include it to your project
-option(DBC_GENERATE_PKGCONFIG "Include project with FetchContent_Declare in another project. In this case the headers and the cmake files are not needed, only the library" OFF)
 option(DBC_GENERATE_DOCS "Use doxygen if installed to generated documentation files" OFF)
 # ---------------------- #
 
@@ -65,22 +63,31 @@ if(DBC_GENERATE_DOCS)
     add_subdirectory(doc)
 endif()
 
+if (MSVC)
+    add_compile_options(/W4 /WX)
+else()
+    add_compile_options(-Wall -Wextra -Wpedantic -Werror)
+endif()
+
 add_library(${PROJECT_NAME} STATIC ${SOURCE_FILES})
 target_link_libraries(${PROJECT_NAME} FastFloat::fast_float)
 target_include_directories(${PROJECT_NAME} PUBLIC
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
     $<INSTALL_INTERFACE:include>
 )
+target_compile_features(${PROJECT_NAME} PRIVATE cxx_std_11)
 
 target_sources(${PROJECT_NAME} INTERFACE FILE_SET HEADERS
         TYPE HEADERS
         BASE_DIRS ${PROJECT_SOURCE_DIR}/include/libdbc
-        FILES ${HEADER_FILES})
+        FILES ${HEADER_FILES}
+)
 
 add_custom_target(release
 					WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
 					COMMAND ${CMAKE_SOURCE_DIR}/scripts/create_single_header.sh
-					DEPENDS ${PROJECT_NAME})
+					DEPENDS ${PROJECT_NAME}
+)
 
 ## Installation
 # install lib
@@ -88,13 +95,10 @@ install(TARGETS ${PROJECT_NAME}
 		DESTINATION ${CMAKE_INSTALL_LIBDIR})
 
 # install headers
-nstall(DIRECTORY ${PROJECT_SOURCE_DIR}/include/libdbc DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
+install(DIRECTORY ${PROJECT_SOURCE_DIR}/include/libdbc DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
 
-
-if (NOT DBC_GENERATE_PKGCONFIG)
-    # Generate pkg-config file
-    configure_file(${PROJECT_NAME}.pc.in ${PROJECT_NAME}.pc @ONLY)
-    install(
-        FILES ${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}.pc
-        DESTINATION ${CMAKE_INSTALL_LIBDIR}/pkgconfig)
-endif()
+# Generate pkg-config file
+configure_file(${PROJECT_NAME}.pc.in ${PROJECT_NAME}.pc @ONLY)
+install(
+    FILES ${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}.pc
+    DESTINATION ${CMAKE_INSTALL_LIBDIR}/pkgconfig)

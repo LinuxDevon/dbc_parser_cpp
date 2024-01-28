@@ -10,6 +10,7 @@
 namespace libdbc {
 struct Message {
 	Message() = delete;
+	virtual ~Message() = default;
 	explicit Message(uint32_t id, const std::string& name, uint8_t size, const std::string& node);
 
 	enum class ParseSignalsStatus {

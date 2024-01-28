@@ -10,6 +10,17 @@ FetchContent_Declare(
 FetchContent_MakeAvailable(Catch2)
 include(Catch)
 
+if (MSVC)
+    add_compile_options(/W4 /WX)
+else()
+    add_compile_options(-Wall -Wextra -Wpedantic -Werror)
+endif()
+
+# Code coverage compiler specific
+if (GCC)
+  add_compile_options(--coverage)
+endif()
+
 add_executable(dbcParserTests
     test_dbc.cpp
     test_utils.cpp

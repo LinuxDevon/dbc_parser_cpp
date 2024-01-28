@@ -24,7 +24,7 @@ BO_ 123 MSG2: 8 Vector__XXX
 
 	parser.parse_file(filename);
 
-	SECTION("Evaluating unknown message id") {
+	SECTION("Evaluating unknown` message id") {
 		std::vector<double> out_values;
 		CHECK(parser.parseMessage(578, std::vector<uint8_t>({0xFF, 0xA2}), out_values) == libdbc::Message::ParseSignalsStatus::ErrorUnknownID);
 	}
@@ -54,7 +54,7 @@ TEST_CASE("Parse Message Big Number not aligned little endian") {
 		std::vector<double> refData{2, 0, 0, 1, 0, 0, 0};
 		CHECK(refData.size() == 7);
 		CHECK(out_values.size() == refData.size());
-		for (int i = 0; i < refData.size(); i++) {
+		for (size_t i = 0; i < refData.size(); i++) {
 			CHECK(out_values.at(i) == refData.at(i));
 		}
 	}
@@ -65,7 +65,7 @@ TEST_CASE("Parse Message Big Number not aligned little endian") {
 		std::vector<double> refData{3, 32, 0, 1, 0, 0, 47};
 		CHECK(refData.size() == 7);
 		CHECK(out_values.size() == refData.size());
-		for (int i = 0; i < refData.size(); i++) {
+		for (size_t i = 0; i < refData.size(); i++) {
 			CHECK(out_values.at(i) == refData.at(i));
 		}
 	}
@@ -76,7 +76,7 @@ TEST_CASE("Parse Message Big Number not aligned little endian") {
 		std::vector<double> refData{3, 51, 0, 1, 0, 0, 57};
 		CHECK(refData.size() == 7);
 		CHECK(out_values.size() == refData.size());
-		for (int i = 0; i < refData.size(); i++) {
+		for (size_t i = 0; i < refData.size(); i++) {
 			CHECK(out_values.at(i) == refData.at(i));
 		}
 	}

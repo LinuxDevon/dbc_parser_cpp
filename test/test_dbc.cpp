@@ -4,6 +4,7 @@
 #include <catch2/catch_test_macros.hpp>
 #include <catch2/matchers/catch_matchers.hpp>
 #include <libdbc/dbc.hpp>
+#include <string>
 
 TEST_CASE("Testing dbc file loading error issues", "[fileio][error]") {
 	auto parser = std::unique_ptr<libdbc::DbcParser>(new libdbc::DbcParser());
@@ -28,10 +29,10 @@ TEST_CASE("Testing dbc file loading error issues", "[fileio][error]") {
 
 	SECTION("Verify that what() method is accessible for all exceptions", "[error]") {
 		auto generic_error = libdbc::exception();
-		REQUIRE(generic_error.what() == "libdbc exception occurred");
+		REQUIRE(std::string{generic_error.what()} == "libdbc exception occurred");
 
 		auto validity_check = libdbc::validity_error();
-		REQUIRE(validity_check.what() == "Invalid DBC file");
+		REQUIRE(std::string{validity_check.what()} == "Invalid DBC file");
 	}
 }
 
