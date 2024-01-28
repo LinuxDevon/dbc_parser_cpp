@@ -11,8 +11,8 @@ jobs:
     name: ${{matrix.cxx}}, C++${{matrix.std}}, ${{matrix.build_type}}
     runs-on: ubuntu-latest
     strategy:
+      fail-fast: false
       matrix:
-        fail-fast: false
         cxx:
           - g++-13
           - clang++-16
