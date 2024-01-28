@@ -39,7 +39,7 @@ jobs:
     - name: Install gcc
       if: ${{ matrix.gcc_version }}
       run: |
-        add-apt-repository ppa:ubuntu-toolchain-r/test
+        sudo add-apt-repository ppa:ubuntu-toolchain-r/test
         apt-get update
         apt-get install -y ${{ matrix.gcc_version }}
 
