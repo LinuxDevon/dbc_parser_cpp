@@ -90,7 +90,6 @@ jobs:
                 -DCMAKE_CXX_STANDARD_REQUIRED=ON          `
                 -DCMAKE_CXX_EXTENSIONS=ON                 `
                 -DDBC_TEST_LOCALE_INDEPENDENCE=ON
-        shell: cmd
 
       - name: Build tests + lib
         working-directory: ${{runner.workspace}}
