@@ -1,4 +1,5 @@
 #include <algorithm>
+#include <cstdint>
 #include <libdbc/message.hpp>
 
 namespace libdbc {
@@ -14,20 +15,20 @@ bool Message::operator==(const Message& rhs) const {
 }
 
 Message::ParseSignalsStatus Message::parseSignals(const std::vector<uint8_t>& data, std::vector<double>& values) const {
-	int size = data.size();
+	auto size = data.size();
 	if (size > 8)
 		return ParseSignalsStatus::ErrorMessageToLong; // not supported yet
 
 	uint64_t data_little_endian = 0;
 	uint64_t data_big_endian = 0;
-	for (int i = 0; i < size; i++) {
+	for (size_t i = 0; i < size; i++) {
 		data_little_endian |= ((uint64_t)data[i]) << i * 8;
 		data_big_endian = (data_big_endian << 8) | (uint64_t)data[i];
 	}
 
 	// TODO: does this also work on a big endian machine?
 
-	const uint32_t len = size * 8;
+	const auto len = size * 8;
 	uint64_t v = 0;
 	for (const auto& signal : m_signals) {
 		if (signal.is_bigendian) {
@@ -40,33 +41,33 @@ Message::ParseSignalsStatus Message::parseSignals(const std::vector<uint8_t>& da
 		if (signal.is_signed && signal.size > 1) {
 			switch (signal.size) {
 			case 8:
-				values.push_back((int8_t)v * signal.factor + signal.offset);
+				values.push_back(static_cast<int8_t>(v) * signal.factor + signal.offset);
 				break;
 			case 16:
-				values.push_back((int16_t)v * signal.factor + signal.offset);
+				values.push_back(static_cast<int16_t>(v) * signal.factor + signal.offset);
 				break;
 			case 32:
-				values.push_back((int32_t)v * signal.factor + signal.offset);
+				values.push_back(static_cast<int32_t>(v) * signal.factor + signal.offset);
 				break;
 			case 64:
-				values.push_back((int64_t)v * signal.factor + signal.offset);
+				values.push_back(static_cast<double>(v) * signal.factor + signal.offset);
 				break;
 			default: {
 				// 2 complement -> decimal
-				const int negative = (v & (1 << (signal.size - 1))) != 0;
+				const int negative = (v & (1ull << (signal.size - 1))) != 0;
 				int64_t nativeInt;
 				if (negative)
-					nativeInt = v | ~((1 << signal.size) - 1); // invert all bits above signal.size
+					nativeInt = v | ~((1ull << signal.size) - 1); // invert all bits above signal.size
 				else
-					nativeInt = v & ((1 << signal.size) - 1); // masking
-				values.push_back(nativeInt * signal.factor + signal.offset);
+					nativeInt = v & ((1ull << signal.size) - 1); // masking
+				values.push_back(static_cast<double>(nativeInt) * signal.factor + signal.offset);
 				break;
 			}
 			}
 		} else {
 			// use only the relevant bits
 			v = v & ((1 << signal.size) - 1); // masking
-			values.push_back(v * signal.factor + signal.offset);
+			values.push_back(static_cast<double>(v) * signal.factor + signal.offset);
 		}
 	}
 	return ParseSignalsStatus::Success;

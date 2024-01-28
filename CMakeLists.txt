@@ -63,10 +63,19 @@ if(DBC_GENERATE_DOCS)
     add_subdirectory(doc)
 endif()
 
+list(APPEND GCC_CLANG_COMPILE_FLAGS
+    -Wall -Wextra -Wpedantic
+    -Warith-conversion -Wconversion
+    -Wint-in-bool-context
+    -Wmissing-declarations
+    -Werror
+)
+
+
 if (MSVC)
     add_compile_options(/W4 /WX)
 else()
-    add_compile_options(-Wall -Wextra -Wpedantic -Werror)
+    add_compile_options(${GCC_CLANG_COMPILE_FLAGS})
 endif()
 
 add_library(${PROJECT_NAME} STATIC ${SOURCE_FILES})

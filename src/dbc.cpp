@@ -1,3 +1,4 @@
+#include <cstdint>
 #include <libdbc/dbc.hpp>
 #include <libdbc/exceptions/error.hpp>
 #include <libdbc/utils/utils.hpp>
@@ -32,6 +33,7 @@ struct VALObject {
 	std::vector<libdbc::Signal::SignalValueDescriptions> vd;
 };
 
+static bool parseVal(const std::string& str, VALObject& obj);
 bool parseVal(const std::string& str, VALObject& obj) {
 	obj.signal_name = "";
 	obj.vd.clear();
@@ -67,7 +69,7 @@ bool parseVal(const std::string& str, VALObject& obj) {
 			}
 			if (can_id_str.empty())
 				return false;
-			obj.can_id = std::stoul(can_id_str);
+			obj.can_id = static_cast<uint32_t>(std::stoul(can_id_str));
 			if (*a != ' ')
 				return false;
 			a++; // skip whitespace
@@ -237,9 +239,9 @@ void DbcParser::parse_dbc_messages(const std::vector<std::string>& lines) {
 	VALObject obj;
 	for (const auto& line : lines) {
 		if (std::regex_search(line, match, message_re)) {
-			uint32_t id = std::stoul(match.str(2));
+			uint32_t id = static_cast<uint32_t>(std::stoul(match.str(2)));
 			std::string name = match.str(3);
-			uint8_t size = std::stoul(match.str(4));
+			uint8_t size = static_cast<uint8_t>(std::stoul(match.str(4)));
 			std::string node = match.str(5);
 
 			Message msg(id, name, size, node);
@@ -251,8 +253,8 @@ void DbcParser::parse_dbc_messages(const std::vector<std::string>& lines) {
 		if (std::regex_search(line, match, signal_re)) {
 			std::string name = match.str(2);
 			bool is_multiplexed = false; // No support yet
-			uint32_t start_bit = std::stoul(match.str(3));
-			uint32_t size = std::stoul(match.str(4));
+			uint32_t start_bit = static_cast<uint32_t>(std::stoul(match.str(3)));
+			uint32_t size = static_cast<uint32_t>(std::stoul(match.str(4)));
 			bool is_bigendian = (std::stoul(match.str(5)) == 0);
 			bool is_signed = (match.str(6) == "-");
 
