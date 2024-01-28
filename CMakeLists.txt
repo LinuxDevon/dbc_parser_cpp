@@ -1,12 +1,15 @@
 cmake_minimum_required(VERSION 3.16)
 
-project(dbc VERSION 0.2.0 DESCRIPTION "C++ DBC Parser")
+project(dbc
+    VERSION 0.2.0
+    DESCRIPTION "C++ DBC Parser"
+)
 
 # -- PROJECT OPTIONS  -- #
 option(DBC_ENABLE_TESTS "Enable Unittests" ON)
 option(DBC_TEST_LOCALE_INDEPENDENCE "Used to deterime if the libary is locale agnostic when it comes to converting floats. You need `de_DE.UTF-8` locale installed for this testing." OFF)
 # Turn OFF, if you are using FetchContent to include it to your project
-option(DBC_FETCH_CONTENT_INCLUSION "Include project with FetchContent_Declare in another project. In this case the headers and the cmake files are not needed, only the library" OFF)
+option(DBC_GENERATE_PKGCONFIG "Include project with FetchContent_Declare in another project. In this case the headers and the cmake files are not needed, only the library" OFF)
 option(DBC_GENERATE_DOCS "Use doxygen if installed to generated documentation files" OFF)
 # ---------------------- #
 
@@ -19,9 +22,6 @@ set(CPACK_PACKAGE_VERSION_PATCH ${PROJECT_VERSION_PATCH})
 set(CPACK_RESOURCE_FILE_LICENSE ${CMAKE_CURRENT_SOURCE_DIR}/LICENSE)
 set(CPACK_RESOURCE_FILE_README ${CMAKE_CURRENT_SOURCE_DIR}/README.md)
 include(CPack)
-
-# defines variables used in the dbc.pc.in
-include(GNUInstallDirs)
 
 # specify the C++ standard
 set(CMAKE_CXX_STANDARD 11)
@@ -39,13 +39,6 @@ if (NOT ${FastFloat_FOUND})
     FetchContent_Populate(FastFloat)
     add_subdirectory(${fastfloat_SOURCE_DIR} ${fastfloat_BINARY_DIR} EXCLUDE_FROM_ALL)
 endif()
-
-set(GCC_COMPILE_FLAGS "-Wextra -Wall -Wfloat-equal -Wundef -Wshadow \
--Wpointer-arith -Wcast-align -Wstrict-prototypes -Wwrite-strings \
--Waggregate-return -Wcast-qual -Wswitch-default -Wswitch-enum -Wconversion \
--Wunreachable-code -Wformat=2 -Werror -Wuninitialized -Winit-self")
-
-set(CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS} ${GCC_COVERAGE_COMPILE_FLAGS}")
 
 # add where to find the source files
 list(APPEND SOURCE_FILES
@@ -95,18 +88,10 @@ install(TARGETS ${PROJECT_NAME}
 		DESTINATION ${CMAKE_INSTALL_LIBDIR})
 
 # install headers
-if (${CMAKE_MINOR_VERSION} GREATER_EQUAL 23 AND NOT FETCH_CONTENT_INCLUSION)
-    install(TARGETS ${PROJECT_NAME}
-                    FILE_SET HEADERS
-                    DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/lib${PROJECT_NAME}
-                    INCLUDES DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
-    )
-elseif(NOT DBC_FETCH_CONTENT_INCLUSION)
-    install(DIRECTORY ${PROJECT_SOURCE_DIR}/include/libdbc DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
-endif()
+nstall(DIRECTORY ${PROJECT_SOURCE_DIR}/include/libdbc DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
 
 
-if (NOT DBC_FETCH_CONTENT_INCLUSION)
+if (NOT DBC_GENERATE_PKGCONFIG)
     # Generate pkg-config file
     configure_file(${PROJECT_NAME}.pc.in ${PROJECT_NAME}.pc @ONLY)
     install(
