@@ -5,7 +5,7 @@
 
 #include <regex>
 
-namespace libdbc {
+namespace {
 
 const auto floatPattern = "(-?\\d+\\.?(\\d+)?)"; // Can be negative
 
@@ -27,7 +27,6 @@ const auto whiteSpace = "\\s";
 
 enum VALToken { Identifier = 0, CANId, SignalName, Value, Description };
 
-struct VALObject;
 struct VALObject {
 	uint32_t can_id;
 	std::string signal_name;
@@ -140,6 +139,10 @@ bool parseVal(const std::string& str, VALObject& obj) {
 	}
 	return false;
 }
+
+} // Anonyomous namespace
+
+namespace libdbc {
 
 DbcParser::DbcParser()
 	: version("")
