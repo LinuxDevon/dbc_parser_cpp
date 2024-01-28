@@ -279,10 +279,10 @@ void DbcParser::parse_dbc_messages(const std::vector<std::string>& lines) {
 		}
 	}
 
-	for (const auto& obj : sv) {
+	for (const auto& signal : sv) {
 		for (auto& msg : messages) {
-			if (msg.id() == obj.can_id) {
-				msg.addValueDescription(obj.signal_name, obj.vd);
+			if (msg.id() == signal.can_id) {
+				msg.addValueDescription(signal.signal_name, signal.vd);
 				break;
 			}
 		}
