@@ -1,4 +1,4 @@
-name: Libdbc Tests
+name: Libdbc Pipeline
 
 on: [push]
 
@@ -21,6 +21,7 @@ jobs:
         include:
           # - cxx: g++-13
           - cxx: clang++-16
+            cc: clang-16
             llvm_version: 16
 
     steps:
@@ -36,13 +37,15 @@ jobs:
     - name: Prepare environment
       run: |
         sudo apt-get update
-        sudo apt-get install -y ninja-build ${{matrix.other_pkgs}}
+        sudo apt-get install -y locales ${{matrix.other_pkgs}}
+
+        locale-gen de_DE.UTF-8
 
     - name: Configure build
       working-directory: ${{runner.workspace}}
       env:
+        CC: ${{matrix.cc}}
         CXX: ${{matrix.cxx}}
-        CXXFLAGS: ${{matrix.cxxflags}}
       run: |
         cmake -Bbuild -H$GITHUB_WORKSPACE \
               -DCMAKE_BUILD_TYPE=${{matrix.build_type}} \
