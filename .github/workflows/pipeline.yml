@@ -30,17 +30,15 @@ jobs:
     - uses: actions/checkout@v4
 
     - name: Install clang
-      if: ${{ matrix.llvm_version }} != ""
+      if: ${{ matrix.llvm_version }}
       run: |
         wget https://apt.llvm.org/llvm.sh
         chmod +x llvm.sh
         sudo ./llvm.sh ${{ matrix.llvm_version }}
 
     - name: Install gcc
-      if: ${{ matrix.gcc_version }} != ""
+      if: ${{ matrix.gcc_version }}
       run: |
-        update-alternatives --remove-all gcc
-        update-alternatives --remove-all g++
         add-apt-repository ppa:ubuntu-toolchain-r/test
         apt-get update
         apt-get install -y ${{ matrix.gcc_version }}
