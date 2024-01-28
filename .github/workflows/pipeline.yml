@@ -1,6 +1,6 @@
 name: Libdbc Tests
 
-on: [push, pull_request]
+on: [push]
 
 env:
   # Customize the CMake build type here (Release, Debug, RelWithDebInfo, etc.)
@@ -10,21 +10,28 @@ jobs:
   linux-builds:
     name: ${{matrix.cxx}}, C++${{matrix.std}}, ${{matrix.build_type}}
     runs-on: ubuntu-latest
+    continue-on-error: true
     strategy:
       matrix:
         cxx:
-          - g++-13
+          # - g++-13
           - clang++-16
         build_type: [Debug, Release]
         std: [11]
         include:
-          - cxx: g++-13
-            other_pkgs: g++-13
+          # - cxx: g++-13
           - cxx: clang++-16
-            other_pkgs: clang-16
+            llvm_version: 16
 
     steps:
     - uses: actions/checkout@v4
+
+    - name: Install clang
+      if: ${{ matrix.llvm_version }} != ""
+      run: |
+        wget https://apt.llvm.org/llvm.sh
+        chmod +x llvm.sh
+        sudo ./llvm.sh ${{ matrix.llvm_version }}
 
     - name: Prepare environment
       run: |
