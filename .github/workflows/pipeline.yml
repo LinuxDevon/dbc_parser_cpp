@@ -41,9 +41,10 @@ jobs:
       run: |
         sudo add-apt-repository ppa:ubuntu-toolchain-r/test
         sudo apt-get update
-        sudo apt-get install -y ${{ matrix.gcc_version }}
+        sudo apt-get install -y gcc-${{ matrix.gcc_version }} g++-${{ matrix.gcc_version }}
 
         gcc --version
+        g++ --version
 
     - name: Prepare environment
       run: |
