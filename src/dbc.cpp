@@ -5,7 +5,7 @@
 
 #include <regex>
 
-namespace {
+namespace libdbc {
 
 const auto floatPattern = "(-?\\d+\\.?(\\d+)?)"; // Can be negative
 
@@ -30,7 +30,7 @@ enum VALToken { Identifier = 0, CANId, SignalName, Value, Description };
 struct VALObject {
 	uint32_t can_id;
 	std::string signal_name;
-	std::vector<libdbc::Signal::SignalValueDescriptions> vd;
+	std::vector<Signal::SignalValueDescriptions> vd;
 };
 
 static bool parseVal(const std::string& str, VALObject& obj);
@@ -39,7 +39,7 @@ bool parseVal(const std::string& str, VALObject& obj) {
 	obj.vd.clear();
 	auto state = Identifier;
 	const char* a = str.data();
-	libdbc::Signal::SignalValueDescriptions vd;
+	Signal::SignalValueDescriptions vd;
 	for (;;) {
 		switch (state) {
 		case Identifier: {
@@ -140,10 +140,6 @@ bool parseVal(const std::string& str, VALObject& obj) {
 	return false;
 }
 
-} // Anonyomous namespace
-
-namespace libdbc {
-
 DbcParser::DbcParser()
 	: version("")
 	, nodes()
@@ -240,7 +236,7 @@ void DbcParser::parse_dbc_messages(const std::vector<std::string>& lines) {
 
 	std::vector<VALObject> sv;
 
-	VALObject obj;
+	VALObject obj{};
 	for (const auto& line : lines) {
 		if (std::regex_search(line, match, message_re)) {
 			uint32_t id = static_cast<uint32_t>(std::stoul(match.str(2)));
