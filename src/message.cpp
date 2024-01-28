@@ -85,6 +85,14 @@ uint32_t Message::id() const {
 	return m_id;
 }
 
+uint8_t Message::size() const {
+	return m_size;
+}
+
+const std::string& Message::name() const {
+	return m_name;
+}
+
 void Message::addValueDescription(const std::string& signal_name, const std::vector<Signal::SignalValueDescriptions>& vd) {
 	for (auto& s : m_signals) {
 		if (s.name.compare(signal_name) == 0) {

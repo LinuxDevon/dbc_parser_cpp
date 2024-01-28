@@ -32,9 +32,8 @@ struct Message {
 	void appendSignal(const Signal& signal);
 	const std::vector<Signal> getSignals() const;
 	uint32_t id() const;
-	const std::string& name() const {
-		return m_name;
-	}
+	uint8_t size() const;
+	const std::string& name() const;
 	void addValueDescription(const std::string& signal_name, const std::vector<Signal::SignalValueDescriptions>&);
 
 	virtual bool operator==(const Message& rhs) const;

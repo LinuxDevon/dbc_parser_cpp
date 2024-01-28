@@ -73,6 +73,7 @@ TEST_CASE("Testing  big endian, little endian") {
 
 	REQUIRE(parser.get_messages().size() == 1);
 	REQUIRE(parser.get_messages().at(0).name() == "MSG1");
+	REQUIRE(parser.get_messages().at(0).size() == 8);
 	REQUIRE(parser.get_messages().at(0).getSignals().size() == 2);
 	{
 		const auto signal = parser.get_messages().at(0).getSignals().at(0);
@@ -85,7 +86,7 @@ TEST_CASE("Testing  big endian, little endian") {
 }
 
 TEST_CASE("Testing negative values") {
-	std::string dbc_contents = PRIMITIVE_DBC + R"(BO_ 234 MSG1: 8 Vector__XXX
+	std::string dbc_contents = PRIMITIVE_DBC + R"(BO_ 234 MSG1: 58 Vector__XXX
  SG_ Sig1 : 55|16@0- (0.1,0) [-3276.8|-3276.7] "C" Vector__XXX
  SG_ Sig2 : 39|16@0- (0.1,0) [-3276.8|-3276.7] "C" Vector__XXX
  SG_ Sig3 : 23|16@0- (10,0) [-3276.8|-3276.7] "C" Vector__XXX
@@ -97,6 +98,7 @@ TEST_CASE("Testing negative values") {
 
 	REQUIRE(parser.get_messages().size() == 1);
 	REQUIRE(parser.get_messages().at(0).name() == "MSG1");
+	REQUIRE(parser.get_messages().at(0).size() == 58);
 	REQUIRE(parser.get_messages().at(0).getSignals().size() == 4);
 
 	SECTION("Evaluating first message") {
@@ -130,7 +132,7 @@ TEST_CASE("Testing negative values") {
 }
 
 TEST_CASE("Special characters in unit") {
-	std::string dbc_contents = PRIMITIVE_DBC + R"(BO_ 234 MSG1: 8 Vector__XXX
+	std::string dbc_contents = PRIMITIVE_DBC + R"(BO_ 234 MSG1: 255 Vector__XXX
  SG_ Speed : 0|8@1+ (1,0) [0|204] "Km/h"  DEVICE1,DEVICE2,DEVICE3)";
 	const auto filename = create_temporary_dbc_with(dbc_contents.c_str());
 
@@ -139,6 +141,7 @@ TEST_CASE("Special characters in unit") {
 
 	REQUIRE(parser.get_messages().size() == 1);
 	REQUIRE(parser.get_messages().at(0).name() == "MSG1");
+	REQUIRE(parser.get_messages().at(0).size() == 255);
 	REQUIRE(parser.get_messages().at(0).getSignals().size() == 1);
 	SECTION("Checking that signal with special characters as unit is parsed correctly") {
 		const auto signal = parser.get_messages().at(0).getSignals().at(0);
