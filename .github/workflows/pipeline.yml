@@ -10,9 +10,9 @@ jobs:
   linux-builds:
     name: ${{matrix.cxx}}, C++${{matrix.std}}, ${{matrix.build_type}}
     runs-on: ubuntu-latest
-    continue-on-error: true
     strategy:
       matrix:
+        fail-fast: false
         cxx:
           # - g++-13
           - clang++-16
