@@ -78,18 +78,8 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Prepare environment
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y locales
-
-          sudo locale-gen de_DE.UTF-8
-
       - name: Configure build
         working-directory: ${{runner.workspace}}
-        env:
-          CC: ${{matrix.cc}}
-          CXX: ${{matrix.cxx}}
         run: |
           cmake -Bbuild -H$GITHUB_WORKSPACE `
                 -A ${{matrix.platform}} `
