@@ -65,7 +65,7 @@ endif()
 
 list(APPEND GCC_CLANG_COMPILE_FLAGS
     -Wall -Wextra -Wpedantic
-    -Wconversion -Wint-in-bool-context
+    -Wconversion -Wint-in-bool-context -Wshadow
     -Wmissing-declarations -Wmissing-field-initializers
     -Werror
 )
