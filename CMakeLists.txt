@@ -9,6 +9,7 @@ project(dbc
 option(DBC_ENABLE_TESTS "Enable Unittests" ON)
 option(DBC_TEST_LOCALE_INDEPENDENCE "Used to deterime if the libary is locale agnostic when it comes to converting floats. You need `de_DE.UTF-8` locale installed for this testing." OFF)
 option(DBC_GENERATE_DOCS "Use doxygen if installed to generated documentation files" OFF)
+option(DBC_GENERATE_SINGLE_HEADER "This will run the generator for the single header file version. Default is OFF since we make a static build. Requires cargo installed." OFF)
 # ---------------------- #
 
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
@@ -94,11 +95,12 @@ target_sources(${PROJECT_NAME} INTERFACE FILE_SET HEADERS
         FILES ${HEADER_FILES}
 )
 
-add_custom_target(release
-					WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
-					COMMAND ${CMAKE_SOURCE_DIR}/scripts/create_single_header.sh
-					DEPENDS ${PROJECT_NAME}
-)
+if(DBC_GENERATE_SINGLE_HEADER)
+    add_custom_target(single_header ALL
+    					WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+    					COMMAND ${CMAKE_SOURCE_DIR}/scripts/create_single_header.sh
+    )
+endif()
 
 ## Installation
 # install lib
