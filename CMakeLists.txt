@@ -3,8 +3,8 @@ cmake_minimum_required(VERSION 3.16)
 project(dbc VERSION 0.2.0 DESCRIPTION "C++ DBC Parser")
 
 # -- PROJECT OPTIONS  -- #
-option(DEBUG "use debug flag" NO)
 option(DBC_ENABLE_TESTS "Enable Unittests" ON)
+option(DBC_TEST_LOCALE_INDEPENDENCE "Used to deterime if the libary is locale agnostic when it comes to converting floats. You need `de_DE.UTF-8` locale installed for this testing." OFF)
 # Turn OFF, if you are using FetchContent to include it to your project
 option(DBC_FETCH_CONTENT_INCLUSION "Include project with FetchContent_Declare in another project. In this case the headers and the cmake files are not needed, only the library" OFF)
 option(DBC_GENERATE_DOCS "Use doxygen if installed to generated documentation files" OFF)
@@ -45,22 +45,17 @@ set(GCC_COMPILE_FLAGS "-Wextra -Wall -Wfloat-equal -Wundef -Wshadow \
 -Waggregate-return -Wcast-qual -Wswitch-default -Wswitch-enum -Wconversion \
 -Wunreachable-code -Wformat=2 -Werror -Wuninitialized -Winit-self")
 
-if(DEBUG)
-	set(GCC_COMPILE_FLAGS ${GCC_COMPILE_FLAGS}" -g")
-else()
-	set(GCC_COMPILE_FLAGS ${GCC_COMPILE_FLAGS}" -O2")
-endif()
-
 set(CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS} ${GCC_COVERAGE_COMPILE_FLAGS}")
 
 # add where to find the source files
-# file(GLOB_RECURSE SOURCE ${PROJECT_SOURCE_DIR}/src/ *.cpp)
-list(APPEND SOURCE ${PROJECT_SOURCE_DIR}/src/utils.cpp
-				   ${PROJECT_SOURCE_DIR}/src/message.cpp
-				   ${PROJECT_SOURCE_DIR}/src/signal.cpp
-				   ${PROJECT_SOURCE_DIR}/src/dbc.cpp)
+list(APPEND SOURCE_FILES
+    ${PROJECT_SOURCE_DIR}/src/utils.cpp
+	${PROJECT_SOURCE_DIR}/src/message.cpp
+	${PROJECT_SOURCE_DIR}/src/signal.cpp
+	${PROJECT_SOURCE_DIR}/src/dbc.cpp
+)
 
-set(HEADER_FILES
+list(APPEND HEADER_FILES
   ${PROJECT_SOURCE_DIR}/include/libdbc/dbc.hpp
   ${PROJECT_SOURCE_DIR}/include/libdbc/message.hpp
   ${PROJECT_SOURCE_DIR}/include/libdbc/signal.hpp
@@ -77,7 +72,7 @@ if(DBC_GENERATE_DOCS)
     add_subdirectory(doc)
 endif()
 
-add_library(${PROJECT_NAME} STATIC ${SOURCE})
+add_library(${PROJECT_NAME} STATIC ${SOURCE_FILES})
 target_link_libraries(${PROJECT_NAME} FastFloat::fast_float)
 target_include_directories(${PROJECT_NAME} PUBLIC
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
