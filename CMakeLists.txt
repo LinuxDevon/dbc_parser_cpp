@@ -65,14 +65,17 @@ endif()
 
 list(APPEND GCC_CLANG_COMPILE_FLAGS
     -Wall -Wextra -Wpedantic
-    -Wconversion -Wint-in-bool-context -Wshadow
+    -Wconversion -Wint-in-bool-context
     -Wmissing-declarations -Wmissing-field-initializers
     -Werror
 )
 
 
-if (MSVC)
+if (CMAKE_CXX_COMPILER_ID MATCHES "MSVC")
     add_compile_options(/W4 /WX)
+elseif(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+    # Clang shadow warnings aren't as sensitive as gcc
+    add_compile_options(${GCC_CLANG_COMPILE_FLAGS} -Wshadow)
 else()
     add_compile_options(${GCC_CLANG_COMPILE_FLAGS})
 endif()

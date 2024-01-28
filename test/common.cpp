@@ -41,5 +41,5 @@ std::string create_temporary_dbc_with(const char* contents) {
 	file << contents << std::endl;
 	file.close();
 
-	return temp_file;
+	return temp_file.string();
 }
