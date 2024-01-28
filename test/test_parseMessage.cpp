@@ -5,24 +5,22 @@
 #include <libdbc/dbc.hpp>
 
 #include "common.hpp"
+#include "defines.hpp"
 
 // Testing of parsing messages
 
 TEST_CASE("Parse Message Unknown ID") {
-	libdbc::DbcParser parser;
-
-	const auto dbcContent = R"(BO_ 234 MSG1: 8 Vector__XXX
+	std::string dbc_contents = PRIMITIVE_DBC + R"(BO_ 234 MSG1: 8 Vector__XXX
  SG_ Msg1Sig1 : 0|8@0+ (1,0) [-3276.8|-3276.7] "C" Vector__XXX
  SG_ MsgSig2 : 8|8@0+ (1,0) [-3276.8|-3276.7] "C" Vector__XXX
 BO_ 123 MSG2: 8 Vector__XXX
  SG_ Msg2Sig1 : 0|8@0+ (1,0) [-3276.8|-3276.7] "C" Vector__XXX
  SG_ Msg2Sig1 : 8|8@0+ (1,0) [-3276.8|-3276.7] "C" Vector__XXX
 )";
+	const auto filename = create_temporary_dbc_with(dbc_contents.c_str());
 
-	const auto* filename = std::tmpnam(NULL);
-	CHECK(create_tmp_dbc_with(filename, dbcContent));
-
-	parser.parse_file(filename);
+	libdbc::DbcParser parser;
+	parser.parse_file(filename.c_str());
 
 	SECTION("Evaluating unknown` message id") {
 		std::vector<double> out_values;
@@ -31,9 +29,7 @@ BO_ 123 MSG2: 8 Vector__XXX
 }
 
 TEST_CASE("Parse Message Big Number not aligned little endian") {
-	libdbc::DbcParser parser;
-
-	const auto dbcContent = R"(BO_ 337 STATUS: 8 Vector__XXX
+	std::string dbc_contents = PRIMITIVE_DBC + R"(BO_ 337 STATUS: 8 Vector__XXX
  SG_ Value6 : 27|3@1+ (1,0) [0|7] ""  Vector__XXX
  SG_ Value5 : 16|11@1+ (0.1,-102) [-102|102] "%"  Vector__XXX
  SG_ Value2 : 8|2@1+ (1,0) [0|2] ""  Vector__XXX
@@ -42,10 +38,9 @@ TEST_CASE("Parse Message Big Number not aligned little endian") {
  SG_ Value4 : 11|4@1+ (1,0) [0|3] ""  Vector__XXX
  SG_ Value1 : 0|8@1+ (1,0) [0|204] "Km/h"  Vector__XXX
 )";
+	const auto filename = create_temporary_dbc_with(dbc_contents.c_str());
 
-	const auto* filename = std::tmpnam(NULL);
-	CHECK(create_tmp_dbc_with(filename, dbcContent));
-
+	libdbc::DbcParser parser;
 	parser.parse_file(filename);
 
 	SECTION("Evaluating first message") {
@@ -83,20 +78,19 @@ TEST_CASE("Parse Message Big Number not aligned little endian") {
 }
 
 TEST_CASE("Parse Message little endian") {
-	const auto* filename = std::tmpnam(NULL);
-
-	create_tmp_dbc_with(filename, R"(BO_ 541 STATUS: 8 DEVICE1
+	std::string dbc_contents = PRIMITIVE_DBC + R"(BO_ 541 STATUS: 8 DEVICE1
  SG_ Temperature : 48|16@1+ (0.01,-40) [-40|125] "C"  DEVICE1
  SG_ SOH : 0|16@1+ (0.01,0) [0|100] "%"  DEVICE1
  SG_ SOE : 32|16@1+ (0.01,0) [0|100] "%"  DEVICE1
- SG_ SOC : 16|16@1+ (0.01,0) [0|100] "%"  DEVICE1)");
+ SG_ SOC : 16|16@1+ (0.01,0) [0|100] "%"  DEVICE1)";
+	const auto filename = create_temporary_dbc_with(dbc_contents.c_str());
 
-	libdbc::DbcParser p;
-	p.parse_file(filename);
+	libdbc::DbcParser parser;
+	parser.parse_file(filename);
 
 	std::vector<uint8_t> data{0x08, 0x27, 0xa3, 0x22, 0xe5, 0x1f, 0x45, 0x14}; // little endian
 	std::vector<double> result_values;
-	REQUIRE(p.parseMessage(0x21d, data, result_values) == libdbc::Message::ParseSignalsStatus::Success);
+	REQUIRE(parser.parseMessage(0x21d, data, result_values) == libdbc::Message::ParseSignalsStatus::Success);
 	REQUIRE(result_values.size() == 4);
 
 	REQUIRE(Catch::Approx(result_values.at(0)) == 11.89);
@@ -106,8 +100,7 @@ TEST_CASE("Parse Message little endian") {
 }
 
 TEST_CASE("Parse Message big endian signed values") {
-	const auto* filename = std::tmpnam(NULL);
-	create_tmp_dbc_with(filename, R"(BO_ 545 MSG: 8 BMS2
+	std::string dbc_contents = PRIMITIVE_DBC + R"(BO_ 545 MSG: 8 BMS2
  SG_ Sig1 : 62|1@0+ (1,0) [0|0] "" Vector__XXX
  SG_ Sig2 : 49|2@0+ (1,0) [0|0] "" Vector__XXX
  SG_ Sig3 : 39|16@0- (0.1,0) [0|0] "A" Vector__XXX
@@ -119,10 +112,11 @@ TEST_CASE("Parse Message big endian signed values") {
  SG_ Sig9 : 56|1@0+ (1,0) [0|0] "" Vector__XXX
  SG_ Sig10 : 61|1@0+ (1,0) [0|0] "" Vector__XXX
  SG_ Sig11 : 7|16@0+ (0.001,0) [0|65.535] "V" Vector__XXX
- SG_ Sig12 : 23|16@0+ (0.1,0) [0|6553.5] "A" Vector__XXX)");
+ SG_ Sig12 : 23|16@0+ (0.1,0) [0|6553.5] "A" Vector__XXX)";
+	const auto filename = create_temporary_dbc_with(dbc_contents.c_str());
 
 	libdbc::DbcParser p;
-	p.parse_file(filename);
+	p.parse_file(filename.c_str());
 
 	std::vector<uint8_t> data{13, 177, 0, 216, 251, 180, 0, 31}; // big endian
 	std::vector<double> result_values;
@@ -143,12 +137,12 @@ TEST_CASE("Parse Message big endian signed values") {
 }
 
 TEST_CASE("Parse Message with non byte aligned values") {
-	const auto* filename = std::tmpnam(NULL);
-	create_tmp_dbc_with(filename, R"(BO_ 403 INFORMATION: 8 Vector__XXX
+	std::string dbc_contents = PRIMITIVE_DBC + R"(BO_ 403 INFORMATION: 8 Vector__XXX
  SG_ Voltage : 30|9@1+ (0.2,0) [0|102.2] "V"  Vector__XXX
  SG_ Phase_Current : 20|10@1- (1,0) [-512|512] "A"  Vector__XXX
  SG_ Iq_Current : 10|10@1- (1,0) [-512|512] "A"  Vector__XXX
- SG_ Id_Current : 0|10@1- (1,0) [-512|512] "A"  Vector__XXX)");
+ SG_ Id_Current : 0|10@1- (1,0) [-512|512] "A"  Vector__XXX)";
+	const auto filename = create_temporary_dbc_with(dbc_contents.c_str());
 
 	libdbc::DbcParser p;
 	p.parse_file(filename);
@@ -164,10 +158,10 @@ TEST_CASE("Parse Message with non byte aligned values") {
 }
 
 TEST_CASE("Parse Message data length < 8 unsigned") {
-	const auto* filename = std::tmpnam(NULL);
-	create_tmp_dbc_with(filename, R"(BO_ 234 MSG1: 8 Vector__XXX
+	std::string dbc_contents = PRIMITIVE_DBC + R"(BO_ 234 MSG1: 8 Vector__XXX
  SG_ Msg1Sig1 : 7|8@0+ (1,0) [-3276.8|-3276.7] "C" Vector__XXX
- SG_ Msg1Sig2 : 15|8@0+ (1,0) [-3276.8|-3276.7] "km/h" Vector__XXX)");
+ SG_ Msg1Sig2 : 15|8@0+ (1,0) [-3276.8|-3276.7] "km/h" Vector__XXX)";
+	const auto filename = create_temporary_dbc_with(dbc_contents.c_str());
 
 	libdbc::DbcParser p;
 	p.parse_file(filename);

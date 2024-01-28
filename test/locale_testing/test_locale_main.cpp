@@ -34,13 +34,12 @@ TEST_CASE("Should parse doubld string locale independently") {
 }
 
 TEST_CASE("Should process message with floats locale indpendently") {
-	const auto* filename = std::tmpnam(NULL);
-
-	create_tmp_dbc_with(filename, R"(BO_ 234 MSG1: 8 Vector__XXX
+	std::string dbc_contents = PRIMITIVE_DBC + R"(BO_ 234 MSG1: 8 Vector__XXX
  SG_ Sig1 : 55|16@0- (0.1,0) [-3276.8|-3276.7] "C" Vector__XXX
  SG_ Sig2 : 39|16@0- (0.1,0) [-3276.8|-3276.7] "C" Vector__XXX
  SG_ Sig3 : 23|16@0- (10,0) [-3276.8|-3276.7] "C" Vector__XXX
- SG_ Sig4 : 7|16@0- (1,-10) [0|32767] "" Vector__XXX)");
+ SG_ Sig4 : 7|16@0- (1,-10) [0|32767] "" Vector__XXX)";
+	const auto filename = create_temporary_dbc_with(dbc_contents.c_str());
 
 	auto parser = libdbc::DbcParser();
 	parser.parse_file(filename);

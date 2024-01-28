@@ -67,7 +67,6 @@ TEST_CASE("Testing  big endian, little endian") {
  SG_ Sig1 : 55|16@0- (0.1,0) [-3276.8|-3276.7] "C" Vector__XXX
  SG_ Sig2 : 39|16@1- (0.1,0) [-3276.8|-3276.7] "C" Vector__XXX)";
 	const auto filename = create_temporary_dbc_with(dbc_contents.c_str());
-	std::cerr << filename << std::endl;
 
 	auto parser = libdbc::DbcParser();
 	parser.parse_file(filename.c_str());
@@ -92,7 +91,6 @@ TEST_CASE("Testing negative values") {
  SG_ Sig3 : 23|16@0- (10,0) [-3276.8|-3276.7] "C" Vector__XXX
  SG_ Sig4 : 7|16@0- (1,-10) [0|32767] "" Vector__XXX)";
 	const auto filename = create_temporary_dbc_with(dbc_contents.c_str());
-	std::cerr << filename << std::endl;
 
 	auto parser = libdbc::DbcParser();
 	parser.parse_file(filename.c_str());
@@ -135,7 +133,6 @@ TEST_CASE("Special characters in unit") {
 	std::string dbc_contents = PRIMITIVE_DBC + R"(BO_ 234 MSG1: 8 Vector__XXX
  SG_ Speed : 0|8@1+ (1,0) [0|204] "Km/h"  DEVICE1,DEVICE2,DEVICE3)";
 	const auto filename = create_temporary_dbc_with(dbc_contents.c_str());
-	std::cerr << filename << std::endl;
 
 	auto parser = libdbc::DbcParser();
 	parser.parse_file(filename.c_str());
@@ -155,7 +152,6 @@ TEST_CASE("Signal Value Description") {
  SG_ State2 : 0|8@1+ (1,0) [0|204] ""  DEVICE1,DEVICE2,DEVICE3
 VAL_ 234 State1 123 "Description 1" 0 "Description 2" 90903489 "Big value and special characters &$Â§())!" ;)";
 	const auto filename = create_temporary_dbc_with(dbc_contents.c_str());
-	std::cerr << filename << std::endl;
 
 	auto parser = libdbc::DbcParser();
 	parser.parse_file(filename.c_str());
@@ -182,7 +178,6 @@ TEST_CASE("Signal Value Description Extended CAN id") {
  SG_ State2 : 0|8@1+ (1,0) [0|204] ""  DEVICE1,DEVICE2,DEVICE3
 VAL_ 3221225472 State1 123 "Description 1" 0 "Description 2" 4000000000 "Big value and special characters &$Â§())!" ;)";
 	const auto filename = create_temporary_dbc_with(dbc_contents.c_str());
-	std::cerr << filename << std::endl;
 
 	auto parser = libdbc::DbcParser();
 	parser.parse_file(filename.c_str());
@@ -213,7 +208,6 @@ BO_ 123 MSG2: 8 Vector__XXX
 VAL_ 3221225472 State1 123 "Description 1" 0 "Description 2" ;
 VAL_ 123 State1 123 "Description 3" 0 "Description 4" ;)";
 	const auto filename = create_temporary_dbc_with(dbc_contents.c_str());
-	std::cerr << filename << std::endl;
 
 	auto parser = libdbc::DbcParser();
 	parser.parse_file(filename.c_str());
