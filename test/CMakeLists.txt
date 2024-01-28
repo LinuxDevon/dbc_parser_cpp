@@ -5,33 +5,51 @@ Include(FetchContent)
 FetchContent_Declare(
   Catch2
   GIT_REPOSITORY https://github.com/catchorg/Catch2.git
-  GIT_TAG        v3.2.1
+  GIT_TAG        v3.5.2
 )
 FetchContent_MakeAvailable(Catch2)
 include(Catch)
 
-add_executable(dbcParserTests test_dbc.cpp test_utils.cpp common.cpp)
+# Need filesystem for testing
+set(CMAKE_CXX_STANDARD 17)
+
+if (MSVC)
+    add_compile_options(/W4 /WX)
+else()
+    add_compile_options(-Wall -Wextra -Wpedantic -Werror)
+endif()
+
+# Code coverage compiler specific
+if (GCC)
+  add_compile_options(--coverage)
+endif()
+
+add_executable(dbcParserTests
+    test_dbc.cpp
+    test_utils.cpp
+    test_parseMessage.cpp
+    common.cpp
+)
+
 target_compile_definitions(dbcParserTests PRIVATE TESTDBCFILES_PATH="${CMAKE_CURRENT_SOURCE_DIR}/dbcs")
 target_link_libraries(dbcParserTests PRIVATE dbc Catch2::Catch2WithMain)
-if (${CMAKE_MINOR_VERSION} GREATER_EQUAL 23)
-    target_sources(dbcParserTests PRIVATE FILE_SET HEADERS
-                                   TYPE HEADERS
-                                   BASE_DIRS ${CMAKE_CURRENT_SOURCE_DIR}
-                                   FILES defines.hpp)
-else()
-    target_include_directories(dbcParserTests PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
-endif()
+target_include_directories(dbcParserTests PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
+
 catch_discover_tests(dbcParserTests)
 
-add_executable(dbcParserParsemessageTests test_parseMessage.cpp common.cpp)
-target_compile_definitions(dbcParserParsemessageTests PRIVATE TESTDBCFILES_PATH="${CMAKE_CURRENT_SOURCE_DIR}/dbcs")
-target_link_libraries(dbcParserParsemessageTests PRIVATE dbc Catch2::Catch2WithMain)
-if (${CMAKE_MINOR_VERSION} GREATER_EQUAL 23)
-    target_sources(dbcParserParsemessageTests PRIVATE FILE_SET HEADERS
-                                   TYPE HEADERS
-                                   BASE_DIRS ${CMAKE_CURRENT_SOURCE_DIR}
-                                   FILES defines.hpp)
+# We want a seperate binary for this test. We setup global locals which mess with all of the testing.
+# Opting for a sperate test running so we don't conflict
+if(DBC_TEST_LOCALE_INDEPENDENCE)
+  add_executable(dbcLocaleTests
+      locale_testing/test_locale_main.cpp
+      common.cpp
+  )
+
+  target_compile_definitions(dbcLocaleTests PRIVATE TESTDBCFILES_PATH="${CMAKE_CURRENT_SOURCE_DIR}/dbcs")
+  target_link_libraries(dbcLocaleTests PRIVATE dbc Catch2::Catch2WithMain)
+  target_include_directories(dbcLocaleTests PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
+
+  catch_discover_tests(dbcLocaleTests)
 else()
-    target_include_directories(dbcParserParsemessageTests PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
+  message(WARNING "Locale independent testing is turned off!")
 endif()
-catch_discover_tests(dbcParserParsemessageTests)

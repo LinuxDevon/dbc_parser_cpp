@@ -42,6 +42,8 @@ public:
 			cont.push_back(token);
 		}
 	}
+
+	static double convert_to_double(const std::string& value, double default_value = 0);
 };
 
 }

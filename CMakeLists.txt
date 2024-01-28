@@ -1,6 +1,15 @@
 cmake_minimum_required(VERSION 3.16)
 
-project(dbc VERSION 0.1.1 DESCRIPTION "C++ DBC Parser")
+project(dbc
+    VERSION 0.2.0
+    DESCRIPTION "C++ DBC Parser"
+)
+
+# -- PROJECT OPTIONS  -- #
+option(DBC_ENABLE_TESTS "Enable Unittests" ON)
+option(DBC_TEST_LOCALE_INDEPENDENCE "Used to deterime if the libary is locale agnostic when it comes to converting floats. You need `de_DE.UTF-8` locale installed for this testing." OFF)
+option(DBC_GENERATE_DOCS "Use doxygen if installed to generated documentation files" OFF)
+# ---------------------- #
 
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
@@ -11,14 +20,6 @@ set(CPACK_PACKAGE_VERSION_PATCH ${PROJECT_VERSION_PATCH})
 set(CPACK_RESOURCE_FILE_LICENSE ${CMAKE_CURRENT_SOURCE_DIR}/LICENSE)
 set(CPACK_RESOURCE_FILE_README ${CMAKE_CURRENT_SOURCE_DIR}/README.md)
 include(CPack)
-
-option(DEBUG "use debug flag" NO)
-option(ENABLE_TESTS "Enable Unittests" ON)
-# Turn OFF, if you are using FetchContent to include it to your project
-option(FETCH_CONTENT_INCLUSION "Include project with FetchContent_Declare in another project. In this case the headers and the cmake files are not needed, only the library" OFF)
-
-# defines variables used in the dbc.pc.in
-include(GNUInstallDirs)
 
 # specify the C++ standard
 set(CMAKE_CXX_STANDARD 11)
@@ -37,27 +38,15 @@ if (NOT ${FastFloat_FOUND})
     add_subdirectory(${fastfloat_SOURCE_DIR} ${fastfloat_BINARY_DIR} EXCLUDE_FROM_ALL)
 endif()
 
-set(GCC_COMPILE_FLAGS "-Wextra -Wall -Wfloat-equal -Wundef -Wshadow \
--Wpointer-arith -Wcast-align -Wstrict-prototypes -Wwrite-strings \
--Waggregate-return -Wcast-qual -Wswitch-default -Wswitch-enum -Wconversion \
--Wunreachable-code -Wformat=2 -Werror -Wuninitialized -Winit-self")
-
-if(DEBUG)
-	set(GCC_COMPILE_FLAGS ${GCC_COMPILE_FLAGS}" -g")
-else()
-	set(GCC_COMPILE_FLAGS ${GCC_COMPILE_FLAGS}" -O2")
-endif()
-
-set(CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS} ${GCC_COVERAGE_COMPILE_FLAGS}")
-
 # add where to find the source files
-# file(GLOB_RECURSE SOURCE ${PROJECT_SOURCE_DIR}/src/ *.cpp)
-list(APPEND SOURCE ${PROJECT_SOURCE_DIR}/src/utils.cpp
-				   ${PROJECT_SOURCE_DIR}/src/message.cpp
-				   ${PROJECT_SOURCE_DIR}/src/signal.cpp
-				   ${PROJECT_SOURCE_DIR}/src/dbc.cpp)
+list(APPEND SOURCE_FILES
+    ${PROJECT_SOURCE_DIR}/src/utils.cpp
+	${PROJECT_SOURCE_DIR}/src/message.cpp
+	${PROJECT_SOURCE_DIR}/src/signal.cpp
+	${PROJECT_SOURCE_DIR}/src/dbc.cpp
+)
 
-set(HEADER_FILES
+list(APPEND HEADER_FILES
   ${PROJECT_SOURCE_DIR}/include/libdbc/dbc.hpp
   ${PROJECT_SOURCE_DIR}/include/libdbc/message.hpp
   ${PROJECT_SOURCE_DIR}/include/libdbc/signal.hpp
@@ -65,30 +54,51 @@ set(HEADER_FILES
   ${PROJECT_SOURCE_DIR}/include/libdbc/exceptions/error.hpp
 )
 
-include_directories(src)
-include_directories(include)
-
-if(ENABLE_TESTS)
+if(DBC_ENABLE_TESTS)
     include(CTest)
     add_subdirectory(test)
 endif()
 
-add_subdirectory(doc)
-
-add_library(${PROJECT_NAME} STATIC ${SOURCE})
-target_link_libraries(${PROJECT_NAME} FastFloat::fast_float)
-
-if (${CMAKE_MINOR_VERSION} GREATER_EQUAL 23)
-    target_sources(${PROJECT_NAME} INTERFACE FILE_SET HEADERS
-            TYPE HEADERS
-            BASE_DIRS ${PROJECT_SOURCE_DIR}/include/libdbc
-            FILES ${HEADER_FILES})
+if(DBC_GENERATE_DOCS)
+    add_subdirectory(doc)
 endif()
+
+list(APPEND GCC_CLANG_COMPILE_FLAGS
+    -Wall -Wextra -Wpedantic
+    -Wconversion -Wint-in-bool-context
+    -Wmissing-declarations -Wmissing-field-initializers
+    -Werror
+)
+
+
+if (CMAKE_CXX_COMPILER_ID MATCHES "MSVC")
+    add_compile_options(/W4 /WX)
+elseif(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+    # Clang shadow warnings aren't as sensitive as gcc
+    add_compile_options(${GCC_CLANG_COMPILE_FLAGS} -Wshadow)
+else()
+    add_compile_options(${GCC_CLANG_COMPILE_FLAGS})
+endif()
+
+add_library(${PROJECT_NAME} STATIC ${SOURCE_FILES})
+target_link_libraries(${PROJECT_NAME} FastFloat::fast_float)
+target_include_directories(${PROJECT_NAME} PUBLIC
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+    $<INSTALL_INTERFACE:include>
+)
+target_compile_features(${PROJECT_NAME} PRIVATE cxx_std_11)
+
+target_sources(${PROJECT_NAME} INTERFACE FILE_SET HEADERS
+        TYPE HEADERS
+        BASE_DIRS ${PROJECT_SOURCE_DIR}/include/libdbc
+        FILES ${HEADER_FILES}
+)
 
 add_custom_target(release
 					WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
 					COMMAND ${CMAKE_SOURCE_DIR}/scripts/create_single_header.sh
-					DEPENDS ${PROJECT_NAME})
+					DEPENDS ${PROJECT_NAME}
+)
 
 ## Installation
 # install lib
@@ -96,21 +106,10 @@ install(TARGETS ${PROJECT_NAME}
 		DESTINATION ${CMAKE_INSTALL_LIBDIR})
 
 # install headers
-if (${CMAKE_MINOR_VERSION} GREATER_EQUAL 23 AND NOT FETCH_CONTENT_INCLUSION)
-    install(TARGETS ${PROJECT_NAME}
-                    FILE_SET HEADERS
-                    DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/lib${PROJECT_NAME}
-                    INCLUDES DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
-    )
-elseif(NOT FETCH_CONTENT_INCLUSION)
-    install(DIRECTORY ${PROJECT_SOURCE_DIR}/include/libdbc DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
-endif()
+install(DIRECTORY ${PROJECT_SOURCE_DIR}/include/libdbc DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
 
-
-if (NOT FETCH_CONTENT_INCLUSION)
-    # Generate pkg-config file
-    configure_file(${PROJECT_NAME}.pc.in ${PROJECT_NAME}.pc @ONLY)
-    install(
-        FILES ${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}.pc
-        DESTINATION ${CMAKE_INSTALL_LIBDIR}/pkgconfig)
-endif()
+# Generate pkg-config file
+configure_file(${PROJECT_NAME}.pc.in ${PROJECT_NAME}.pc @ONLY)
+install(
+    FILES ${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}.pc
+    DESTINATION ${CMAKE_INSTALL_LIBDIR}/pkgconfig)

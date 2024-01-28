@@ -1,6 +1,20 @@
 # Build folders
 bin/
 build/
+Testing/
 
 # -- Git -- #
 *.bak
+
+# -- Python -- #
+venv*/
+__pycache__/
+
+# -- IDEs / Editors -- #
+.idea/
+.vscode/
+*.sublime-*
+
+# -- Static Analyzers -- #
+.cache/
+

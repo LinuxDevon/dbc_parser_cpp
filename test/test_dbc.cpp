@@ -4,6 +4,7 @@
 #include <catch2/catch_test_macros.hpp>
 #include <catch2/matchers/catch_matchers.hpp>
 #include <libdbc/dbc.hpp>
+#include <string>
 
 TEST_CASE("Testing dbc file loading error issues", "[fileio][error]") {
 	auto parser = std::unique_ptr<libdbc::DbcParser>(new libdbc::DbcParser());
@@ -28,10 +29,10 @@ TEST_CASE("Testing dbc file loading error issues", "[fileio][error]") {
 
 	SECTION("Verify that what() method is accessible for all exceptions", "[error]") {
 		auto generic_error = libdbc::exception();
-		REQUIRE(generic_error.what() == "libdbc exception occurred");
+		REQUIRE(std::string{generic_error.what()} == "libdbc exception occurred");
 
 		auto validity_check = libdbc::validity_error();
-		REQUIRE(validity_check.what() == "Invalid DBC file");
+		REQUIRE(std::string{validity_check.what()} == "Invalid DBC file");
 	}
 }
 
@@ -62,25 +63,17 @@ TEST_CASE("Testing dbc file loading", "[fileio]") {
 }
 
 TEST_CASE("Testing  big endian, little endian") {
-	const auto* filename = std::tmpnam(NULL);
-
-	auto* file = std::fopen(filename, "w");
-	CHECK(file);
-
-	std::fputs(PRIMITIVE_DBC.c_str(), file);
-	// first big endian
-	// second little endian
-	std::fputs(R"(BO_ 234 MSG1: 8 Vector__XXX
+	std::string dbc_contents = PRIMITIVE_DBC + R"(BO_ 234 MSG1: 8 Vector__XXX
  SG_ Sig1 : 55|16@0- (0.1,0) [-3276.8|-3276.7] "C" Vector__XXX
- SG_ Sig2 : 39|16@1- (0.1,0) [-3276.8|-3276.7] "C" Vector__XXX)",
-			   file);
-	std::fclose(file);
+ SG_ Sig2 : 39|16@1- (0.1,0) [-3276.8|-3276.7] "C" Vector__XXX)";
+	const auto filename = create_temporary_dbc_with(dbc_contents.c_str());
 
 	auto parser = libdbc::DbcParser();
-	parser.parse_file(filename);
+	parser.parse_file(filename.c_str());
 
 	REQUIRE(parser.get_messages().size() == 1);
 	REQUIRE(parser.get_messages().at(0).name() == "MSG1");
+	REQUIRE(parser.get_messages().at(0).size() == 8);
 	REQUIRE(parser.get_messages().at(0).getSignals().size() == 2);
 	{
 		const auto signal = parser.get_messages().at(0).getSignals().at(0);
@@ -93,19 +86,19 @@ TEST_CASE("Testing  big endian, little endian") {
 }
 
 TEST_CASE("Testing negative values") {
-	const auto* filename = std::tmpnam(NULL);
-
-	create_tmp_dbc_with(filename, R"(BO_ 234 MSG1: 8 Vector__XXX
+	std::string dbc_contents = PRIMITIVE_DBC + R"(BO_ 234 MSG1: 58 Vector__XXX
  SG_ Sig1 : 55|16@0- (0.1,0) [-3276.8|-3276.7] "C" Vector__XXX
  SG_ Sig2 : 39|16@0- (0.1,0) [-3276.8|-3276.7] "C" Vector__XXX
  SG_ Sig3 : 23|16@0- (10,0) [-3276.8|-3276.7] "C" Vector__XXX
- SG_ Sig4 : 7|16@0- (1,-10) [0|32767] "" Vector__XXX)");
+ SG_ Sig4 : 7|16@0- (1,-10) [0|32767] "" Vector__XXX)";
+	const auto filename = create_temporary_dbc_with(dbc_contents.c_str());
 
 	auto parser = libdbc::DbcParser();
-	parser.parse_file(filename);
+	parser.parse_file(filename.c_str());
 
 	REQUIRE(parser.get_messages().size() == 1);
 	REQUIRE(parser.get_messages().at(0).name() == "MSG1");
+	REQUIRE(parser.get_messages().at(0).size() == 58);
 	REQUIRE(parser.get_messages().at(0).getSignals().size() == 4);
 
 	SECTION("Evaluating first message") {
@@ -139,16 +132,16 @@ TEST_CASE("Testing negative values") {
 }
 
 TEST_CASE("Special characters in unit") {
-	const auto* filename = std::tmpnam(NULL);
-
-	create_tmp_dbc_with(filename, R"(BO_ 234 MSG1: 8 Vector__XXX
- SG_ Speed : 0|8@1+ (1,0) [0|204] "Km/h"  DEVICE1,DEVICE2,DEVICE3)");
+	std::string dbc_contents = PRIMITIVE_DBC + R"(BO_ 234 MSG1: 255 Vector__XXX
+ SG_ Speed : 0|8@1+ (1,0) [0|204] "Km/h"  DEVICE1,DEVICE2,DEVICE3)";
+	const auto filename = create_temporary_dbc_with(dbc_contents.c_str());
 
 	auto parser = libdbc::DbcParser();
-	parser.parse_file(filename);
+	parser.parse_file(filename.c_str());
 
 	REQUIRE(parser.get_messages().size() == 1);
 	REQUIRE(parser.get_messages().at(0).name() == "MSG1");
+	REQUIRE(parser.get_messages().at(0).size() == 255);
 	REQUIRE(parser.get_messages().at(0).getSignals().size() == 1);
 	SECTION("Checking that signal with special characters as unit is parsed correctly") {
 		const auto signal = parser.get_messages().at(0).getSignals().at(0);
@@ -157,15 +150,14 @@ TEST_CASE("Special characters in unit") {
 }
 
 TEST_CASE("Signal Value Description") {
-	const auto* filename = std::tmpnam(NULL);
-
-	create_tmp_dbc_with(filename, R"(BO_ 234 MSG1: 8 Vector__XXX
+	std::string dbc_contents = PRIMITIVE_DBC + R"(BO_ 234 MSG1: 8 Vector__XXX
  SG_ State1 : 0|8@1+ (1,0) [0|200] "Km/h"  DEVICE1,DEVICE2,DEVICE3
  SG_ State2 : 0|8@1+ (1,0) [0|204] ""  DEVICE1,DEVICE2,DEVICE3
-VAL_ 234 State1 123 "Description 1" 0 "Description 2" 90903489 "Big value and special characters &$Â§())!" ;)");
+VAL_ 234 State1 123 "Description 1" 0 "Description 2" 90903489 "Big value and special characters &$Â§())!" ;)";
+	const auto filename = create_temporary_dbc_with(dbc_contents.c_str());
 
 	auto parser = libdbc::DbcParser();
-	parser.parse_file(filename);
+	parser.parse_file(filename.c_str());
 
 	REQUIRE(parser.get_messages().size() == 1);
 	REQUIRE(parser.get_messages().at(0).name() == "MSG1");
@@ -184,18 +176,14 @@ VAL_ 234 State1 123 "Description 1" 0 "Description 2" 90903489 "Big value and sp
 }
 
 TEST_CASE("Signal Value Description Extended CAN id") {
-	/*
-	 * It should not crash, even extended CAN id is used
-	 */
-	const auto* filename = std::tmpnam(NULL);
-
-	create_tmp_dbc_with(filename, R"(BO_ 3221225472 MSG1: 8 Vector__XXX
+	std::string dbc_contents = PRIMITIVE_DBC + R"(BO_ 3221225472 MSG1: 8 Vector__XXX
  SG_ State1 : 0|8@1+ (1,0) [0|200] "Km/h"  DEVICE1,DEVICE2,DEVICE3
  SG_ State2 : 0|8@1+ (1,0) [0|204] ""  DEVICE1,DEVICE2,DEVICE3
-VAL_ 3221225472 State1 123 "Description 1" 0 "Description 2" 4000000000 "Big value and special characters &$Â§())!" ;)");
+VAL_ 3221225472 State1 123 "Description 1" 0 "Description 2" 4000000000 "Big value and special characters &$Â§())!" ;)";
+	const auto filename = create_temporary_dbc_with(dbc_contents.c_str());
 
 	auto parser = libdbc::DbcParser();
-	parser.parse_file(filename);
+	parser.parse_file(filename.c_str());
 
 	REQUIRE(parser.get_messages().size() == 1);
 	REQUIRE(parser.get_messages().at(0).name() == "MSG1");
@@ -214,22 +202,18 @@ VAL_ 3221225472 State1 123 "Description 1" 0 "Description 2" 4000000000 "Big val
 }
 
 TEST_CASE("Signal Value Multiple VAL_") {
-	/*
-	 * It should not crash, even extended CAN id is used
-	 */
-	const auto* filename = std::tmpnam(NULL);
-
-	create_tmp_dbc_with(filename, R"(BO_ 3221225472 MSG1: 8 Vector__XXX
+	std::string dbc_contents = PRIMITIVE_DBC + R"(BO_ 3221225472 MSG1: 8 Vector__XXX
  SG_ State1 : 0|8@1+ (1,0) [0|200] "Km/h"  DEVICE1,DEVICE2,DEVICE3
  SG_ State2 : 0|8@1+ (1,0) [0|204] ""  DEVICE1,DEVICE2,DEVICE3"
 BO_ 123 MSG2: 8 Vector__XXX
  SG_ State1 : 0|8@1+ (1,0) [0|200] "Km/h"  DEVICE1,DEVICE2,DEVICE3
  SG_ State2 : 0|8@1+ (1,0) [0|204] ""  DEVICE1,DEVICE2,DEVICE3
 VAL_ 3221225472 State1 123 "Description 1" 0 "Description 2" ;
-VAL_ 123 State1 123 "Description 3" 0 "Description 4" ;)");
+VAL_ 123 State1 123 "Description 3" 0 "Description 4" ;)";
+	const auto filename = create_temporary_dbc_with(dbc_contents.c_str());
 
 	auto parser = libdbc::DbcParser();
-	parser.parse_file(filename);
+	parser.parse_file(filename.c_str());
 
 	REQUIRE(parser.get_messages().size() == 2);
 	REQUIRE(parser.get_messages().at(0).name() == "MSG1");

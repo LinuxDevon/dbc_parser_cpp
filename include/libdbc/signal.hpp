@@ -29,6 +29,7 @@ struct Signal {
 	std::vector<SignalValueDescriptions> svDescriptions;
 
 	Signal() = delete;
+	virtual ~Signal() = default;
 	explicit Signal(std::string name,
 					bool is_multiplexed,
 					uint32_t start_bit,

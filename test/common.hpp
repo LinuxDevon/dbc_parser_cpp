@@ -1,6 +1,8 @@
 #ifndef COMMON_H
 #define COMMON_H
 
-bool create_tmp_dbc_with(const char* filename, const char* content);
+#include <string>
+
+std::string create_temporary_dbc_with(const char* contents);
 
 #endif // COMMON_H

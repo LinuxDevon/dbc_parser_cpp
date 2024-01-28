@@ -1,11 +1,11 @@
-#include <fast_float/fast_float.h>
+#include <cstdint>
 #include <libdbc/dbc.hpp>
 #include <libdbc/exceptions/error.hpp>
 #include <libdbc/utils/utils.hpp>
 
 #include <regex>
 
-namespace {
+namespace libdbc {
 
 const auto floatPattern = "(-?\\d+\\.?(\\d+)?)"; // Can be negative
 
@@ -30,15 +30,16 @@ enum VALToken { Identifier = 0, CANId, SignalName, Value, Description };
 struct VALObject {
 	uint32_t can_id;
 	std::string signal_name;
-	std::vector<libdbc::Signal::SignalValueDescriptions> vd;
+	std::vector<Signal::SignalValueDescriptions> vd;
 };
 
+static bool parseVal(const std::string& str, VALObject& obj);
 bool parseVal(const std::string& str, VALObject& obj) {
 	obj.signal_name = "";
 	obj.vd.clear();
 	auto state = Identifier;
 	const char* a = str.data();
-	libdbc::Signal::SignalValueDescriptions vd;
+	Signal::SignalValueDescriptions vd;
 	for (;;) {
 		switch (state) {
 		case Identifier: {
@@ -68,7 +69,7 @@ bool parseVal(const std::string& str, VALObject& obj) {
 			}
 			if (can_id_str.empty())
 				return false;
-			obj.can_id = std::stoul(can_id_str);
+			obj.can_id = static_cast<uint32_t>(std::stoul(can_id_str));
 			if (*a != ' ')
 				return false;
 			a++; // skip whitespace
@@ -138,10 +139,6 @@ bool parseVal(const std::string& str, VALObject& obj) {
 	}
 	return false;
 }
-
-} // anonymous namespace
-
-namespace libdbc {
 
 DbcParser::DbcParser()
 	: version("")
@@ -239,12 +236,12 @@ void DbcParser::parse_dbc_messages(const std::vector<std::string>& lines) {
 
 	std::vector<VALObject> sv;
 
-	VALObject obj;
+	VALObject obj{};
 	for (const auto& line : lines) {
 		if (std::regex_search(line, match, message_re)) {
-			uint32_t id = std::stoul(match.str(2));
+			uint32_t id = static_cast<uint32_t>(std::stoul(match.str(2)));
 			std::string name = match.str(3);
-			uint8_t size = std::stoul(match.str(4));
+			uint8_t size = static_cast<uint8_t>(std::stoul(match.str(4)));
 			std::string node = match.str(5);
 
 			Message msg(id, name, size, node);
@@ -256,19 +253,16 @@ void DbcParser::parse_dbc_messages(const std::vector<std::string>& lines) {
 		if (std::regex_search(line, match, signal_re)) {
 			std::string name = match.str(2);
 			bool is_multiplexed = false; // No support yet
-			uint32_t start_bit = std::stoul(match.str(3));
-			uint32_t size = std::stoul(match.str(4));
+			uint32_t start_bit = static_cast<uint32_t>(std::stoul(match.str(3)));
+			uint32_t size = static_cast<uint32_t>(std::stoul(match.str(4)));
 			bool is_bigendian = (std::stoul(match.str(5)) == 0);
 			bool is_signed = (match.str(6) == "-");
-			// Alternate groups because a group is for the decimal portion
-			double factor;
-			fast_float::from_chars(match.str(7).data(), match.str(7).data() + match.str(7).size(), factor);
-			double offset;
-			fast_float::from_chars(match.str(9).data(), match.str(9).data() + match.str(9).size(), offset);
-			double min;
-			fast_float::from_chars(match.str(11).data(), match.str(11).data() + match.str(11).size(), min);
-			double max;
-			fast_float::from_chars(match.str(13).data(), match.str(13).data() + match.str(13).size(), max);
+
+			double factor = utils::String::convert_to_double(match.str(7).data());
+			double offset = utils::String::convert_to_double(match.str(9).data());
+			double min = utils::String::convert_to_double(match.str(11).data());
+			double max = utils::String::convert_to_double(match.str(13).data());
+
 			std::string unit = match.str(15);
 
 			std::vector<std::string> receivers;
@@ -285,10 +279,10 @@ void DbcParser::parse_dbc_messages(const std::vector<std::string>& lines) {
 		}
 	}
 
-	for (const auto& obj : sv) {
+	for (const auto& signal : sv) {
 		for (auto& msg : messages) {
-			if (msg.id() == obj.can_id) {
-				msg.addValueDescription(obj.signal_name, obj.vd);
+			if (msg.id() == signal.can_id) {
+				msg.addValueDescription(signal.signal_name, signal.vd);
 				break;
 			}
 		}
