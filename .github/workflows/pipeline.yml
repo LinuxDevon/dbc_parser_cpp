@@ -14,12 +14,14 @@ jobs:
       matrix:
         fail-fast: false
         cxx:
-          # - g++-13
+          - g++-13
           - clang++-16
         build_type: [Debug, Release]
         std: [11]
         include:
-          # - cxx: g++-13
+          - cxx: g++-13
+            cc: gcc-13
+            gcc_version: 13
           - cxx: clang++-16
             cc: clang-16
             llvm_version: 16
@@ -34,10 +36,21 @@ jobs:
         chmod +x llvm.sh
         sudo ./llvm.sh ${{ matrix.llvm_version }}
 
+    - name: Install gcc
+      if: ${{ matrix.gcc_version }} != ""
+      run: |
+        update-alternatives --remove-all gcc
+        update-alternatives --remove-all g++
+        add-apt-repository ppa:ubuntu-toolchain-r/test
+        apt-get update
+        apt-get install -y ${{ matrix.gcc_version }}
+
+        gcc --version
+
     - name: Prepare environment
       run: |
         sudo apt-get update
-        sudo apt-get install -y locales ${{matrix.other_pkgs}}
+        sudo apt-get install -y locales
 
         sudo locale-gen de_DE.UTF-8
 
