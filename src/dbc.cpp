@@ -1,4 +1,3 @@
-#include <fast_float/fast_float.h>
 #include <libdbc/dbc.hpp>
 #include <libdbc/exceptions/error.hpp>
 #include <libdbc/utils/utils.hpp>
@@ -139,7 +138,6 @@ bool parseVal(const std::string& str, VALObject& obj) {
 	return false;
 }
 
-
 DbcParser::DbcParser()
 	: version("")
 	, nodes()
@@ -257,15 +255,12 @@ void DbcParser::parse_dbc_messages(const std::vector<std::string>& lines) {
 			uint32_t size = std::stoul(match.str(4));
 			bool is_bigendian = (std::stoul(match.str(5)) == 0);
 			bool is_signed = (match.str(6) == "-");
-			// Alternate groups because a group is for the decimal portion
-			double factor;
-			fast_float::from_chars(match.str(7).data(), match.str(7).data() + match.str(7).size(), factor);
-			double offset;
-			fast_float::from_chars(match.str(9).data(), match.str(9).data() + match.str(9).size(), offset);
-			double min;
-			fast_float::from_chars(match.str(11).data(), match.str(11).data() + match.str(11).size(), min);
-			double max;
-			fast_float::from_chars(match.str(13).data(), match.str(13).data() + match.str(13).size(), max);
+
+			double factor = utils::String::convert_to_double(match.str(7).data());
+			double offset = utils::String::convert_to_double(match.str(9).data());
+			double min = utils::String::convert_to_double(match.str(11).data());
+			double max = utils::String::convert_to_double(match.str(13).data());
+
 			std::string unit = match.str(15);
 
 			std::vector<std::string> receivers;

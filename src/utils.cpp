@@ -1,3 +1,6 @@
+#include <charconv>
+#include <exception>
+#include <fast_float/fast_float.h>
 #include <libdbc/utils/utils.hpp>
 
 #include <regex>
@@ -67,6 +70,13 @@ std::string String::trim(const std::string& line) {
 	std::size_t start = line.find_first_not_of(WhiteSpace);
 	std::size_t end = line.find_last_not_of(WhiteSpace);
 	return start == end ? std::string() : line.substr(start, end - start + 1);
+}
+
+double String::convert_to_double(const std::string& value, double default_value) {
+	double converted_value = default_value;
+	fast_float::from_chars(value.data(), value.data() + value.size(), converted_value);
+	// converted_value = std::stod(value);
+	return converted_value;
 }
 
 } // Namespace Utils
