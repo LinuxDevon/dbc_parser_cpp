@@ -69,6 +69,7 @@ jobs:
     name: ${{matrix.os}}, ${{matrix.std}}, ${{matrix.build_type}}, ${{matrix.platform}}
     runs-on: ${{matrix.os}}
     strategy:
+      fail-fast: false
       matrix:
         os: [windows-2019, windows-2022]
         platform: [Win32, x64]
@@ -81,15 +82,15 @@ jobs:
       - name: Configure build
         working-directory: ${{runner.workspace}}
         run: |
-          cmake -B ${{runner.workspace}}/build            `
-                -S $Env:GITHUB_WORKSPACE                  `
-                -H $GITHUB_WORKSPACE                      `
+          cmake -S $Env:GITHUB_WORKSPACE                  `
+                -B ${{runner.workspace}}/build            `
                 -A ${{matrix.platform}}                   `
                 -DCMAKE_BUILD_TYPE=${{matrix.build_type}} `
                 -DCMAKE_CXX_STANDARD=${{matrix.std}}      `
                 -DCMAKE_CXX_STANDARD_REQUIRED=ON          `
                 -DCMAKE_CXX_EXTENSIONS=ON                 `
                 -DDBC_TEST_LOCALE_INDEPENDENCE=ON
+        shell: cmd
 
       - name: Build tests + lib
         working-directory: ${{runner.workspace}}
