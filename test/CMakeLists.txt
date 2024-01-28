@@ -68,4 +68,6 @@ if(DBC_GENERATE_SINGLE_HEADER)
 	target_include_directories(dbcSingleHeaderTest PRIVATE ${CMAKE_CURRENT_SOURCE_DIR} ${CMAKE_BINARY_DIR}/single_header/)
 
 	catch_discover_tests(dbcSingleHeaderTest)
+
+	add_dependencies(dbcSingleHeaderTest single_header)
 endif()
