@@ -8,7 +8,7 @@ env:
 
 jobs:
   linux-builds:
-    name: ${{matrix.cxx}}, C++${{matrix.std}}, ${{matrix.build_type}}
+    name: linux ${{matrix.cxx}}, C++${{matrix.std}}, ${{matrix.build_type}}
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
@@ -104,9 +104,10 @@ jobs:
         shell: cmd
 
   macos-builds:
-    name: ${{matrix.cxx}}, C++${{matrix.std}}, ${{matrix.build_type}}
+    name: macos ${{matrix.cxx}}, C++${{matrix.std}}, ${{matrix.build_type}}
     runs-on: macos-latest
     strategy:
+      fail-fast: false
       matrix:
         cxx:
           - g++

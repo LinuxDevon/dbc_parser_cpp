@@ -13,7 +13,8 @@ public:
 	using Catch::EventListenerBase::EventListenerBase;
 
 	void testRunStarting(Catch::TestRunInfo const&) override {
-		prev_loc = std::setlocale(LC_ALL, nullptr);
+		// Mac OS uses global and c++ standard uses the std. Using this to remove ambiguity between the two.
+		prev_loc = ::setlocale(LC_ALL, nullptr);
 		// Set the locale to something that has , instead of . for floats
 		std::locale::global(std::locale("de_DE.UTF-8"));
 	}
