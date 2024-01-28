@@ -81,12 +81,14 @@ jobs:
       - name: Configure build
         working-directory: ${{runner.workspace}}
         run: |
-          cmake -Bbuild -H$GITHUB_WORKSPACE `
-                -A ${{matrix.platform}} `
+          cmake -B ${{runner.workspace}}/build            `
+                -S $Env:GITHUB_WORKSPACE                  `
+                -H $GITHUB_WORKSPACE                      `
+                -A ${{matrix.platform}}                   `
                 -DCMAKE_BUILD_TYPE=${{matrix.build_type}} `
-                -DCMAKE_CXX_STANDARD=${{matrix.std}} `
-                -DCMAKE_CXX_STANDARD_REQUIRED=ON `
-                -DCMAKE_CXX_EXTENSIONS=ON `
+                -DCMAKE_CXX_STANDARD=${{matrix.std}}      `
+                -DCMAKE_CXX_STANDARD_REQUIRED=ON          `
+                -DCMAKE_CXX_EXTENSIONS=ON                 `
                 -DDBC_TEST_LOCALE_INDEPENDENCE=ON
 
       - name: Build tests + lib
