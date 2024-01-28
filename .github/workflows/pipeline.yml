@@ -21,7 +21,6 @@ jobs:
         include:
           - cxx: g++-13
             cc: gcc-13
-            gcc_version: 13
           - cxx: clang++-16
             cc: clang-16
             llvm_version: 16
@@ -35,16 +34,6 @@ jobs:
         wget https://apt.llvm.org/llvm.sh
         chmod +x llvm.sh
         sudo ./llvm.sh ${{ matrix.llvm_version }}
-
-    - name: Install gcc
-      if: ${{ matrix.gcc_version }}
-      run: |
-        sudo add-apt-repository ppa:ubuntu-toolchain-r/test
-        sudo apt-get update
-        sudo apt-get install -y gcc-${{ matrix.gcc_version }} g++-${{ matrix.gcc_version }}
-
-        gcc --version
-        g++ --version
 
     - name: Prepare environment
       run: |
