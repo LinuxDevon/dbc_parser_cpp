@@ -29,7 +29,7 @@ add_executable(dbcParserTests
 	test_dbc.cpp
 	test_utils.cpp
 	test_parse_message.cpp
-	common.cpp
+	testing_utils/common.cpp
 )
 
 target_compile_definitions(dbcParserTests PRIVATE TESTDBCFILES_PATH="${CMAKE_CURRENT_SOURCE_DIR}/dbcs")
@@ -43,7 +43,7 @@ catch_discover_tests(dbcParserTests)
 if(DBC_TEST_LOCALE_INDEPENDENCE)
 	add_executable(dbcLocaleTests
 		locale_testing/test_locale_main.cpp
-		common.cpp
+		testing_utils/common.cpp
 	)
 
 	target_compile_definitions(dbcLocaleTests PRIVATE TESTDBCFILES_PATH="${CMAKE_CURRENT_SOURCE_DIR}/dbcs")
@@ -60,7 +60,7 @@ endif()
 if(DBC_GENERATE_SINGLE_HEADER)
 	add_executable(dbcSingleHeaderTest
 		single_header_testing/test_single_header.cpp
-		common.cpp
+		testing_utils/common.cpp
 	)
 
 	target_compile_definitions(dbcSingleHeaderTest PRIVATE TESTDBCFILES_PATH="${CMAKE_CURRENT_SOURCE_DIR}/dbcs")

@@ -1,4 +1,4 @@
-#include "defines.hpp"
+#include "testing_utils/defines.hpp"
 #include <catch2/catch_test_macros.hpp>
 #include <libdbc/utils/utils.hpp>
 
