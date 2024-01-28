@@ -26,44 +26,90 @@ jobs:
             llvm_version: 16
 
     steps:
-    - uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-    - name: Install clang
-      if: ${{ matrix.llvm_version }}
-      run: |
-        wget https://apt.llvm.org/llvm.sh
-        chmod +x llvm.sh
-        sudo ./llvm.sh ${{ matrix.llvm_version }}
+      - name: Install clang
+        if: ${{ matrix.llvm_version }}
+        run: |
+          wget https://apt.llvm.org/llvm.sh
+          chmod +x llvm.sh
+          sudo ./llvm.sh ${{ matrix.llvm_version }}
 
-    - name: Prepare environment
-      run: |
-        sudo apt-get update
-        sudo apt-get install -y locales
+      - name: Prepare environment
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y locales
 
-        sudo locale-gen de_DE.UTF-8
+          sudo locale-gen de_DE.UTF-8
 
-    - name: Configure build
-      working-directory: ${{runner.workspace}}
-      env:
-        CC: ${{matrix.cc}}
-        CXX: ${{matrix.cxx}}
-      run: |
-        cmake -Bbuild -H$GITHUB_WORKSPACE \
-              -DCMAKE_BUILD_TYPE=${{matrix.build_type}} \
-              -DCMAKE_CXX_STANDARD=${{matrix.std}} \
-              -DCMAKE_CXX_STANDARD_REQUIRED=ON \
-              -DCMAKE_CXX_EXTENSIONS=ON \
-              -DDBC_TEST_LOCALE_INDEPENDENCE=ON
+      - name: Configure build
+        working-directory: ${{runner.workspace}}
+        env:
+          CC: ${{matrix.cc}}
+          CXX: ${{matrix.cxx}}
+        run: |
+          cmake -Bbuild -H$GITHUB_WORKSPACE \
+                -DCMAKE_BUILD_TYPE=${{matrix.build_type}} \
+                -DCMAKE_CXX_STANDARD=${{matrix.std}} \
+                -DCMAKE_CXX_STANDARD_REQUIRED=ON \
+                -DCMAKE_CXX_EXTENSIONS=ON \
+                -DDBC_TEST_LOCALE_INDEPENDENCE=ON
 
-    - name: Build tests + lib
-      working-directory: ${{runner.workspace}}
-      run: cmake --build build
+      - name: Build tests + lib
+        working-directory: ${{runner.workspace}}
+        run: cmake --build build
 
-    - name: Run tests
-      env:
-          CTEST_OUTPUT_ON_FAILURE: 1
-      working-directory: ${{runner.workspace}}
-      run: ctest --output-on-failure --test-dir build -j `nproc`
+      - name: Run tests
+        env:
+            CTEST_OUTPUT_ON_FAILURE: 1
+        working-directory: ${{runner.workspace}}
+        run: ctest --output-on-failure --test-dir build -j `nproc`
+
+  windows-build:
+    name: ${{matrix.os}}, ${{matrix.std}}, ${{matrix.build_type}}, ${{matrix.platform}}
+    runs-on: ${{matrix.os}}
+    strategy:
+      matrix:
+        os: [windows-2019, windows-2022]
+        platform: [Win32, x64]
+        build_type: [Debug, Release]
+        std: [11]
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Prepare environment
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y locales
+
+          sudo locale-gen de_DE.UTF-8
+
+      - name: Configure build
+        working-directory: ${{runner.workspace}}
+        env:
+          CC: ${{matrix.cc}}
+          CXX: ${{matrix.cxx}}
+        run: |
+          cmake -Bbuild -H$GITHUB_WORKSPACE `
+                -A ${{matrix.platform}} `
+                -DCMAKE_BUILD_TYPE=${{matrix.build_type}} `
+                -DCMAKE_CXX_STANDARD=${{matrix.std}} `
+                -DCMAKE_CXX_STANDARD_REQUIRED=ON `
+                -DCMAKE_CXX_EXTENSIONS=ON `
+                -DDBC_TEST_LOCALE_INDEPENDENCE=ON
+
+      - name: Build tests + lib
+        working-directory: ${{runner.workspace}}
+        run: cmake --build build --config ${{matrix.build_type}} --parallel %NUMBER_OF_PROCESSORS%
+        shell: cmd
+
+      - name: Run tests
+        env:
+            CTEST_OUTPUT_ON_FAILURE: 1
+        working-directory: ${{runner.workspace}}
+        run: ctest --output-on-failure --test-dir build -j %NUMBER_OF_PROCESSORS%
+        shell: cmd
 
   format-check:
     runs-on: ubuntu-latest
