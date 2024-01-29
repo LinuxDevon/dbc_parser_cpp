@@ -72,7 +72,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          branch: 'release/v${{ inputs.major }}.${{ inputs.minor }}'
+          branch: 'release/v${{ inputs.major }}.${{ inputs.minor }}.X'
           sha: '${{ github.sha }}'
 
       - uses: ncipollo/release-action@v1
@@ -81,7 +81,7 @@ jobs:
           draft: true
           bodyFile: ".github/data/release_body.md"
           tag: v${{ inputs.major }}.${{ inputs.minor }}.${{ inputs.patch }}
-          commit: release/v${{ inputs.major }}.${{ inputs.minor }}
+          commit: release/v${{ inputs.major }}.${{ inputs.minor }}.X
 
 
 
