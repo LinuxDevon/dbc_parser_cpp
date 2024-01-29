@@ -162,6 +162,8 @@ jobs:
           chmod +x llvm.sh
           sudo ./llvm.sh 16
 
+          ln -sf $(which clang-format-16) $(which clang-format)
+
           clang-format --version
 
     - name: Test format with clang format

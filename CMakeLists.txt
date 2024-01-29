@@ -34,9 +34,7 @@ if (NOT ${FastFloat_FOUND})
 	  GIT_REPOSITORY https://github.com/fastfloat/fast_float.git
 	  GIT_TAG 1ea4f27b2aeee2859a1354a3c24cff52a116cad1
 	)
-	# FetchContent_MakeAvailable(FastFloat)
-	FetchContent_Populate(FastFloat)
-	add_subdirectory(${fastfloat_SOURCE_DIR} ${fastfloat_BINARY_DIR} EXCLUDE_FROM_ALL)
+	FetchContent_MakeAvailable(FastFloat)
 endif()
 
 # add where to find the source files
