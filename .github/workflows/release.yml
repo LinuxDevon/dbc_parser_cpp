@@ -35,7 +35,6 @@ jobs:
         run: ./scripts/check_version.py --version "v${{ inputs.major }}.${{ inputs.minor }}.${{ inputs.patch }}"
 
   pipeline:
-    runs-on: ubuntu-latest
     needs: [check_version]
     uses: ./.github/workflows/pipeline.yml
 
