@@ -11,8 +11,8 @@ FMT=""
 
 # Some distros just call it clang-format. Others (e.g. Ubuntu) are insistent
 # that the version number be part of the command. We prefer clang-format if
-# that's present, otherwise we check clang-format-13
-for clangfmt in clang-format{,-13}; do
+# that's present, otherwise we check clang-format-16
+for clangfmt in clang-format{,-16}; do
     if which "$clangfmt" &>/dev/null; then
         FMT="$clangfmt"
         break
@@ -21,7 +21,7 @@ done
 
 # Check if we found a working clang-format
 if [ -z "$FMT" ]; then
-    echo "failed to find clang-format. Please install clang-format version 13 or above"
+    echo "failed to find clang-format. Please install clang-format version 16 or above"
     exit 1
 fi
 

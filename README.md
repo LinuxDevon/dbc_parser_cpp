@@ -36,6 +36,21 @@ cmake -LH .. | grep -B1 "DBC_"
 cmake -LAH ..
 ```
 
+### Creating a Single Header File
+
+It requires you have `cargo` installed from rust. See these instructions if you don't have that https://www.rust-lang.org/tools/install.
+It uses the https://github.com/Felerius/cpp-amalgamate crate to do the single header file creation.
+
+The output will be generated in the `build/single_header/libdbc/` folder. You can run a cmake command to build this as well as other targets.
+
+To just build the single header you can simply run the target:
+```shell
+cmake -Bbuild -H. -DDBC_GENERATE_SINGLE_HEADER=ON
+
+cmake --build build --parallel `nproc` --target single_header
+```
+
+
 ## Testing
 
 I am trying to always make sure that this is very well tested code. I am using Catch2 to do this

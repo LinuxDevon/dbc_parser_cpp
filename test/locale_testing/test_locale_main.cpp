@@ -1,5 +1,5 @@
-#include "common.hpp"
-#include "defines.hpp"
+#include "testing_utils/common.hpp"
+#include "testing_utils/defines.hpp"
 #include <libdbc/dbc.hpp>
 #include <libdbc/utils/utils.hpp>
 

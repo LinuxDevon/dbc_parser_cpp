@@ -1,6 +1,6 @@
 name: Libdbc Pipeline
 
-on: [push]
+on: [push, workflow_call]
 
 env:
   # Customize the CMake build type here (Release, Debug, RelWithDebInfo, etc.)
@@ -42,27 +42,28 @@ jobs:
 
           sudo locale-gen de_DE.UTF-8
 
+          curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
+          source "$HOME/.cargo/env"
+
       - name: Configure build
-        working-directory: ${{runner.workspace}}
         env:
           CC: ${{matrix.cc}}
           CXX: ${{matrix.cxx}}
         run: |
-          cmake -Bbuild -H$GITHUB_WORKSPACE \
+          cmake -Bbuild -H$GITHUB_WORKSPACE               \
                 -DCMAKE_BUILD_TYPE=${{matrix.build_type}} \
-                -DCMAKE_CXX_STANDARD=${{matrix.std}} \
-                -DCMAKE_CXX_STANDARD_REQUIRED=ON \
-                -DCMAKE_CXX_EXTENSIONS=ON \
-                -DDBC_TEST_LOCALE_INDEPENDENCE=ON
+                -DCMAKE_CXX_STANDARD=${{matrix.std}}      \
+                -DCMAKE_CXX_STANDARD_REQUIRED=ON          \
+                -DCMAKE_CXX_EXTENSIONS=ON                 \
+                -DDBC_TEST_LOCALE_INDEPENDENCE=ON         \
+                -DDBC_GENERATE_SINGLE_HEADER=ON
 
       - name: Build tests + lib
-        working-directory: ${{runner.workspace}}
         run: cmake --build build --parallel `nproc`
 
       - name: Run tests
         env:
             CTEST_OUTPUT_ON_FAILURE: 1
-        working-directory: ${{runner.workspace}}
         run: ctest --output-on-failure --test-dir build -j `nproc`
 
   windows-build:
@@ -129,11 +130,11 @@ jobs:
           CC: ${{matrix.cc}}
           CXX: ${{matrix.cxx}}
         run: |
-          cmake -Bbuild -H$GITHUB_WORKSPACE \
+          cmake -Bbuild -H$GITHUB_WORKSPACE               \
                 -DCMAKE_BUILD_TYPE=${{matrix.build_type}} \
-                -DCMAKE_CXX_STANDARD=${{matrix.std}} \
-                -DCMAKE_CXX_STANDARD_REQUIRED=ON \
-                -DCMAKE_CXX_EXTENSIONS=ON \
+                -DCMAKE_CXX_STANDARD=${{matrix.std}}      \
+                -DCMAKE_CXX_STANDARD_REQUIRED=ON          \
+                -DCMAKE_CXX_EXTENSIONS=ON                 \
                 -DDBC_TEST_LOCALE_INDEPENDENCE=ON
 
       - name: Build tests + lib
@@ -150,7 +151,18 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
+
+    - name: Install clang-format version
+      run: |
+          wget https://apt.llvm.org/llvm.sh
+          chmod +x llvm.sh
+          sudo ./llvm.sh 16
+
+          sudo apt update && sudo apt install -y clang-format-16
+          sudo ln -sf $(which clang-format-16) $(which clang-format)
+
+          test "$(clang-format --version)" == "$(clang-format-16 --version)"
 
     - name: Test format with clang format
       run: ./scripts/fmt.sh
