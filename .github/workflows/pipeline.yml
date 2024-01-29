@@ -1,6 +1,6 @@
 name: Libdbc Pipeline
 
-on: [push]
+on: [push, workflow_call]
 
 env:
   # Customize the CMake build type here (Release, Debug, RelWithDebInfo, etc.)
