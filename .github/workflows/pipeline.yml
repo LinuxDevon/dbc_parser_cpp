@@ -46,7 +46,6 @@ jobs:
           source "$HOME/.cargo/env"
 
       - name: Configure build
-        working-directory: ${{runner.workspace}}
         env:
           CC: ${{matrix.cc}}
           CXX: ${{matrix.cxx}}
@@ -60,13 +59,11 @@ jobs:
                 -DDBC_GENERATE_SINGLE_HEADER=ON
 
       - name: Build tests + lib
-        working-directory: ${{runner.workspace}}
         run: cmake --build build --parallel `nproc`
 
       - name: Run tests
         env:
             CTEST_OUTPUT_ON_FAILURE: 1
-        working-directory: ${{runner.workspace}}
         run: ctest --output-on-failure --test-dir build -j `nproc`
 
   windows-build:
@@ -162,9 +159,10 @@ jobs:
           chmod +x llvm.sh
           sudo ./llvm.sh 16
 
+          sudo apt update && sudo apt install -y clang-format-16
           sudo ln -sf $(which clang-format-16) $(which clang-format)
 
-          clang-format --version
+          test "$(clang-format --version)" == "$(clang-forsmat-16 --version)"
 
     - name: Test format with clang format
       run: ./scripts/fmt.sh
