@@ -53,8 +53,11 @@ jobs:
           curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
           source "$HOME/.cargo/env"
 
-      - name: "Generate the header only library"
-        run: ./scripts/create_single_header.sh
+      - name: Configure build
+        run: cmake -Bbuild -H$GITHUB_WORKSPACE -DDBC_GENERATE_SINGLE_HEADER=ON
+
+      - name: Generate the header file
+        run: cmake --build build --parallel `nproc` --target single_header
 
       - uses: actions/upload-artifact@v4
         with:
