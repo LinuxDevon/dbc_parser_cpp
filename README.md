@@ -47,7 +47,7 @@ To just build the single header you can simply run the target:
 ```shell
 cmake -Bbuild -H. -DDBC_GENERATE_SINGLE_HEADER=ON
 
-cmake --build build --parallel `nproc` --target single-header
+cmake --build build --parallel `nproc` --target single_header
 ```
 
 
