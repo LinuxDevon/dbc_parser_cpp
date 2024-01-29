@@ -65,7 +65,7 @@ jobs:
 
       - name: "Create a branch if we are making a major / minor release"
         uses: peterjgrainger/action-create-branch@v2.2.0
-        if: ${{ inputs.major }} || ${{ inputs.minor }}
+        if: ${{ inputs.release_type }} == "minor" || ${{ inputs.release_type }} == "major"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
