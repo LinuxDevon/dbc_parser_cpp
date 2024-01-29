@@ -78,7 +78,7 @@ jobs:
         with:
           artifacts: "${{ env.header_file_path }}"
           draft: true
-          bodyFile: ".github/workflows/release_body.md"
+          bodyFile: ".github/data/release_body.md"
           tag: v${{ inputs.major }}.${{ inputs.minor }}.${{ inputs.patch }}
           commit: release/v${{ inputs.major }}.${{ inputs.minor }}
 
