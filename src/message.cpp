@@ -16,8 +16,9 @@ bool Message::operator==(const Message& rhs) const {
 
 Message::ParseSignalsStatus Message::parseSignals(const std::vector<uint8_t>& data, std::vector<double>& values) const {
 	auto size = data.size();
-	if (size > 8)
+	if (size > 8) {
 		return ParseSignalsStatus::ErrorMessageToLong; // not supported yet
+	}
 
 	uint64_t data_little_endian = 0;
 	uint64_t data_big_endian = 0;
@@ -35,8 +36,9 @@ Message::ParseSignalsStatus Message::parseSignals(const std::vector<uint8_t>& da
 			uint32_t start_bit = 8 * (signal.start_bit / 8) + (7 - (signal.start_bit % 8)); // Calculation taken from python CAN
 			v = data_big_endian << start_bit;
 			v = v >> (len - signal.size);
-		} else
+		} else {
 			v = data_little_endian >> signal.start_bit;
+		}
 
 		if (signal.is_signed && signal.size > 1) {
 			switch (signal.size) {
@@ -56,10 +58,11 @@ Message::ParseSignalsStatus Message::parseSignals(const std::vector<uint8_t>& da
 				// 2 complement -> decimal
 				const int negative = (v & (1ull << (signal.size - 1))) != 0;
 				int64_t nativeInt;
-				if (negative)
+				if (negative) {
 					nativeInt = static_cast<int64_t>(v | ~((1ull << signal.size) - 1)); // invert all bits above signal.size
-				else
+				} else {
 					nativeInt = static_cast<int64_t>(v & ((1ull << signal.size) - 1)); // masking
+				}
 				values.push_back(static_cast<double>(nativeInt) * signal.factor + signal.offset);
 				break;
 			}

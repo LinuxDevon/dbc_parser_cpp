@@ -43,20 +43,25 @@ bool parseVal(const std::string& str, VALObject& obj) {
 	for (;;) {
 		switch (state) {
 		case Identifier: {
-			if (*a != 'V')
+			if (*a != 'V') {
 				return false;
+			}
 			a++;
-			if (*a != 'A')
+			if (*a != 'A') {
 				return false;
+			}
 			a++;
-			if (*a != 'L')
+			if (*a != 'L') {
 				return false;
+			}
 			a++;
-			if (*a != '_')
+			if (*a != '_') {
 				return false;
+			}
 			a++;
-			if (*a != ' ')
+			if (*a != ' ') {
 				return false;
+			}
 			a++; // skip whitespace
 			state = CANId;
 			break;
@@ -67,27 +72,31 @@ bool parseVal(const std::string& str, VALObject& obj) {
 				can_id_str += *a;
 				a++;
 			}
-			if (can_id_str.empty())
+			if (can_id_str.empty()) {
 				return false;
+			}
 			obj.can_id = static_cast<uint32_t>(std::stoul(can_id_str));
-			if (*a != ' ')
+			if (*a != ' ') {
 				return false;
+			}
 			a++; // skip whitespace
 			state = SignalName;
 			break;
 		}
 		case SignalName: {
-			if ((*a >= 'a' && *a <= 'z') || (*a >= 'A' && *a <= 'Z') || *a == '_')
+			if ((*a >= 'a' && *a <= 'z') || (*a >= 'A' && *a <= 'Z') || *a == '_') {
 				obj.signal_name += *a;
-			else
+			} else {
 				return false;
+			}
 			a++;
 			while ((*a >= 'a' && *a <= 'z') || (*a >= 'A' && *a <= 'Z') || *a == '_' || (*a >= '0' && *a <= '9')) {
 				obj.signal_name += *a;
 				a++;
 			}
-			if (*a != ' ')
+			if (*a != ' ') {
 				return false;
+			}
 			a++; // skip whitespace
 			state = Value;
 			break;
@@ -99,15 +108,18 @@ bool parseVal(const std::string& str, VALObject& obj) {
 				a++;
 			}
 			if (*a == ';') {
-				if (value_str.empty())
+				if (value_str.empty()) {
 					return true;
+				}
 				return false;
 			}
-			if (value_str.empty())
+			if (value_str.empty()) {
 				return false;
+			}
 
-			if (*a != ' ')
+			if (*a != ' ') {
 				return false;
+			}
 			a++; // skip whitespace
 			vd.value = (uint32_t)std::stoul(value_str);
 			state = Description;
@@ -115,18 +127,21 @@ bool parseVal(const std::string& str, VALObject& obj) {
 		}
 		case Description: {
 			std::string desc;
-			if (*a != '"')
+			if (*a != '"') {
 				return false;
+			}
 			a++;
 			while (*a != '"' && *a != 0) {
 				desc += *a;
 				a++;
 			}
-			if (*a == 0)
+			if (*a == 0) {
 				return false;
+			}
 			a++;
-			if (*a != ' ')
+			if (*a != ' ') {
 				return false;
+			}
 			a++; // skip whitespace
 
 			vd.description = desc;
@@ -188,8 +203,9 @@ std::vector<libdbc::Message> DbcParser::get_messages() const {
 
 Message::ParseSignalsStatus DbcParser::parseMessage(const uint32_t id, const std::vector<uint8_t>& data, std::vector<double>& out_values) {
 	for (const auto& message : messages) {
-		if (message.id() == id)
+		if (message.id() == id) {
 			return message.parseSignals(data, out_values);
+		}
 	}
 	return Message::ParseSignalsStatus::ErrorUnknownID;
 }
@@ -212,8 +228,9 @@ void DbcParser::parse_dbc_header(std::istream& file_stream) {
 
 	utils::StreamHandler::get_next_non_blank_line(file_stream, line);
 
-	if (!std::regex_search(line, match, bit_timing_re))
+	if (!std::regex_search(line, match, bit_timing_re)) {
 		throw validity_error();
+	}
 }
 
 void DbcParser::parse_dbc_nodes(std::istream& file_stream) {
@@ -222,8 +239,9 @@ void DbcParser::parse_dbc_nodes(std::istream& file_stream) {
 
 	utils::StreamHandler::get_next_non_blank_line(file_stream, line);
 
-	if (!std::regex_search(line, match, node_re))
+	if (!std::regex_search(line, match, node_re)) {
 		throw validity_error();
+	}
 
 	if (match.length() > 2) {
 		std::string n = match.str(2);

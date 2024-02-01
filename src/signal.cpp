@@ -47,8 +47,9 @@ std::ostream& operator<<(std::ostream& out, const Signal& sig) {
 	out << "Min: " << sig.min << ", Max: " << sig.max << ", ";
 	out << "Unit: (" << sig.unit << "), ";
 	out << "receivers: ";
-	for (const auto& r : sig.receivers)
+	for (const auto& r : sig.receivers) {
 		out << r;
+	}
 	return out << "}";
 }
 }

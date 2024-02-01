@@ -44,6 +44,8 @@ BraceWrapping:
     AfterClass: false
     AfterCaseLabel: false
 
+InsertBraces: true
+
 # CrlInstruction *a;
 DerivePointerAlignment: false
 PointerAlignment: Left
