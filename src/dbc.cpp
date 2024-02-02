@@ -223,9 +223,7 @@ void DbcParser::parse_dbc_header(std::istream& file_stream) {
 	version = match.str(2);
 
 	utils::StreamHandler::get_next_non_blank_line(file_stream, line);
-
 	utils::StreamHandler::skip_to_next_blank_line(file_stream, line);
-
 	utils::StreamHandler::get_next_non_blank_line(file_stream, line);
 
 	if (!std::regex_search(line, match, bit_timing_re)) {

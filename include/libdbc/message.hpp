@@ -21,12 +21,6 @@ struct Message {
 		ErrorInvalidConversion,
 	};
 
-	/*!
-	 * \brief parseSignals
-	 * \param data
-	 * \param values
-	 * \return
-	 */
 	ParseSignalsStatus parseSignals(const std::vector<uint8_t>& data, std::vector<double>& values) const;
 
 	void appendSignal(const Signal& signal);
