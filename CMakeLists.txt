@@ -111,3 +111,10 @@ configure_file(${PROJECT_NAME}.pc.in ${PROJECT_NAME}.pc @ONLY)
 install(
 	FILES ${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}.pc
 	DESTINATION ${CMAKE_INSTALL_LIBDIR}/pkgconfig)
+
+# Clang tidy
+add_custom_target(clang-tidy-check
+	clang-tidy -p ${CMAKE_BINARY_DIR}/compile_commands.json -checks=* -dump-config -checks=*,-clang-analyzer-alpha.*,-llvm-include-order ${SOURCE_FILES} ${HEADER_FILES}
+	# clang-tidy -p ${CMAKE_BINARY_DIR}/compile_commands.json -checks=* -dump-config${SOURCE_FILES} ${HEADER_FILES}
+	DEPENDS ${SOURCE_FILES} ${HEADER_FILES}
+ )
