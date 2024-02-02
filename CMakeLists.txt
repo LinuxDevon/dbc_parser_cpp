@@ -114,7 +114,16 @@ install(
 
 # Clang tidy
 add_custom_target(clang-tidy-check
-	# clang-tidy -checks=-*,clang-analyzer-*,clang-analyzer-cplusplus*,cert-*,cppcoreguidelines-*,portability-*,readability-*,clang-diagnostic-* -dump-config -p ${CMAKE_BINARY_DIR}/compile_commands.json ${SOURCE_FILES} ${HEADER_FILES} > ../.clang-tidy
 	clang-tidy -p ${CMAKE_BINARY_DIR}/compile_commands.json ${SOURCE_FILES} ${HEADER_FILES}
 	DEPENDS ${SOURCE_FILES} ${HEADER_FILES}
- )
+)
+
+add_custom_target(clang-tidy-dump
+	clang-tidy -checks=-*,clang-analyzer-*,clang-analyzer-cplusplus*,cert-*,cppcoreguidelines-*,portability-*,readability-*,clang-diagnostic-* -dump-config -p ${CMAKE_BINARY_DIR}/compile_commands.json ${SOURCE_FILES} ${HEADER_FILES} > ../.clang-tidy
+	DEPENDS ${SOURCE_FILES} ${HEADER_FILES}
+)
+
+add_custom_target(clang-tidy-fix
+	clang-tidy -fix-notes -p ${CMAKE_BINARY_DIR}/compile_commands.json ${SOURCE_FILES} ${HEADER_FILES}
+	DEPENDS ${SOURCE_FILES} ${HEADER_FILES}
+)
