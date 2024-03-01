@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.16)
+cmake_minimum_required(VERSION 3.23)
 
 # Keep this on one line for release checking
 project(dbc VERSION 0.2.0 DESCRIPTION "C++ DBC Parser")
@@ -111,3 +111,19 @@ configure_file(${PROJECT_NAME}.pc.in ${PROJECT_NAME}.pc @ONLY)
 install(
 	FILES ${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}.pc
 	DESTINATION ${CMAKE_INSTALL_LIBDIR}/pkgconfig)
+
+# Clang tidy
+add_custom_target(clang-tidy-check
+	clang-tidy -p ${CMAKE_BINARY_DIR}/compile_commands.json ${SOURCE_FILES} ${HEADER_FILES}
+	DEPENDS ${SOURCE_FILES} ${HEADER_FILES}
+)
+
+add_custom_target(clang-tidy-dump
+	clang-tidy -checks=-*,clang-analyzer-*,clang-analyzer-cplusplus*,cert-*,cppcoreguidelines-*,portability-*,readability-*,clang-diagnostic-* -dump-config -p ${CMAKE_BINARY_DIR}/compile_commands.json ${SOURCE_FILES} ${HEADER_FILES} > ../.clang-tidy
+	DEPENDS ${SOURCE_FILES} ${HEADER_FILES}
+)
+
+add_custom_target(clang-tidy-fix
+	clang-tidy -fix-notes -p ${CMAKE_BINARY_DIR}/compile_commands.json ${SOURCE_FILES} ${HEADER_FILES}
+	DEPENDS ${SOURCE_FILES} ${HEADER_FILES}
+)
