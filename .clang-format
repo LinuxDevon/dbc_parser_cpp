@@ -106,3 +106,4 @@ AllowShortLambdasOnASingleLine: Empty
 AllowAllArgumentsOnNextLine: false
 
 InsertNewlineAtEOF: true
+LineEnding: LF

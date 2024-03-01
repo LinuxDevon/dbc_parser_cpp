@@ -1,6 +1,6 @@
 
-#ifndef __UTILS_HPP__
-#define __UTILS_HPP__
+#ifndef UTILS_HPP
+#define UTILS_HPP
 
 #include <algorithm>
 #include <fstream>
@@ -48,4 +48,4 @@ public:
 
 }
 
-#endif // __UTILS_HPP__
+#endif // UTILS_HPP

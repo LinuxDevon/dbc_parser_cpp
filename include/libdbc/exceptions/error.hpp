@@ -1,5 +1,5 @@
-#ifndef __ERROR_HPP__
-#define __ERROR_HPP__
+#ifndef ERROR_HPP
+#define ERROR_HPP
 
 #include <sstream>
 
@@ -21,4 +21,4 @@ public:
 
 } // libdbc
 
-#endif // __ERROR_HPP__
+#endif // ERROR_HPP

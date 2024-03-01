@@ -1,6 +1,6 @@
 
-#ifndef __SIGNAL_HPP__
-#define __SIGNAL_HPP__
+#ifndef SIGNAL_HPP
+#define SIGNAL_HPP
 
 #include <cstdint>
 #include <iostream>
@@ -51,4 +51,4 @@ std::ostream& operator<<(std::ostream& out, const Signal& sig);
 
 }
 
-#endif // __SIGNAL_HPP__
+#endif // SIGNAL_HPP

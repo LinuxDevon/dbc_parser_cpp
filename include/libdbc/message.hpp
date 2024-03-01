@@ -1,5 +1,5 @@
-#ifndef __MESSAGE_HPP__
-#define __MESSAGE_HPP__
+#ifndef MESSAGE_HPP
+#define MESSAGE_HPP
 
 #include <array>
 #include <iostream>
@@ -46,4 +46,4 @@ std::ostream& operator<<(std::ostream& out, const Message& msg);
 
 }
 
-#endif // __MESSAGE_HPP__
+#endif // MESSAGE_HPP

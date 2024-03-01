@@ -1,5 +1,5 @@
-#ifndef __DBC_HPP__
-#define __DBC_HPP__
+#ifndef DBC_HPP
+#define DBC_HPP
 
 #include <libdbc/exceptions/error.hpp>
 #include <libdbc/message.hpp>
@@ -52,4 +52,4 @@ private:
 
 }
 
-#endif // __DBC_HPP__
+#endif // DBC_HPP
