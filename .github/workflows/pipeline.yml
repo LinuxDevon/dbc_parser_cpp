@@ -169,12 +169,12 @@ jobs:
       run: |
           wget https://apt.llvm.org/llvm.sh
           chmod +x llvm.sh
-          sudo ./llvm.sh 16
+          sudo ./llvm.sh 17
 
-          sudo apt update && sudo apt install -y clang-format-16
-          sudo ln -sf $(which clang-format-16) $(which clang-format)
+          sudo apt update && sudo apt install -y clang-format-17
+          sudo ln -sf $(which clang-format-17) $(which clang-format)
 
-          test "$(clang-format --version)" == "$(clang-format-16 --version)"
+          test "$(clang-format --version)" == "$(clang-format-17 --version)"
 
     - name: Test format with clang format
       run: ./scripts/fmt.sh
@@ -184,6 +184,17 @@ jobs:
 
     steps:
     - uses: actions/checkout@v4
+
+    - name: Install clang-tidy version
+      run: |
+          wget https://apt.llvm.org/llvm.sh
+          chmod +x llvm.sh
+          sudo ./llvm.sh 17
+
+          sudo apt update && sudo apt install -y clang-tidy-17
+          sudo ln -sf $(which clang-tidy-17) $(which clang-tidy)
+
+          test "$(clang-tidy --version)" == "$(clang-tidy-17 --version)"
 
     - name: Make build directory
       run: cmake -Bbuild -H$GITHUB_WORKSPACE
