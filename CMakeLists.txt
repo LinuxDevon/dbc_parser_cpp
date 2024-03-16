@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.16)
 
 # Keep this on one line for release checking
-project(dbc VERSION 0.2.0 DESCRIPTION "C++ DBC Parser")
+project(dbc VERSION 0.3.0 DESCRIPTION "C++ DBC Parser")
 
 # -- PROJECT OPTIONS  -- #
 option(DBC_ENABLE_TESTS "Enable Unittests" ON)
