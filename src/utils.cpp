@@ -74,7 +74,9 @@ std::string String::trim(const std::string& line) {
 
 double String::convert_to_double(const std::string& value, double default_value) {
 	double converted_value = default_value;
-	fast_float::from_chars(&(*value.begin()), &(*value.end()), converted_value);
+	fast_float::from_chars(value.data(),
+						   value.data() + value.size(),
+						   converted_value); // NOLINT -- Trying to iterators on the value causes the test to infinitly hang on windows builds
 	return converted_value;
 }
 
