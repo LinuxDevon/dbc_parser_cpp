@@ -62,6 +62,7 @@ jobs:
         run: cmake --build build --parallel `nproc`
 
       - name: Run tests
+        timeout-minutes: 3
         env:
             CTEST_OUTPUT_ON_FAILURE: 1
         run: ctest --output-on-failure --test-dir build -j `nproc`
@@ -98,6 +99,7 @@ jobs:
         shell: cmd
 
       - name: Run tests
+        timeout-minutes: 3
         env:
             CTEST_OUTPUT_ON_FAILURE: 1
         working-directory: ${{runner.workspace}}
@@ -142,10 +144,11 @@ jobs:
         run: cmake --build build --parallel `sysctl -n hw.ncpu`
 
       - name: Run tests
+        timeout-minutes: 3
         env:
             CTEST_OUTPUT_ON_FAILURE: 1
         working-directory: ${{runner.workspace}}
-        run: ctest --output-on-failure --test-dir build -j `sysctl -n hw.ncpu`
+        run: ctest --output-on-failure --test-dir build -j `sysctl -n hw.ncpu` -V
 
   format-check:
     runs-on: ubuntu-latest
