@@ -41,7 +41,7 @@ struct Signal {
 					double min,
 					double max,
 					std::string unit,
-					std::vector<std::string> recievers);
+					std::vector<std::string> receivers);
 
 	virtual bool operator==(const Signal& rhs) const;
 	bool operator<(const Signal& rhs) const;

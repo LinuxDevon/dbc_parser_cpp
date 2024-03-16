@@ -140,7 +140,7 @@ CheckOptions:
   readability-suspicious-call-argument.DiceSimilarAbove: '70'
   readability-suspicious-call-argument.Dice: 'true'
   readability-suspicious-call-argument.Abbreviation: 'true'
-  cppcoreguidelines-special-member-functions.AllowSoleDefaultDtor: 'false'
+  cppcoreguidelines-special-member-functions.AllowSoleDefaultDtor: 'true'
   readability-identifier-length.IgnoredLoopCounterNames: '^[ijk_]$'
   cert-dcl37-c.Invert: 'false'
   cert-dcl37-c.AggressiveDependentMemberLookup: 'false'

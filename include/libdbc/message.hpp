@@ -11,7 +11,7 @@ namespace libdbc {
 struct Message {
 	Message() = delete;
 	virtual ~Message() = default;
-	explicit Message(uint32_t id, const std::string& name, uint8_t size, const std::string& node);
+	explicit Message(uint32_t message_id, const std::string& name, uint8_t size, const std::string& node);
 
 	enum class ParseSignalsStatus {
 		Success,
@@ -39,7 +39,7 @@ private:
 	std::string m_node;
 	std::vector<Signal> m_signals;
 
-	friend std::ostream& operator<<(std::ostream& os, const Message& dt);
+	friend std::ostream& operator<<(std::ostream& out, const Message& msg);
 };
 
 std::ostream& operator<<(std::ostream& out, const Message& msg);

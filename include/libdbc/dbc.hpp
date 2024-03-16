@@ -23,28 +23,26 @@ class DbcParser : public Parser {
 public:
 	DbcParser();
 
-	virtual ~DbcParser() = default;
-
-	virtual void parse_file(const std::string& file) final override;
+	void parse_file(const std::string& file) override;
 
 	std::string get_version() const;
 	std::vector<std::string> get_nodes() const;
 	std::vector<libdbc::Message> get_messages() const;
 
-	Message::ParseSignalsStatus parseMessage(const uint32_t id, const std::vector<uint8_t>& data, std::vector<double>& out_values);
+	Message::ParseSignalsStatus parseMessage(uint32_t message_id, const std::vector<uint8_t>& data, std::vector<double>& out_values);
 
 private:
 	std::string version;
 	std::vector<std::string> nodes;
 	std::vector<libdbc::Message> messages;
 
-	const std::regex version_re;
-	const std::regex bit_timing_re;
-	const std::regex name_space_re;
-	const std::regex node_re;
-	const std::regex message_re;
-	const std::regex value_re;
-	const std::regex signal_re;
+	std::regex version_re;
+	std::regex bit_timing_re;
+	std::regex name_space_re;
+	std::regex node_re;
+	std::regex message_re;
+	std::regex value_re;
+	std::regex signal_re;
 
 	void parse_dbc_header(std::istream& file_stream);
 	void parse_dbc_nodes(std::istream& file_stream);

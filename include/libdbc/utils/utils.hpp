@@ -35,10 +35,10 @@ public:
 
 	template<class Container>
 	static void split(const std::string& str, Container& cont, char delim = ' ') {
-		std::stringstream ss(str);
+		std::stringstream stream(str);
 		std::string token;
 
-		while (std::getline(ss, token, delim)) {
+		while (std::getline(stream, token, delim)) {
 			cont.push_back(token);
 		}
 	}
