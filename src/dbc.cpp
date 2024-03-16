@@ -185,32 +185,32 @@ void DbcParser::parse_dbc_messages(const std::vector<std::string>& lines) {
 			continue;
 		}
 
-		if (std::regex_search(line, match, value_re)) {
-			uint32_t message_id = static_cast<uint32_t>(std::stoul(match.str(2)));
-			std::string signal_name = match.str(3);
+		// if (std::regex_search(line, match, value_re)) {
+		// 	uint32_t message_id = static_cast<uint32_t>(std::stoul(match.str(2)));
+		// 	std::string signal_name = match.str(3);
 
-			// Loop over the rest of the descriptions
-			std::string rest_of_descriptions = match.str(4);
-			std::regex description_re("\\s(\\d+)\\s\"([^\"]*)\"");
+		// 	// Loop over the rest of the descriptions
+		// 	std::string rest_of_descriptions = match.str(4);
+		// 	std::regex description_re("\\s(\\d+)\\s\"([^\"]*)\"");
 
-			std::sregex_iterator desc_iter(rest_of_descriptions.begin(), rest_of_descriptions.end(), description_re);
-			std::sregex_iterator desc_end = std::sregex_iterator();
+		// 	std::sregex_iterator desc_iter(rest_of_descriptions.begin(), rest_of_descriptions.end(), description_re);
+		// 	std::sregex_iterator desc_end = std::sregex_iterator();
 
-			std::vector<Signal::SignalValueDescriptions> values{};
-			for (std::sregex_iterator i = desc_iter; i != desc_end; ++i) {
-				std::smatch desc_match = *desc_iter;
-				uint32_t number = static_cast<uint32_t>(std::stoul(desc_match.str(1)));
-				std::string text = desc_match.str(2);
+		// 	std::vector<Signal::SignalValueDescriptions> values{};
+		// 	for (std::sregex_iterator i = desc_iter; i != desc_end; ++i) {
+		// 		std::smatch desc_match = *desc_iter;
+		// 		uint32_t number = static_cast<uint32_t>(std::stoul(desc_match.str(1)));
+		// 		std::string text = desc_match.str(2);
 
-				values.push_back(Signal::SignalValueDescriptions{number, text});
-				++desc_iter;
-			}
+		// 		values.push_back(Signal::SignalValueDescriptions{number, text});
+		// 		++desc_iter;
+		// 	}
 
-			VALObject obj{message_id, signal_name, values};
+		// 	VALObject obj{message_id, signal_name, values};
 
-			signal_value.push_back(obj);
-			continue;
-		}
+		// 	signal_value.push_back(obj);
+		// 	continue;
+		// }
 	}
 
 	for (const auto& signal : signal_value) {
