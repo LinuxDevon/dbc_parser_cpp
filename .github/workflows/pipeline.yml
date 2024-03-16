@@ -202,3 +202,18 @@ jobs:
     - name: Run clang-tidy check
       run: cmake --build build --target clang-tidy-check
 
+  check-against-minimum-cmake:
+    runs-on: ubuntu-20.04
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Cmake version
+      run: cmake --version
+
+    - name: Make build directory
+      run: cmake -Bbuild -H$GITHUB_WORKSPACE
+
+    - name: Run clang-tidy check
+      run: cmake --build build
+
