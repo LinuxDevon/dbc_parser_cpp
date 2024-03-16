@@ -25,6 +25,8 @@ jobs:
             cc: clang-16
             llvm_version: 16
 
+    env:
+
     steps:
       - uses: actions/checkout@v4
 
@@ -126,6 +128,9 @@ jobs:
           - cxx: clang++
             cc: clang
 
+    env:
+      BUILD_TYPE: ${{matrix.build_type}}
+
     steps:
       - uses: actions/checkout@v4
 
@@ -172,4 +177,16 @@ jobs:
 
     - name: Test format with clang format
       run: ./scripts/fmt.sh
+
+  clang-tidy-check:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Make build directory
+      run: cmake -Bbuild -H$GITHUB_WORKSPACE
+
+    - name: Run clang-tidy check
+      run: cmake --build build --target clang-tidy-check
 
