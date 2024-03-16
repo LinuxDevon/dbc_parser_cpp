@@ -194,10 +194,10 @@ void DbcParser::parse_dbc_messages(const std::vector<std::string>& lines) {
 			std::regex description_re("\\s(\\d+)\\s\"([^\"]*)\"");
 
 			std::sregex_iterator desc_iter(rest_of_descriptions.begin(), rest_of_descriptions.end(), description_re);
-			std::sregex_iterator desc_end;
+			std::sregex_iterator desc_end = std::sregex_iterator();
 
 			std::vector<Signal::SignalValueDescriptions> values{};
-			while (desc_iter != desc_end) {
+			for (std::sregex_iterator i = desc_iter; i != desc_end; ++i) {
 				std::smatch desc_match = *desc_iter;
 				uint32_t number = static_cast<uint32_t>(std::stoul(desc_match.str(1)));
 				std::string text = desc_match.str(2);
