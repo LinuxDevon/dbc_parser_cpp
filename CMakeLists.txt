@@ -85,11 +85,7 @@ target_include_directories(${PROJECT_NAME} PUBLIC
 )
 target_compile_features(${PROJECT_NAME} PRIVATE cxx_std_11)
 
-target_sources(${PROJECT_NAME} INTERFACE HEADERS
-		TYPE HEADERS
-		BASE_DIRS ${PROJECT_SOURCE_DIR}/include/libdbc
-		FILES ${HEADER_FILES}
-)
+target_sources(${PROJECT_NAME} INTERFACE ${HEADER_FILES})
 
 if(DBC_GENERATE_SINGLE_HEADER)
 	add_custom_target(single_header ALL

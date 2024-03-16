@@ -1,10 +1,10 @@
-#include "exceptions/error.hpp"
 #include "testing_utils/common.hpp"
 #include "testing_utils/defines.hpp"
 #include <catch2/catch_approx.hpp>
 #include <catch2/catch_test_macros.hpp>
 #include <catch2/matchers/catch_matchers.hpp>
 #include <libdbc/dbc.hpp>
+#include <libdbc/exceptions/error.hpp>
 #include <string>
 
 TEST_CASE("Testing dbc file loading error issues", "[fileio][error]") {
