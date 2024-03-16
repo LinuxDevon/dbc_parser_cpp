@@ -59,7 +59,7 @@ DbcParser::DbcParser()
 	: version_re("^(VERSION)\\s\"(.*)\"")
 	, bit_timing_re("^(BS_:)")
 	, name_space_re("^(NS_)\\s\\:")
-	, node_re("^(BU_:)\\s((?:[\\w]+?\\s?)*)")
+	, node_re("^(BU_:)\\s?((?:[\\w]+?\\s?)*)?")
 	, message_re("^(BO_)\\s(\\d+)\\s(\\w+)\\:\\s(\\d+)\\s(\\w+|Vector__XXX)")
 	, value_re("^(VAL_)\\s(\\d+)\\s(\\w+)((?:\\s(\\d+)\\s\"([^\"]*)\")+)\\s;$")
 	,

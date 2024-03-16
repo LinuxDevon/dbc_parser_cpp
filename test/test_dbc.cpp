@@ -239,3 +239,30 @@ VAL_ 123 State1 123 "Description 3" 0 "Description 4" ;)";
 	REQUIRE(signal2.value_descriptions.at(1).value == 0);
 	REQUIRE(signal2.value_descriptions.at(1).description == "Description 4");
 }
+
+TEST_CASE("Should parse DBC with empty BU_") {
+	std::string contents = R"(VERSION ""
+
+
+NS_ :
+
+BS_:
+
+BU_:
+
+
+BO_ 293 Msg1: 2 Vector__XXX
+ SG_ Wert7 : 0|16@1- (1,0) [0|0] "" Vector__XXX
+
+BO_ 292 Msg2: 8 Vector__XXX
+ SG_ Wert8 : 56|8@1- (1,0) [0|0] "" Vector__XXX
+)";
+	const auto filename = create_temporary_dbc_with(contents.c_str());
+
+	auto parser = Libdbc::DbcParser();
+	parser.parse_file(filename.c_str());
+
+	REQUIRE(parser.get_messages().size() == 2);
+	REQUIRE(parser.get_messages().at(0).name() == "Msg1");
+	REQUIRE(parser.get_messages().at(1).name() == "Msg2");
+}

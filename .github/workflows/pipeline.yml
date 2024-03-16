@@ -218,6 +218,6 @@ jobs:
     - name: Make build directory
       run: cmake -Bbuild -H$GITHUB_WORKSPACE
 
-    - name: Run clang-tidy check
+    - name: Run build
       run: cmake --build build
 
