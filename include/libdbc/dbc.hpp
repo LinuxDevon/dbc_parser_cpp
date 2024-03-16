@@ -1,12 +1,12 @@
 #ifndef DBC_HPP
 #define DBC_HPP
 
-#include <libdbc/exceptions/error.hpp>
-#include <libdbc/message.hpp>
-#include <libdbc/signal.hpp>
-#include <libdbc/utils/utils.hpp>
-
+#include <cstdint>
 #include <regex>
+#include <string>
+#include <vector>
+#include <istream>
+#include <libdbc/message.hpp>
 
 namespace Libdbc {
 

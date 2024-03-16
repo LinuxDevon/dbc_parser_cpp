@@ -1,9 +1,13 @@
 #include <cstdint>
+#include <fstream>
+#include <istream>
 #include <libdbc/dbc.hpp>
 #include <libdbc/exceptions/error.hpp>
+#include <libdbc/message.hpp>
+#include <libdbc/signal.hpp>
 #include <libdbc/utils/utils.hpp>
-
 #include <regex>
+#include <string>
 #include <vector>
 
 namespace Libdbc {

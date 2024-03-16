@@ -1,5 +1,10 @@
+#include <cstddef>
 #include <cstdint>
 #include <libdbc/message.hpp>
+#include <libdbc/signal.hpp>
+#include <ostream>
+#include <string>
+#include <vector>
 
 namespace Libdbc {
 
@@ -29,7 +34,7 @@ Message::ParseSignalsStatus Message::parse_signals(const std::vector<uint8_t>& d
 
 	uint64_t data_little_endian = 0;
 	uint64_t data_big_endian = 0;
-	for (size_t i = 0; i < size; i++) {
+	for (std::size_t i = 0; i < size; i++) {
 		data_little_endian |= ((uint64_t)data[i]) << i * ONE_BYTE;
 		data_big_endian = (data_big_endian << ONE_BYTE) | (uint64_t)data[i];
 	}

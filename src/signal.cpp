@@ -1,4 +1,8 @@
+#include <cstdint>
 #include <libdbc/signal.hpp>
+#include <ostream>
+#include <string>
+#include <vector>
 
 namespace Libdbc {
 Signal::Signal(std::string name,

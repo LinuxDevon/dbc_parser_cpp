@@ -1,7 +1,7 @@
 #include "testing_utils/defines.hpp"
 #include <catch2/catch_test_macros.hpp>
+#include <fstream>
 #include <libdbc/utils/utils.hpp>
-
 #include <sstream>
 
 namespace Utils {
