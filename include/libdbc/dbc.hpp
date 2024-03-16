@@ -2,11 +2,11 @@
 #define DBC_HPP
 
 #include <cstdint>
+#include <istream>
+#include <libdbc/message.hpp>
 #include <regex>
 #include <string>
 #include <vector>
-#include <istream>
-#include <libdbc/message.hpp>
 
 namespace Libdbc {
 

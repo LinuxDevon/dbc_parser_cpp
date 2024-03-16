@@ -1,11 +1,11 @@
 #ifndef MESSAGE_HPP
 #define MESSAGE_HPP
 
+#include <cstdint>
 #include <iostream>
 #include <libdbc/signal.hpp>
 #include <string>
 #include <vector>
-#include <cstdint>
 
 namespace Libdbc {
 struct Message {
