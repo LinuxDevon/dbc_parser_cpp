@@ -26,6 +26,7 @@ jobs:
             llvm_version: 16
 
     env:
+      BUILD_TYPE: ${{matrix.build_type}}
 
     steps:
       - uses: actions/checkout@v4
