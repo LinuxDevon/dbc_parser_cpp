@@ -24,7 +24,7 @@ struct Message {
 	ParseSignalsStatus parseSignals(const std::vector<uint8_t>& data, std::vector<double>& values) const;
 
 	void appendSignal(const Signal& signal);
-	const std::vector<Signal> getSignals() const;
+	std::vector<Signal> getSignals() const;
 	uint32_t id() const;
 	uint8_t size() const;
 	const std::string& name() const;
