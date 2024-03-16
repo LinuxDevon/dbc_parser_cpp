@@ -74,9 +74,7 @@ std::string String::trim(const std::string& line) {
 
 double String::convert_to_double(const std::string& value, double default_value) {
 	double converted_value = default_value;
-	auto begin = value.begin();
-	auto end = value.end();
-	fast_float::from_chars(&(*begin), &(*end), converted_value);
+	fast_float::from_chars(&(*value.begin()), &(*value.end()), converted_value);
 	return converted_value;
 }
 
