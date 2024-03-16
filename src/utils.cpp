@@ -13,10 +13,10 @@ std::istream& StreamHandler::get_line(std::istream& stream, std::string& line) {
 	std::getline(stream, newline);
 
 	// Windows CRLF (\r\n)
-	if (newline.size() && newline[newline.size() - 1] == '\r') {
+	if (!newline.empty() && newline[newline.size() - 1] == '\r') {
 		line = newline.substr(0, newline.size() - 1);
 		// MacOS LF (\r)
-	} else if (newline.size() && newline[newline.size()] == '\r') {
+	} else if (!newline.empty() && newline[newline.size()] == '\r') {
 		line = newline.replace(newline.size(), 1, "\n");
 	} else {
 		line = newline;
@@ -74,7 +74,9 @@ std::string String::trim(const std::string& line) {
 
 double String::convert_to_double(const std::string& value, double default_value) {
 	double converted_value = default_value;
-	fast_float::from_chars(value.data(), value.data() + value.size(), converted_value);
+	auto begin = value.begin();
+	auto end = value.end();
+	fast_float::from_chars(&(*begin), &(*end), converted_value);
 	return converted_value;
 }
 
