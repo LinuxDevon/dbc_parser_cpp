@@ -4,6 +4,7 @@
 #include <libdbc/utils/utils.hpp>
 
 #include <regex>
+#include <vector>
 
 namespace libdbc {
 
@@ -52,136 +53,13 @@ struct VALObject {
 	std::vector<Signal::SignalValueDescriptions> vd;
 };
 
-static bool parse_value(const std::string& str, VALObject& obj);
-
-bool parse_value(const std::string& str, VALObject& obj) {
-	obj.signal_name = "";
-	obj.vd.clear();
-	auto state = Identifier;
-	const char* value_data = str.data();
-	Signal::SignalValueDescriptions value_description;
-	for (;;) {
-		switch (state) {
-		case Identifier: {
-			if (*value_data != 'V') {
-				return false;
-			}
-			value_data++;
-			if (*value_data != 'A') {
-				return false;
-			}
-			value_data++;
-			if (*value_data != 'L') {
-				return false;
-			}
-			value_data++;
-			if (*value_data != '_') {
-				return false;
-			}
-			value_data++;
-			if (*value_data != ' ') {
-				return false;
-			}
-			value_data++; // skip whitespace
-			state = CANId;
-			break;
-		}
-		case CANId: {
-			std::string can_id_str;
-			while (*value_data >= '0' && *value_data <= '9') {
-				can_id_str += *value_data;
-				value_data++;
-			}
-			if (can_id_str.empty()) {
-				return false;
-			}
-			obj.can_id = static_cast<uint32_t>(std::stoul(can_id_str));
-			if (*value_data != ' ') {
-				return false;
-			}
-			value_data++; // skip whitespace
-			state = SignalName;
-			break;
-		}
-		case SignalName: {
-			if ((*value_data >= 'a' && *value_data <= 'z') || (*value_data >= 'A' && *value_data <= 'Z') || *value_data == '_') {
-				obj.signal_name += *value_data;
-			} else {
-				return false;
-			}
-			value_data++;
-			while ((*value_data >= 'a' && *value_data <= 'z') || (*value_data >= 'A' && *value_data <= 'Z') || *value_data == '_'
-				   || (*value_data >= '0' && *value_data <= '9')) {
-				obj.signal_name += *value_data;
-				value_data++;
-			}
-			if (*value_data != ' ') {
-				return false;
-			}
-			value_data++; // skip whitespace
-			state = Value;
-			break;
-		}
-		case Value: {
-			std::string value_str;
-			while (*value_data >= '0' && *value_data <= '9') {
-				value_str += *value_data;
-				value_data++;
-			}
-			if (*value_data == ';') {
-				if (value_str.empty()) {
-					return true;
-				}
-				return false;
-			}
-			if (value_str.empty()) {
-				return false;
-			}
-
-			if (*value_data != ' ') {
-				return false;
-			}
-			value_data++; // skip whitespace
-			value_description.value = (uint32_t)std::stoul(value_str);
-			state = Description;
-			break;
-		}
-		case Description: {
-			std::string desc;
-			if (*value_data != '"') {
-				return false;
-			}
-			value_data++;
-			while (*value_data != '"' && *value_data != 0) {
-				desc += *value_data;
-				value_data++;
-			}
-			if (*value_data == 0) {
-				return false;
-			}
-			value_data++;
-			if (*value_data != ' ') {
-				return false;
-			}
-			value_data++; // skip whitespace
-
-			value_description.description = desc;
-			obj.vd.push_back(value_description);
-
-			state = Value;
-			break;
-		}
-		}
-	}
-	return false;
-}
-
 DbcParser::DbcParser()
 	: version_re("^(VERSION)\\s\"(.*)\"")
 	, bit_timing_re("^(BS_:)")
 	, name_space_re("^(NS_)\\s\\:")
 	, node_re("^(BU_:)\\s((?:[\\w]+?\\s?)*)")
 	, message_re("^(BO_)\\s(\\d+)\\s(\\w+)\\:\\s(\\d+)\\s(\\w+|Vector__XXX)")
+	, value_re("^(VAL_)\\s(\\d+)\\s(\\w+)((?:\\s(\\d+)\\s\"([^\"]*)\")+)\\s;$")
 	,
 	// NOTE: No multiplex support yet
 	signal_re(std::string("^") + whiteSpace + signalIdentifierPattern + whiteSpace + namePattern + whiteSpace + "\\:" + whiteSpace + bitStartPattern + "\\|"
@@ -271,7 +149,6 @@ void DbcParser::parse_dbc_messages(const std::vector<std::string>& lines) {
 
 	std::vector<VALObject> signal_value;
 
-	VALObject obj{};
 	for (const auto& line : lines) {
 		if (std::regex_search(line, match, message_re)) {
 			uint32_t message_id = static_cast<uint32_t>(std::stoul(match.str(MESSAGE_ID_GROUP)));
@@ -308,7 +185,29 @@ void DbcParser::parse_dbc_messages(const std::vector<std::string>& lines) {
 			continue;
 		}
 
-		if (parse_value(line, obj)) {
+		if (std::regex_search(line, match, value_re)) {
+			uint32_t message_id = static_cast<uint32_t>(std::stoul(match.str(2)));
+			std::string signal_name = match.str(3);
+
+			// Loop over the rest of the descriptions
+			std::string rest_of_descriptions = match.str(4);
+			std::regex description_re("\\s(\\d+)\\s\"([^\"]*)\"");
+
+			std::sregex_iterator desc_iter(rest_of_descriptions.begin(), rest_of_descriptions.end(), description_re);
+			std::sregex_iterator desc_end;
+
+			std::vector<Signal::SignalValueDescriptions> values{};
+			while (desc_iter != desc_end) {
+				std::smatch desc_match = *desc_iter;
+				uint32_t number = static_cast<uint32_t>(std::stoul(desc_match.str(1)));
+				std::string text = desc_match.str(2);
+
+				values.push_back(Signal::SignalValueDescriptions{number, text});
+				++desc_iter;
+			}
+
+			VALObject obj{message_id, signal_name, values};
+
 			signal_value.push_back(obj);
 			continue;
 		}

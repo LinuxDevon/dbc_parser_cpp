@@ -43,6 +43,7 @@ private:
 	const std::regex name_space_re;
 	const std::regex node_re;
 	const std::regex message_re;
+	const std::regex value_re;
 	const std::regex signal_re;
 
 	void parse_dbc_header(std::istream& file_stream);
