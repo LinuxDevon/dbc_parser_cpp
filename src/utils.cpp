@@ -5,7 +5,7 @@
 
 #include <regex>
 
-namespace utils {
+namespace Utils {
 
 std::istream& StreamHandler::get_line(std::istream& stream, std::string& line) {
 	std::string newline;
@@ -32,7 +32,7 @@ std::istream& StreamHandler::get_next_non_blank_line(std::istream& stream, std::
 	std::smatch match;
 
 	while (is_blank) {
-		utils::StreamHandler::get_line(stream, line);
+		Utils::StreamHandler::get_line(stream, line);
 
 		std::regex_search(line, match, whitespace_re);
 
@@ -53,7 +53,7 @@ std::istream& StreamHandler::skip_to_next_blank_line(std::istream& stream, std::
 	std::smatch match;
 
 	while (!line_is_empty) {
-		utils::StreamHandler::get_line(stream, line);
+		Utils::StreamHandler::get_line(stream, line);
 
 		std::regex_search(line, match, whitespace_re);
 
@@ -74,9 +74,8 @@ std::string String::trim(const std::string& line) {
 
 double String::convert_to_double(const std::string& value, double default_value) {
 	double converted_value = default_value;
-	fast_float::from_chars(value.data(),
-						   value.data() + value.size(),
-						   converted_value); // NOLINT -- Trying to iterators on the value causes the test to infinitly hang on windows builds
+	// NOLINTNEXTLINE -- Trying to iterators on the value causes the test to infinitly hang on windows builds
+	fast_float::from_chars(value.data(), value.data() + value.size(), converted_value);
 	return converted_value;
 }
 

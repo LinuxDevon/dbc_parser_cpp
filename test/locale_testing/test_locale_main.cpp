@@ -31,7 +31,7 @@ private:
 CATCH_REGISTER_LISTENER(testRunListener)
 
 TEST_CASE("Should parse doubld string locale independently") {
-	REQUIRE(Catch::Approx(utils::String::convert_to_double("6.82")) == 6.82);
+	REQUIRE(Catch::Approx(Utils::String::convert_to_double("6.82")) == 6.82);
 }
 
 TEST_CASE("Should process message with floats locale indpendently") {
@@ -42,36 +42,36 @@ TEST_CASE("Should process message with floats locale indpendently") {
  SG_ Sig4 : 7|16@0- (1,-10) [0|32767] "" Vector__XXX)";
 	const auto filename = create_temporary_dbc_with(dbc_contents.c_str());
 
-	auto parser = libdbc::DbcParser();
+	auto parser = Libdbc::DbcParser();
 	parser.parse_file(filename);
 
 	REQUIRE(parser.get_messages().size() == 1);
 	REQUIRE(parser.get_messages().at(0).name() == "MSG1");
-	REQUIRE(parser.get_messages().at(0).getSignals().size() == 4);
+	REQUIRE(parser.get_messages().at(0).get_signals().size() == 4);
 
 	SECTION("Evaluating first message") {
-		const auto signal = parser.get_messages().at(0).getSignals().at(0);
+		const auto signal = parser.get_messages().at(0).get_signals().at(0);
 		REQUIRE(signal.factor == 0.1);
 		REQUIRE(signal.offset == 0);
 		REQUIRE(signal.min == -3276.8);
 		REQUIRE(signal.max == -3276.7);
 	}
 	SECTION("Evaluating second message") {
-		const auto signal = parser.get_messages().at(0).getSignals().at(1);
+		const auto signal = parser.get_messages().at(0).get_signals().at(1);
 		REQUIRE(signal.factor == 0.1);
 		REQUIRE(signal.offset == 0);
 		REQUIRE(signal.min == -3276.8);
 		REQUIRE(signal.max == -3276.7);
 	}
 	SECTION("Evaluating third message") {
-		const auto signal = parser.get_messages().at(0).getSignals().at(2);
+		const auto signal = parser.get_messages().at(0).get_signals().at(2);
 		REQUIRE(signal.factor == 10);
 		REQUIRE(signal.offset == 0);
 		REQUIRE(signal.min == -3276.8);
 		REQUIRE(signal.max == -3276.7);
 	}
 	SECTION("Evaluating fourth message") {
-		const auto signal = parser.get_messages().at(0).getSignals().at(3);
+		const auto signal = parser.get_messages().at(0).get_signals().at(3);
 		REQUIRE(signal.factor == 1);
 		REQUIRE(signal.offset == -10);
 		REQUIRE(signal.min == 0);

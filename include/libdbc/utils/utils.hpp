@@ -9,7 +9,7 @@
 #include <sstream>
 #include <string>
 
-namespace utils {
+namespace Utils {
 
 class StreamHandler {
 public:

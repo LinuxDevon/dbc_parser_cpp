@@ -8,7 +8,7 @@
 
 #include <regex>
 
-namespace libdbc {
+namespace Libdbc {
 
 class Parser {
 public:
@@ -27,14 +27,14 @@ public:
 
 	std::string get_version() const;
 	std::vector<std::string> get_nodes() const;
-	std::vector<libdbc::Message> get_messages() const;
+	std::vector<Libdbc::Message> get_messages() const;
 
-	Message::ParseSignalsStatus parseMessage(uint32_t message_id, const std::vector<uint8_t>& data, std::vector<double>& out_values);
+	Message::ParseSignalsStatus parse_message(uint32_t message_id, const std::vector<uint8_t>& data, std::vector<double>& out_values);
 
 private:
 	std::string version;
 	std::vector<std::string> nodes;
-	std::vector<libdbc::Message> messages;
+	std::vector<Libdbc::Message> messages;
 
 	std::regex version_re;
 	std::regex bit_timing_re;

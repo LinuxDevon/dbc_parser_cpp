@@ -1,7 +1,7 @@
 #include <cstdint>
 #include <libdbc/message.hpp>
 
-namespace libdbc {
+namespace Libdbc {
 
 constexpr unsigned ONE_BYTE = 8;
 constexpr unsigned TWO_BYTES = 16;
@@ -21,7 +21,7 @@ bool Message::operator==(const Message& rhs) const {
 	return (m_id == rhs.id()) && (m_name == rhs.m_name) && (m_size == rhs.m_size) && (m_node == rhs.m_node);
 }
 
-Message::ParseSignalsStatus Message::parseSignals(const std::vector<uint8_t>& data, std::vector<double>& values) const {
+Message::ParseSignalsStatus Message::parse_signals(const std::vector<uint8_t>& data, std::vector<double>& values) const {
 	auto size = data.size();
 	if (size > ONE_BYTE) {
 		return ParseSignalsStatus::ErrorMessageToLong; // not supported yet
@@ -83,11 +83,11 @@ Message::ParseSignalsStatus Message::parseSignals(const std::vector<uint8_t>& da
 	return ParseSignalsStatus::Success;
 }
 
-void Message::appendSignal(const Signal& signal) {
+void Message::append_signal(const Signal& signal) {
 	m_signals.push_back(signal);
 }
 
-std::vector<Signal> Message::getSignals() const {
+std::vector<Signal> Message::get_signals() const {
 	return m_signals;
 }
 
@@ -103,10 +103,10 @@ const std::string& Message::name() const {
 	return m_name;
 }
 
-void Message::addValueDescription(const std::string& signal_name, const std::vector<Signal::SignalValueDescriptions>& value_descriptor) {
+void Message::add_value_description(const std::string& signal_name, const std::vector<Signal::ValueDescription>& value_descriptor) {
 	for (auto& signal : m_signals) {
 		if (signal.name == signal_name) {
-			signal.svDescriptions = value_descriptor;
+			signal.value_descriptions = value_descriptor;
 			return;
 		}
 	}

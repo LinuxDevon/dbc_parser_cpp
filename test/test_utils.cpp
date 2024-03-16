@@ -4,7 +4,7 @@
 
 #include <sstream>
 
-using namespace utils;
+namespace Utils {
 
 TEST_CASE("Basic file input with safe get_line that is non line ending specific", "") {
 	SECTION("Verify various line ending input files") {
@@ -91,3 +91,5 @@ TEST_CASE("Test string split feature", "[string]") {
 
 	REQUIRE(v == vs);
 }
+
+} // Utils

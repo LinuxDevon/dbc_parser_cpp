@@ -7,9 +7,9 @@
 #include <string>
 #include <vector>
 
-namespace libdbc {
+namespace Libdbc {
 struct Signal {
-	struct SignalValueDescriptions {
+	struct ValueDescription {
 		uint32_t value;
 		std::string description;
 	};
@@ -26,7 +26,7 @@ struct Signal {
 	double max;
 	std::string unit;
 	std::vector<std::string> receivers;
-	std::vector<SignalValueDescriptions> svDescriptions;
+	std::vector<ValueDescription> value_descriptions;
 
 	Signal() = delete;
 	virtual ~Signal() = default;

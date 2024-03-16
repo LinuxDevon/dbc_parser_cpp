@@ -1,6 +1,6 @@
 #include <libdbc/signal.hpp>
 
-namespace libdbc {
+namespace Libdbc {
 Signal::Signal(std::string name,
 			   bool is_multiplexed,
 			   uint32_t start_bit,

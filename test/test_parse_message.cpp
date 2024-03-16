@@ -19,12 +19,12 @@ BO_ 123 MSG2: 8 Vector__XXX
 )";
 	const auto filename = create_temporary_dbc_with(dbc_contents.c_str());
 
-	libdbc::DbcParser parser;
+	Libdbc::DbcParser parser;
 	parser.parse_file(filename.c_str());
 
 	SECTION("Evaluating unknown` message id") {
 		std::vector<double> out_values;
-		CHECK(parser.parseMessage(578, std::vector<uint8_t>({0xFF, 0xA2}), out_values) == libdbc::Message::ParseSignalsStatus::ErrorUnknownID);
+		CHECK(parser.parse_message(578, std::vector<uint8_t>({0xFF, 0xA2}), out_values) == Libdbc::Message::ParseSignalsStatus::ErrorUnknownID);
 	}
 }
 
@@ -40,12 +40,12 @@ TEST_CASE("Parse Message Big Number not aligned little endian") {
 )";
 	const auto filename = create_temporary_dbc_with(dbc_contents.c_str());
 
-	libdbc::DbcParser parser;
+	Libdbc::DbcParser parser;
 	parser.parse_file(filename);
 
 	SECTION("Evaluating first message") {
 		std::vector<double> out_values;
-		CHECK(parser.parseMessage(337, std::vector<uint8_t>({0, 4, 252, 19, 0, 0, 0, 0}), out_values) == libdbc::Message::ParseSignalsStatus::Success);
+		CHECK(parser.parse_message(337, std::vector<uint8_t>({0, 4, 252, 19, 0, 0, 0, 0}), out_values) == Libdbc::Message::ParseSignalsStatus::Success);
 		std::vector<double> refData{2, 0, 0, 1, 0, 0, 0};
 		CHECK(refData.size() == 7);
 		CHECK(out_values.size() == refData.size());
@@ -56,7 +56,7 @@ TEST_CASE("Parse Message Big Number not aligned little endian") {
 
 	SECTION("Evaluating second message") {
 		std::vector<double> out_values;
-		CHECK(parser.parseMessage(337, std::vector<uint8_t>({47, 4, 60, 29, 0, 0, 0, 0}), out_values) == libdbc::Message::ParseSignalsStatus::Success);
+		CHECK(parser.parse_message(337, std::vector<uint8_t>({47, 4, 60, 29, 0, 0, 0, 0}), out_values) == Libdbc::Message::ParseSignalsStatus::Success);
 		std::vector<double> refData{3, 32, 0, 1, 0, 0, 47};
 		CHECK(refData.size() == 7);
 		CHECK(out_values.size() == refData.size());
@@ -67,7 +67,7 @@ TEST_CASE("Parse Message Big Number not aligned little endian") {
 
 	SECTION("Evaluating third message") {
 		std::vector<double> out_values;
-		CHECK(parser.parseMessage(337, std::vector<uint8_t>({57, 4, 250, 29, 0, 0, 0, 0}), out_values) == libdbc::Message::ParseSignalsStatus::Success);
+		CHECK(parser.parse_message(337, std::vector<uint8_t>({57, 4, 250, 29, 0, 0, 0, 0}), out_values) == Libdbc::Message::ParseSignalsStatus::Success);
 		std::vector<double> refData{3, 51, 0, 1, 0, 0, 57};
 		CHECK(refData.size() == 7);
 		CHECK(out_values.size() == refData.size());
@@ -85,12 +85,12 @@ TEST_CASE("Parse Message little endian") {
  SG_ SOC : 16|16@1+ (0.01,0) [0|100] "%"  DEVICE1)";
 	const auto filename = create_temporary_dbc_with(dbc_contents.c_str());
 
-	libdbc::DbcParser parser;
+	Libdbc::DbcParser parser;
 	parser.parse_file(filename);
 
 	std::vector<uint8_t> data{0x08, 0x27, 0xa3, 0x22, 0xe5, 0x1f, 0x45, 0x14}; // little endian
 	std::vector<double> result_values;
-	REQUIRE(parser.parseMessage(0x21d, data, result_values) == libdbc::Message::ParseSignalsStatus::Success);
+	REQUIRE(parser.parse_message(0x21d, data, result_values) == Libdbc::Message::ParseSignalsStatus::Success);
 	REQUIRE(result_values.size() == 4);
 
 	REQUIRE(Catch::Approx(result_values.at(0)) == 11.89);
@@ -115,12 +115,12 @@ TEST_CASE("Parse Message big endian signed values") {
  SG_ Sig12 : 23|16@0+ (0.1,0) [0|6553.5] "A" Vector__XXX)";
 	const auto filename = create_temporary_dbc_with(dbc_contents.c_str());
 
-	libdbc::DbcParser p;
+	Libdbc::DbcParser p;
 	p.parse_file(filename.c_str());
 
 	std::vector<uint8_t> data{13, 177, 0, 216, 251, 180, 0, 31}; // big endian
 	std::vector<double> result_values;
-	REQUIRE(p.parseMessage(545, data, result_values) == libdbc::Message::ParseSignalsStatus::Success);
+	REQUIRE(p.parse_message(545, data, result_values) == Libdbc::Message::ParseSignalsStatus::Success);
 	REQUIRE(result_values.size() == 12);
 	REQUIRE(Catch::Approx(result_values.at(0)) == 0);
 	REQUIRE(Catch::Approx(result_values.at(1)) == 0);
@@ -144,12 +144,12 @@ TEST_CASE("Parse Message with non byte aligned values") {
  SG_ Id_Current : 0|10@1- (1,0) [-512|512] "A"  Vector__XXX)";
 	const auto filename = create_temporary_dbc_with(dbc_contents.c_str());
 
-	libdbc::DbcParser p;
+	Libdbc::DbcParser p;
 	p.parse_file(filename);
 
 	std::vector<uint8_t> data{131, 51, 33, 9, 33, 0, 0, 0};
 	std::vector<double> result_values;
-	REQUIRE(p.parseMessage(403, data, result_values) == libdbc::Message::ParseSignalsStatus::Success);
+	REQUIRE(p.parse_message(403, data, result_values) == Libdbc::Message::ParseSignalsStatus::Success);
 	REQUIRE(result_values.size() == 4);
 	REQUIRE(Catch::Approx(result_values.at(0)) == 26.4);
 	REQUIRE(Catch::Approx(result_values.at(1)) == 146);
@@ -163,12 +163,12 @@ TEST_CASE("Parse Message data length < 8 unsigned") {
  SG_ Msg1Sig2 : 15|8@0+ (1,0) [-3276.8|-3276.7] "km/h" Vector__XXX)";
 	const auto filename = create_temporary_dbc_with(dbc_contents.c_str());
 
-	libdbc::DbcParser p;
+	Libdbc::DbcParser p;
 	p.parse_file(filename);
 
 	std::vector<uint8_t> data{0x1, 0x2};
 	std::vector<double> result_values;
-	REQUIRE(p.parseMessage(234, data, result_values) == libdbc::Message::ParseSignalsStatus::Success);
+	REQUIRE(p.parse_message(234, data, result_values) == Libdbc::Message::ParseSignalsStatus::Success);
 	REQUIRE(result_values.size() == 2);
 	REQUIRE(Catch::Approx(result_values.at(0)) == 0x1);
 	REQUIRE(Catch::Approx(result_values.at(1)) == 0x2);

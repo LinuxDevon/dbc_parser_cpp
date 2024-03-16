@@ -7,7 +7,7 @@
 #include <string>
 #include <vector>
 
-namespace libdbc {
+namespace Libdbc {
 struct Message {
 	Message() = delete;
 	virtual ~Message() = default;
@@ -21,14 +21,14 @@ struct Message {
 		ErrorInvalidConversion,
 	};
 
-	ParseSignalsStatus parseSignals(const std::vector<uint8_t>& data, std::vector<double>& values) const;
+	ParseSignalsStatus parse_signals(const std::vector<uint8_t>& data, std::vector<double>& values) const;
 
-	void appendSignal(const Signal& signal);
-	std::vector<Signal> getSignals() const;
+	void append_signal(const Signal& signal);
+	std::vector<Signal> get_signals() const;
 	uint32_t id() const;
 	uint8_t size() const;
 	const std::string& name() const;
-	void addValueDescription(const std::string& signal_name, const std::vector<Signal::SignalValueDescriptions>&);
+	void add_value_description(const std::string& signal_name, const std::vector<Signal::ValueDescription>&);
 
 	virtual bool operator==(const Message& rhs) const;
 

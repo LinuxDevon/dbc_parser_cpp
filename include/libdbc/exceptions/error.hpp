@@ -3,16 +3,16 @@
 
 #include <exception>
 
-namespace libdbc {
+namespace Libdbc {
 
-class exception : public std::exception {
+class Exception : public std::exception {
 public:
 	const char* what() const throw() override {
 		return "libdbc exception occurred";
 	}
 };
 
-class validity_error : public exception {
+class ValidityError : public Exception {
 public:
 	const char* what() const throw() override {
 		return "Invalid DBC file";

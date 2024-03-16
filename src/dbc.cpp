@@ -6,7 +6,7 @@
 #include <regex>
 #include <vector>
 
-namespace libdbc {
+namespace Libdbc {
 
 const auto floatPattern = "(-?\\d+\\.?(\\d+)?)"; // Can be negative
 
@@ -45,12 +45,10 @@ constexpr unsigned MESSAGE_NAME_GROUP = 3;
 constexpr unsigned MESSAGE_SIZE_GROUP = 4;
 constexpr unsigned MESSAGE_NODE_GROUP = 5;
 
-enum VALToken { Identifier = 0, CANId, SignalName, Value, Description };
-
-struct VALObject {
+struct Value {
 	uint32_t can_id;
 	std::string signal_name;
-	std::vector<Signal::SignalValueDescriptions> vd;
+	std::vector<Signal::ValueDescription> value_descriptions;
 };
 
 DbcParser::DbcParser()
@@ -79,7 +77,7 @@ void DbcParser::parse_file(const std::string& file) {
 	parse_dbc_nodes(stream);
 
 	while (!stream.eof()) {
-		utils::StreamHandler::get_next_non_blank_line(stream, line);
+		Utils::StreamHandler::get_next_non_blank_line(stream, line);
 		lines.push_back(line);
 	}
 
@@ -94,14 +92,14 @@ std::vector<std::string> DbcParser::get_nodes() const {
 	return nodes;
 }
 
-std::vector<libdbc::Message> DbcParser::get_messages() const {
+std::vector<Libdbc::Message> DbcParser::get_messages() const {
 	return messages;
 }
 
-Message::ParseSignalsStatus DbcParser::parseMessage(const uint32_t message_id, const std::vector<uint8_t>& data, std::vector<double>& out_values) {
+Message::ParseSignalsStatus DbcParser::parse_message(const uint32_t message_id, const std::vector<uint8_t>& data, std::vector<double>& out_values) {
 	for (const auto& message : messages) {
 		if (message.id() == message_id) {
-			return message.parseSignals(data, out_values);
+			return message.parse_signals(data, out_values);
 		}
 	}
 	return Message::ParseSignalsStatus::ErrorUnknownID;
@@ -111,20 +109,20 @@ void DbcParser::parse_dbc_header(std::istream& file_stream) {
 	std::string line;
 	std::smatch match;
 
-	utils::StreamHandler::get_line(file_stream, line);
+	Utils::StreamHandler::get_line(file_stream, line);
 
 	if (!std::regex_search(line, match, version_re)) {
-		throw validity_error();
+		throw ValidityError();
 	}
 
 	version = match.str(2);
 
-	utils::StreamHandler::get_next_non_blank_line(file_stream, line);
-	utils::StreamHandler::skip_to_next_blank_line(file_stream, line);
-	utils::StreamHandler::get_next_non_blank_line(file_stream, line);
+	Utils::StreamHandler::get_next_non_blank_line(file_stream, line);
+	Utils::StreamHandler::skip_to_next_blank_line(file_stream, line);
+	Utils::StreamHandler::get_next_non_blank_line(file_stream, line);
 
 	if (!std::regex_search(line, match, bit_timing_re)) {
-		throw validity_error();
+		throw ValidityError();
 	}
 }
 
@@ -132,22 +130,22 @@ void DbcParser::parse_dbc_nodes(std::istream& file_stream) {
 	std::string line;
 	std::smatch match;
 
-	utils::StreamHandler::get_next_non_blank_line(file_stream, line);
+	Utils::StreamHandler::get_next_non_blank_line(file_stream, line);
 
 	if (!std::regex_search(line, match, node_re)) {
-		throw validity_error();
+		throw ValidityError();
 	}
 
 	if (match.length() > 2) {
 		std::string node = match.str(2);
-		utils::String::split(node, nodes);
+		Utils::String::split(node, nodes);
 	}
 }
 
 void DbcParser::parse_dbc_messages(const std::vector<std::string>& lines) {
 	std::smatch match;
 
-	std::vector<VALObject> signal_value;
+	std::vector<Value> signal_value;
 
 	for (const auto& line : lines) {
 		if (std::regex_search(line, match, message_re)) {
@@ -170,18 +168,18 @@ void DbcParser::parse_dbc_messages(const std::vector<std::string>& lines) {
 			bool is_bigendian = (std::stoul(match.str(SIGNAL_ENDIAN_GROUP)) == 0);
 			bool is_signed = (match.str(SIGNAL_SIGNED_GROUP) == "-");
 
-			double factor = utils::String::convert_to_double(match.str(SIGNAL_FACTOR_GROUP));
-			double offset = utils::String::convert_to_double(match.str(SIGNAL_OFFSET_GROUP));
-			double min = utils::String::convert_to_double(match.str(SIGNAL_MIN_GROUP));
-			double max = utils::String::convert_to_double(match.str(SIGNAL_MAX_GROUP));
+			double factor = Utils::String::convert_to_double(match.str(SIGNAL_FACTOR_GROUP));
+			double offset = Utils::String::convert_to_double(match.str(SIGNAL_OFFSET_GROUP));
+			double min = Utils::String::convert_to_double(match.str(SIGNAL_MIN_GROUP));
+			double max = Utils::String::convert_to_double(match.str(SIGNAL_MAX_GROUP));
 
 			std::string unit = match.str(SIGNAL_UNIT_GROUP);
 
 			std::vector<std::string> receivers;
-			utils::String::split(match.str(SIGNAL_RECIEVER_GROUP), receivers, ',');
+			Utils::String::split(match.str(SIGNAL_RECIEVER_GROUP), receivers, ',');
 
 			Signal sig(name, is_multiplexed, start_bit, size, is_bigendian, is_signed, factor, offset, min, max, unit, receivers);
-			messages.back().appendSignal(sig);
+			messages.back().append_signal(sig);
 			continue;
 		}
 
@@ -196,19 +194,19 @@ void DbcParser::parse_dbc_messages(const std::vector<std::string>& lines) {
 			std::sregex_iterator desc_iter(rest_of_descriptions.begin(), rest_of_descriptions.end(), description_re);
 			std::sregex_iterator desc_end = std::sregex_iterator();
 
-			std::vector<Signal::SignalValueDescriptions> values{};
+			std::vector<Signal::ValueDescription> values{};
 			for (std::sregex_iterator i = desc_iter; i != desc_end; ++i) {
 				std::smatch desc_match = *desc_iter;
 				uint32_t number = static_cast<uint32_t>(std::stoul(desc_match.str(1)));
 				std::string text = desc_match.str(2);
 
-				values.push_back(Signal::SignalValueDescriptions{number, text});
+				values.push_back(Signal::ValueDescription{number, text});
 				++desc_iter;
 			}
 
-			VALObject obj{message_id, signal_name, values};
+			Value val{message_id, signal_name, values};
 
-			signal_value.push_back(obj);
+			signal_value.push_back(val);
 			continue;
 		}
 	}
@@ -216,7 +214,7 @@ void DbcParser::parse_dbc_messages(const std::vector<std::string>& lines) {
 	for (const auto& signal : signal_value) {
 		for (auto& msg : messages) {
 			if (msg.id() == signal.can_id) {
-				msg.addValueDescription(signal.signal_name, signal.vd);
+				msg.add_value_description(signal.signal_name, signal.value_descriptions);
 				break;
 			}
 		}
