@@ -17,13 +17,32 @@ const auto byteOrderPattern = "([0-1])";
 const auto signPattern = "(\\+|\\-)";
 const auto scalePattern = "(\\d+\\.?(\\d+)?)"; // Non negative float
 const auto offsetPattern = floatPattern;
+// NOLINTNEXTLINE -- Disable warning for runtime initialization and can throw. Can't fix until newer c++ version with constexpr
 const auto offsetScalePattern = std::string("\\(") + scalePattern + "\\," + offsetPattern + "\\)";
 const auto minPattern = floatPattern;
 const auto maxPattern = floatPattern;
+// NOLINTNEXTLINE -- Disable warning for runtime initialization and can throw. Can't fix until newer c++ version with constexpr
 const auto minMaxPattern = std::string("\\[") + minPattern + "\\|" + maxPattern + "\\]";
 const auto unitPattern = "\"(.*)\""; // Random string
 const auto receiverPattern = "([\\w\\,]+|Vector__XXX)*";
 const auto whiteSpace = "\\s";
+
+constexpr unsigned SIGNAL_NAME_GROUP = 2;
+constexpr unsigned SIGNAL_START_BIT_GROUP = 3;
+constexpr unsigned SIGNAL_SIZE_GROUP = 4;
+constexpr unsigned SIGNAL_ENDIAN_GROUP = 5;
+constexpr unsigned SIGNAL_SIGNED_GROUP = 6;
+constexpr unsigned SIGNAL_FACTOR_GROUP = 7;
+constexpr unsigned SIGNAL_OFFSET_GROUP = 9;
+constexpr unsigned SIGNAL_MIN_GROUP = 11;
+constexpr unsigned SIGNAL_MAX_GROUP = 13;
+constexpr unsigned SIGNAL_UNIT_GROUP = 15;
+constexpr unsigned SIGNAL_RECIEVER_GROUP = 16;
+
+constexpr unsigned MESSAGE_ID_GROUP = 2;
+constexpr unsigned MESSAGE_NAME_GROUP = 3;
+constexpr unsigned MESSAGE_SIZE_GROUP = 4;
+constexpr unsigned MESSAGE_NODE_GROUP = 5;
 
 enum VALToken { Identifier = 0, CANId, SignalName, Value, Description };
 
@@ -33,81 +52,83 @@ struct VALObject {
 	std::vector<Signal::SignalValueDescriptions> vd;
 };
 
-static bool parseVal(const std::string& str, VALObject& obj);
-bool parseVal(const std::string& str, VALObject& obj) {
+static bool parse_value(const std::string& str, VALObject& obj);
+
+bool parse_value(const std::string& str, VALObject& obj) {
 	obj.signal_name = "";
 	obj.vd.clear();
 	auto state = Identifier;
-	const char* a = str.data();
-	Signal::SignalValueDescriptions vd;
+	const char* value_data = str.data();
+	Signal::SignalValueDescriptions value_description;
 	for (;;) {
 		switch (state) {
 		case Identifier: {
-			if (*a != 'V') {
+			if (*value_data != 'V') {
 				return false;
 			}
-			a++;
-			if (*a != 'A') {
+			value_data++;
+			if (*value_data != 'A') {
 				return false;
 			}
-			a++;
-			if (*a != 'L') {
+			value_data++;
+			if (*value_data != 'L') {
 				return false;
 			}
-			a++;
-			if (*a != '_') {
+			value_data++;
+			if (*value_data != '_') {
 				return false;
 			}
-			a++;
-			if (*a != ' ') {
+			value_data++;
+			if (*value_data != ' ') {
 				return false;
 			}
-			a++; // skip whitespace
+			value_data++; // skip whitespace
 			state = CANId;
 			break;
 		}
 		case CANId: {
 			std::string can_id_str;
-			while (*a >= '0' && *a <= '9') {
-				can_id_str += *a;
-				a++;
+			while (*value_data >= '0' && *value_data <= '9') {
+				can_id_str += *value_data;
+				value_data++;
 			}
 			if (can_id_str.empty()) {
 				return false;
 			}
 			obj.can_id = static_cast<uint32_t>(std::stoul(can_id_str));
-			if (*a != ' ') {
+			if (*value_data != ' ') {
 				return false;
 			}
-			a++; // skip whitespace
+			value_data++; // skip whitespace
 			state = SignalName;
 			break;
 		}
 		case SignalName: {
-			if ((*a >= 'a' && *a <= 'z') || (*a >= 'A' && *a <= 'Z') || *a == '_') {
-				obj.signal_name += *a;
+			if ((*value_data >= 'a' && *value_data <= 'z') || (*value_data >= 'A' && *value_data <= 'Z') || *value_data == '_') {
+				obj.signal_name += *value_data;
 			} else {
 				return false;
 			}
-			a++;
-			while ((*a >= 'a' && *a <= 'z') || (*a >= 'A' && *a <= 'Z') || *a == '_' || (*a >= '0' && *a <= '9')) {
-				obj.signal_name += *a;
-				a++;
+			value_data++;
+			while ((*value_data >= 'a' && *value_data <= 'z') || (*value_data >= 'A' && *value_data <= 'Z') || *value_data == '_'
+				   || (*value_data >= '0' && *value_data <= '9')) {
+				obj.signal_name += *value_data;
+				value_data++;
 			}
-			if (*a != ' ') {
+			if (*value_data != ' ') {
 				return false;
 			}
-			a++; // skip whitespace
+			value_data++; // skip whitespace
 			state = Value;
 			break;
 		}
 		case Value: {
 			std::string value_str;
-			while (*a >= '0' && *a <= '9') {
-				value_str += *a;
-				a++;
+			while (*value_data >= '0' && *value_data <= '9') {
+				value_str += *value_data;
+				value_data++;
 			}
-			if (*a == ';') {
+			if (*value_data == ';') {
 				if (value_str.empty()) {
 					return true;
 				}
@@ -117,35 +138,35 @@ bool parseVal(const std::string& str, VALObject& obj) {
 				return false;
 			}
 
-			if (*a != ' ') {
+			if (*value_data != ' ') {
 				return false;
 			}
-			a++; // skip whitespace
-			vd.value = (uint32_t)std::stoul(value_str);
+			value_data++; // skip whitespace
+			value_description.value = (uint32_t)std::stoul(value_str);
 			state = Description;
 			break;
 		}
 		case Description: {
 			std::string desc;
-			if (*a != '"') {
+			if (*value_data != '"') {
 				return false;
 			}
-			a++;
-			while (*a != '"' && *a != 0) {
-				desc += *a;
-				a++;
+			value_data++;
+			while (*value_data != '"' && *value_data != 0) {
+				desc += *value_data;
+				value_data++;
 			}
-			if (*a == 0) {
+			if (*value_data == 0) {
 				return false;
 			}
-			a++;
-			if (*a != ' ') {
+			value_data++;
+			if (*value_data != ' ') {
 				return false;
 			}
-			a++; // skip whitespace
+			value_data++; // skip whitespace
 
-			vd.description = desc;
-			obj.vd.push_back(vd);
+			value_description.description = desc;
+			obj.vd.push_back(value_description);
 
 			state = Value;
 			break;
@@ -156,9 +177,7 @@ bool parseVal(const std::string& str, VALObject& obj) {
 }
 
 DbcParser::DbcParser()
-	: version("")
-	, nodes()
-	, version_re("^(VERSION)\\s\"(.*)\"")
+	: version_re("^(VERSION)\\s\"(.*)\"")
 	, bit_timing_re("^(BS_:)")
 	, name_space_re("^(NS_)\\s\\:")
 	, node_re("^(BU_:)\\s((?:[\\w]+?\\s?)*)")
@@ -171,18 +190,18 @@ DbcParser::DbcParser()
 }
 
 void DbcParser::parse_file(const std::string& file) {
-	std::ifstream s(file.c_str());
+	std::ifstream stream(file.c_str());
 	std::string line;
 	std::vector<std::string> lines;
 
 	messages.clear();
 
-	parse_dbc_header(s);
+	parse_dbc_header(stream);
 
-	parse_dbc_nodes(s);
+	parse_dbc_nodes(stream);
 
-	while (!s.eof()) {
-		utils::StreamHandler::get_next_non_blank_line(s, line);
+	while (!stream.eof()) {
+		utils::StreamHandler::get_next_non_blank_line(stream, line);
 		lines.push_back(line);
 	}
 
@@ -201,9 +220,9 @@ std::vector<libdbc::Message> DbcParser::get_messages() const {
 	return messages;
 }
 
-Message::ParseSignalsStatus DbcParser::parseMessage(const uint32_t id, const std::vector<uint8_t>& data, std::vector<double>& out_values) {
+Message::ParseSignalsStatus DbcParser::parseMessage(const uint32_t message_id, const std::vector<uint8_t>& data, std::vector<double>& out_values) {
 	for (const auto& message : messages) {
-		if (message.id() == id) {
+		if (message.id() == message_id) {
 			return message.parseSignals(data, out_values);
 		}
 	}
@@ -242,60 +261,60 @@ void DbcParser::parse_dbc_nodes(std::istream& file_stream) {
 	}
 
 	if (match.length() > 2) {
-		std::string n = match.str(2);
-		utils::String::split(n, nodes);
+		std::string node = match.str(2);
+		utils::String::split(node, nodes);
 	}
 }
 
 void DbcParser::parse_dbc_messages(const std::vector<std::string>& lines) {
 	std::smatch match;
 
-	std::vector<VALObject> sv;
+	std::vector<VALObject> signal_value;
 
 	VALObject obj{};
 	for (const auto& line : lines) {
 		if (std::regex_search(line, match, message_re)) {
-			uint32_t id = static_cast<uint32_t>(std::stoul(match.str(2)));
-			std::string name = match.str(3);
-			uint8_t size = static_cast<uint8_t>(std::stoul(match.str(4)));
-			std::string node = match.str(5);
+			uint32_t message_id = static_cast<uint32_t>(std::stoul(match.str(MESSAGE_ID_GROUP)));
+			std::string name = match.str(MESSAGE_NAME_GROUP);
+			uint8_t size = static_cast<uint8_t>(std::stoul(match.str(MESSAGE_SIZE_GROUP)));
+			std::string node = match.str(MESSAGE_NODE_GROUP);
 
-			Message msg(id, name, size, node);
+			Message msg(message_id, name, size, node);
 
 			messages.push_back(msg);
 			continue;
 		}
 
 		if (std::regex_search(line, match, signal_re)) {
-			std::string name = match.str(2);
+			std::string name = match.str(SIGNAL_NAME_GROUP);
 			bool is_multiplexed = false; // No support yet
-			uint32_t start_bit = static_cast<uint32_t>(std::stoul(match.str(3)));
-			uint32_t size = static_cast<uint32_t>(std::stoul(match.str(4)));
-			bool is_bigendian = (std::stoul(match.str(5)) == 0);
-			bool is_signed = (match.str(6) == "-");
+			uint32_t start_bit = static_cast<uint32_t>(std::stoul(match.str(SIGNAL_START_BIT_GROUP)));
+			uint32_t size = static_cast<uint32_t>(std::stoul(match.str(SIGNAL_SIZE_GROUP)));
+			bool is_bigendian = (std::stoul(match.str(SIGNAL_ENDIAN_GROUP)) == 0);
+			bool is_signed = (match.str(SIGNAL_SIGNED_GROUP) == "-");
 
-			double factor = utils::String::convert_to_double(match.str(7).data());
-			double offset = utils::String::convert_to_double(match.str(9).data());
-			double min = utils::String::convert_to_double(match.str(11).data());
-			double max = utils::String::convert_to_double(match.str(13).data());
+			double factor = utils::String::convert_to_double(match.str(SIGNAL_FACTOR_GROUP));
+			double offset = utils::String::convert_to_double(match.str(SIGNAL_OFFSET_GROUP));
+			double min = utils::String::convert_to_double(match.str(SIGNAL_MIN_GROUP));
+			double max = utils::String::convert_to_double(match.str(SIGNAL_MAX_GROUP));
 
-			std::string unit = match.str(15);
+			std::string unit = match.str(SIGNAL_UNIT_GROUP);
 
 			std::vector<std::string> receivers;
-			utils::String::split(match.str(16), receivers, ',');
+			utils::String::split(match.str(SIGNAL_RECIEVER_GROUP), receivers, ',');
 
 			Signal sig(name, is_multiplexed, start_bit, size, is_bigendian, is_signed, factor, offset, min, max, unit, receivers);
 			messages.back().appendSignal(sig);
 			continue;
 		}
 
-		if (parseVal(line, obj)) {
-			sv.push_back(obj);
+		if (parse_value(line, obj)) {
+			signal_value.push_back(obj);
 			continue;
 		}
 	}
 
-	for (const auto& signal : sv) {
+	for (const auto& signal : signal_value) {
 		for (auto& msg : messages) {
 			if (msg.id() == signal.can_id) {
 				msg.addValueDescription(signal.signal_name, signal.vd);
