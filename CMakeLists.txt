@@ -114,7 +114,7 @@ install(
 
 # Clang tidy
 add_custom_target(clang-tidy-check
-	clang-tidy -p ${CMAKE_BINARY_DIR}/compile_commands.json ${SOURCE_FILES} ${HEADER_FILES}
+	clang-tidy -p ${CMAKE_BINARY_DIR}/compile_commands.json -warnings-as-errors=* ${SOURCE_FILES} ${HEADER_FILES}
 	DEPENDS ${SOURCE_FILES} ${HEADER_FILES}
 )
 

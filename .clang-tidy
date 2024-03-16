@@ -17,7 +17,7 @@ CheckOptions:
   cert-dcl16-c.NewSuffixes: 'L;LL;LU;LLU'
   cert-dcl51-cpp.AggressiveDependentMemberLookup: 'false'
   readability-identifier-naming.GetConfigPerFile: 'true'
-  cert-err61-cpp.MaxSize: '-1'
+  cert-err61-cpp.MaxSize: '10'
   cert-sig30-c.AsyncSafeFunctionSet: POSIX
   readability-inconsistent-declaration-parameter-name.Strict: 'false'
   cppcoreguidelines-macro-usage.CheckCapsOnly: 'false'
@@ -45,7 +45,7 @@ CheckOptions:
   readability-suspicious-call-argument.JaroWinklerDissimilarBelow: '75'
   readability-suspicious-call-argument.SuffixSimilarAbove: '30'
   readability-suspicious-call-argument.Suffix: 'true'
-  cert-err09-cpp.MaxSize: '-1'
+  cert-err09-cpp.MaxSize: '10'
   cppcoreguidelines-narrowing-conversions.WarnOnIntegerNarrowingConversion: 'true'
   cppcoreguidelines-prefer-member-initializer.UseAssignment: 'false'
   cert-oop57-cpp.MemSetNames: ''
@@ -156,5 +156,14 @@ CheckOptions:
   cert-dcl16-c.IgnoreMacros: 'true'
   llvm-else-after-return.WarnOnUnfixable: 'false'
   cert-msc32-c.DisallowedSeedTypes: 'time_t,std::time_t'
+  readability-identifier-naming.NamespaceCase: 'CamelCase'
+  readability-identifier-naming.UnionCase: 'CamelCase'
+  readability-identifier-naming.ClassCase: 'CamelCase'
+  readability-identifier-naming.ClassMemberCase: 'lower_case'
+  readability-identifier-naming.ClassMethodCase: 'lower_case'
+  readability-identifier-naming.StructCase: 'CamelCase'
+  readability-identifier-naming.MemberCase: 'lower_case'
+  readability-identifier-naming.MethodCase: 'lower_case'
+  readability-identifier-naming.FunctionCase: 'lower_case'
 ...
 
