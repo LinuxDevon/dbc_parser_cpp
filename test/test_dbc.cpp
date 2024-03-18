@@ -11,11 +11,11 @@ TEST_CASE("Testing dbc file loading error issues", "[fileio][error]") {
 	auto parser = std::unique_ptr<Libdbc::DbcParser>(new Libdbc::DbcParser());
 
 	SECTION("Loading a non dbc file should throw an error", "[error]") {
-		REQUIRE_THROWS_AS(parser->parse_file(TEXT_FILE), Libdbc::ValidityError);
+		REQUIRE_THROWS_AS(parser->parse_file(TEXT_FILE), Libdbc::NonDbcFileFormatError);
 	}
 
 	SECTION("Loading a dbc with bad headers throws an error", "[error]") {
-		REQUIRE_THROWS_AS(parser->parse_file(MISSING_VERSION_DBC_FILE), Libdbc::ValidityError);
+		REQUIRE_THROWS_AS(parser->parse_file(MISSING_VERSION_DBC_FILE), Libdbc::DbcFileIsMissingVersion);
 	}
 
 	SECTION("Loading a dbc without the required bit timing section (BS_:)", "[error]") {

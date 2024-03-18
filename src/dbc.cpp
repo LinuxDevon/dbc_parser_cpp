@@ -76,8 +76,12 @@ void DbcParser::parse_file(const std::string& file) {
 
 	messages.clear();
 
-	parse_dbc_header(stream);
+	auto extension = get_extension(file);
+	if (extension != ".dbc") {
+		throw NonDbcFileFormatError(file, extension);
+	}
 
+	parse_dbc_header(stream);
 	parse_dbc_nodes(stream);
 
 	while (!stream.eof()) {
@@ -86,6 +90,15 @@ void DbcParser::parse_file(const std::string& file) {
 	}
 
 	parse_dbc_messages(lines);
+}
+
+std::string DbcParser::get_extension(const std::string& file_name) {
+	size_t dot = file_name.find_last_of(".");
+	if (dot != std::string::npos) {
+		return file_name.substr(dot, file_name.size() - dot);
+	}
+
+	return "";
 }
 
 std::string DbcParser::get_version() const {
@@ -116,7 +129,7 @@ void DbcParser::parse_dbc_header(std::istream& file_stream) {
 	Utils::StreamHandler::get_line(file_stream, line);
 
 	if (!std::regex_search(line, match, version_re)) {
-		throw ValidityError();
+		throw DbcFileIsMissingVersion();
 	}
 
 	version = match.str(2);

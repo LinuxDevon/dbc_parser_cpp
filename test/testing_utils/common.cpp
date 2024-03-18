@@ -23,7 +23,7 @@ std::string generate_unique_filename() {
 	int random_num = dis(gen);
 
 	// Concatenate time and random number to create a unique filename
-	return "temp_file_" + std::to_string(milliseconds) + "_" + std::to_string(random_num) + ".txt";
+	return "temp_file_" + std::to_string(milliseconds) + "_" + std::to_string(random_num) + ".dbc";
 }
 
 std::string create_temporary_dbc_with(const char* contents) {
