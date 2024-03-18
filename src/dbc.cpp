@@ -224,6 +224,10 @@ void DbcParser::parse_dbc_messages(const std::vector<std::string>& lines) {
 			signal_value.push_back(val);
 			continue;
 		}
+
+		if (line.length() > 0) {
+			missed_lines.push_back(line);
+		}
 	}
 
 	for (const auto& signal : signal_value) {
@@ -234,6 +238,10 @@ void DbcParser::parse_dbc_messages(const std::vector<std::string>& lines) {
 			}
 		}
 	}
+}
+
+std::vector<std::string> DbcParser::unused_lines() const {
+	return missed_lines;
 }
 
 }

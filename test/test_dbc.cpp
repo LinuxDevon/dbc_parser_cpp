@@ -260,7 +260,7 @@ BU_:
 BO_ 293 Msg1: 2 Vector__XXX
  SG_ Wert7 : 0|16@1- (1,0) [0|0] "" Vector__XXX
 
-BO_ 292 Msg2: 8 Vector__XXX
+BO_ 292 Msg2: 1 Vector__XXX
  SG_ Wert8 : 56|8@1- (1,0) [0|0] "" Vector__XXX
 )";
 	const auto filename = create_temporary_dbc_with(contents.c_str());
@@ -271,4 +271,41 @@ BO_ 292 Msg2: 8 Vector__XXX
 	REQUIRE(parser.get_messages().size() == 2);
 	REQUIRE(parser.get_messages().at(0).name() == "Msg1");
 	REQUIRE(parser.get_messages().at(1).name() == "Msg2");
+}
+
+TEST_CASE("Should report unused lines since we don't have tracing.", "[parsing]") {
+	std::string contents = R"(VERSION ""
+
+NS_ :
+
+BS_:
+
+BU_:
+
+
+BO_ 293 Msg1: 2 Vector__XXX
+ SG_ Whitespace: | 0|16@1- (1,0) [0|0] "" Vector__XXX
+ SG_ Wert7 : 0|16@1- (1,0) [0|0] "" Vector__XXX
+ SG_ Wert8 : 0|16@1- (1,0) [0|0] "" Vector__XXX
+
+BO_ 292 Msg2: 1 Vector__XXX
+ SG_ Wert8 : 56|8@1- (1,0) [0|0] "" Vector__XXX
+ SB_ not a correct line
+
+BO_ have a issue here:
+)";
+
+	const auto filename = create_temporary_dbc_with(contents.c_str());
+
+	auto parser = Libdbc::DbcParser();
+	REQUIRE_NOTHROW(parser.parse_file(filename.c_str()));
+
+	REQUIRE(parser.get_messages().size() == 2);
+	REQUIRE(parser.get_messages()[0].size() == 2);
+	REQUIRE(parser.get_messages()[1].size() == 1);
+
+	auto unused = parser.unused_lines();
+
+	// We could match them all here but i think just a check that the size is sufficent.
+	REQUIRE(unused.size() == 3);
 }
