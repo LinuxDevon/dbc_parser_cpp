@@ -44,6 +44,12 @@ public:
 	}
 };
 
+class DbcFileIsMissingBitTiming : public ValidityError {
+public:
+	const char* what() const throw() override {
+		return "Invalid dbc file. Missing the version header.";
+	}
+};
 
 
 } // libdbc

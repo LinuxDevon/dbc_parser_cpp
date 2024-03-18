@@ -19,7 +19,7 @@ TEST_CASE("Testing dbc file loading error issues", "[fileio][error]") {
 	}
 
 	SECTION("Loading a dbc without the required bit timing section (BS_:)", "[error]") {
-		REQUIRE_THROWS_AS(parser->parse_file(MISSING_BIT_TIMING_DBC_FILE), Libdbc::ValidityError);
+		REQUIRE_THROWS_AS(parser->parse_file(MISSING_BIT_TIMING_DBC_FILE), Libdbc::DbcFileIsMissingBitTiming);
 	}
 
 	SECTION("Loading a dbc with some missing namespace section tags (NS_ :)", "[error]") {

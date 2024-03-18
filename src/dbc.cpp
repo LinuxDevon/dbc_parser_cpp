@@ -139,7 +139,7 @@ void DbcParser::parse_dbc_header(std::istream& file_stream) {
 	Utils::StreamHandler::get_next_non_blank_line(file_stream, line);
 
 	if (!std::regex_search(line, match, bit_timing_re)) {
-		throw ValidityError();
+		throw DbcFileIsMissingBitTiming();
 	}
 }
 
