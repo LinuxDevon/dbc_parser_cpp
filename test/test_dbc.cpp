@@ -18,7 +18,7 @@ TEST_CASE("Testing dbc file loading error issues", "[fileio][error]") {
 		REQUIRE_THROWS_WITH(parser->parse_file(TEXT_FILE), ContainsSubstring("TextFile.txt"));
 	}
 
-	SECTION("Loading a dbc with bad headers throws an error", "[error]") {
+	SECTION("Loading a dbc with missing version header throws an error (VERSION)", "[error]") {
 		REQUIRE_THROWS_AS(parser->parse_file(MISSING_VERSION_DBC_FILE), Libdbc::DbcFileIsMissingVersion);
 		REQUIRE_THROWS_WITH(parser->parse_file(MISSING_VERSION_DBC_FILE), ContainsSubstring("line: (NS_ :)"));
 	}
@@ -31,7 +31,7 @@ TEST_CASE("Testing dbc file loading error issues", "[fileio][error]") {
 	SECTION("Loading a dbc with some missing namespace section tags (NS_ :)", "[error]") {
 		// Confusion about this type of error. it appears that the header isn't
 		// very well standardized for now we ignore this type of error.
-		CHECK_NOTHROW(parser->parse_file(MISSING_NEW_SYMBOLS_DBC_FILE));
+		REQUIRE_NOTHROW(parser->parse_file(MISSING_NEW_SYMBOLS_DBC_FILE));
 	}
 
 	SECTION("Verify that what() method is accessible for all exceptions", "[error]") {
@@ -246,7 +246,7 @@ VAL_ 123 State1 123 "Description 3" 0 "Description 4" ;)";
 	REQUIRE(signal2.value_descriptions.at(1).description == "Description 4");
 }
 
-TEST_CASE("Should parse DBC with empty BU_") {
+TEST_CASE("Should parse DBC with empty BU_", "[error][optional]") {
 	std::string contents = R"(VERSION ""
 
 
@@ -266,7 +266,7 @@ BO_ 292 Msg2: 8 Vector__XXX
 	const auto filename = create_temporary_dbc_with(contents.c_str());
 
 	auto parser = Libdbc::DbcParser();
-	parser.parse_file(filename.c_str());
+	REQUIRE_NOTHROW(parser.parse_file(filename.c_str()));
 
 	REQUIRE(parser.get_messages().size() == 2);
 	REQUIRE(parser.get_messages().at(0).name() == "Msg1");
