@@ -1,4 +1,5 @@
 #include <cstdint>
+#include <cstdio>
 #include <fstream>
 #include <istream>
 #include <libdbc/dbc.hpp>
@@ -93,7 +94,7 @@ void DbcParser::parse_file(const std::string& file) {
 }
 
 std::string DbcParser::get_extension(const std::string& file_name) {
-	size_t dot = file_name.find_last_of(".");
+	std::size_t dot = file_name.find_last_of(".");
 	if (dot != std::string::npos) {
 		return file_name.substr(dot, file_name.size() - dot);
 	}

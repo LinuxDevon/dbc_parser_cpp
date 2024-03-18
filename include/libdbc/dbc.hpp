@@ -52,7 +52,7 @@ private:
 	void parse_dbc_nodes(std::istream& file_stream);
 	void parse_dbc_messages(const std::vector<std::string>& lines);
 
-	std::string get_extension(const std::string& file_name);
+	static std::string get_extension(const std::string& file_name);
 };
 
 }
