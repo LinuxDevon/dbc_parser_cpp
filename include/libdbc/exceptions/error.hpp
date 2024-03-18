@@ -22,9 +22,8 @@ public:
 
 class NonDbcFileFormatError : public ValidityError {
 public:
-	NonDbcFileFormatError(const std::string &path, const std::string &extension)
-	{
-		error_msg = {"File is not of DBC format. Cannot read this type of file (" + path + "). Found the extension (" + extension + ")"};
+	NonDbcFileFormatError(const std::string &path, const std::string &extension) {
+		error_msg = {"File is not of DBC format. Expected a .dbc extension. Cannot read this type of file (" + path + "). Found the extension (" + extension + ")."};
 	}
 
 	const char* what() const throw() override {
@@ -32,23 +31,35 @@ public:
 	}
 
 private:
-
 	std::string error_msg;
-
 };
 
 class DbcFileIsMissingVersion : public ValidityError {
 public:
-	const char* what() const throw() override {
-		return "Invalid dbc file. Missing the version header.";
+	DbcFileIsMissingVersion(const std::string &line) {
+		error_msg = {"Invalid dbc file. Missing the required version header. Attempting to read line: (" + line + ")."};
 	}
+
+	const char* what() const throw() override {
+		return error_msg.c_str();
+	}
+
+private:
+	std::string error_msg;
 };
 
 class DbcFileIsMissingBitTiming : public ValidityError {
 public:
-	const char* what() const throw() override {
-		return "Invalid dbc file. Missing the version header.";
+	DbcFileIsMissingBitTiming(const std::string &line) {
+		error_msg = {"Invalid dbc file. Missing required bit timing in the header. Attempting to read line: (" + line + ")."};
 	}
+
+	const char* what() const throw() override {
+		return error_msg.c_str();
+	}
+
+private:
+	std::string error_msg;
 };
 
 

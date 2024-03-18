@@ -3,23 +3,29 @@
 #include <catch2/catch_approx.hpp>
 #include <catch2/catch_test_macros.hpp>
 #include <catch2/matchers/catch_matchers.hpp>
+#include <catch2/matchers/catch_matchers_string.hpp>
 #include <libdbc/dbc.hpp>
 #include <libdbc/exceptions/error.hpp>
 #include <string>
+
+using Catch::Matchers::ContainsSubstring;
 
 TEST_CASE("Testing dbc file loading error issues", "[fileio][error]") {
 	auto parser = std::unique_ptr<Libdbc::DbcParser>(new Libdbc::DbcParser());
 
 	SECTION("Loading a non dbc file should throw an error", "[error]") {
 		REQUIRE_THROWS_AS(parser->parse_file(TEXT_FILE), Libdbc::NonDbcFileFormatError);
+		REQUIRE_THROWS_WITH(parser->parse_file(TEXT_FILE), ContainsSubstring("TextFile.txt"));
 	}
 
 	SECTION("Loading a dbc with bad headers throws an error", "[error]") {
 		REQUIRE_THROWS_AS(parser->parse_file(MISSING_VERSION_DBC_FILE), Libdbc::DbcFileIsMissingVersion);
+		REQUIRE_THROWS_WITH(parser->parse_file(MISSING_VERSION_DBC_FILE), ContainsSubstring("line: (NS_ :)"));
 	}
 
 	SECTION("Loading a dbc without the required bit timing section (BS_:)", "[error]") {
 		REQUIRE_THROWS_AS(parser->parse_file(MISSING_BIT_TIMING_DBC_FILE), Libdbc::DbcFileIsMissingBitTiming);
+		REQUIRE_THROWS_WITH(parser->parse_file(MISSING_BIT_TIMING_DBC_FILE), ContainsSubstring("BU_: DBG DRIVER IO MOTOR SENSOR"));
 	}
 
 	SECTION("Loading a dbc with some missing namespace section tags (NS_ :)", "[error]") {

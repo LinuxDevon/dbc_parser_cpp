@@ -129,7 +129,7 @@ void DbcParser::parse_dbc_header(std::istream& file_stream) {
 	Utils::StreamHandler::get_line(file_stream, line);
 
 	if (!std::regex_search(line, match, version_re)) {
-		throw DbcFileIsMissingVersion();
+		throw DbcFileIsMissingVersion(line);
 	}
 
 	version = match.str(2);
@@ -139,7 +139,7 @@ void DbcParser::parse_dbc_header(std::istream& file_stream) {
 	Utils::StreamHandler::get_next_non_blank_line(file_stream, line);
 
 	if (!std::regex_search(line, match, bit_timing_re)) {
-		throw DbcFileIsMissingBitTiming();
+		throw DbcFileIsMissingBitTiming(line);
 	}
 }
 
@@ -149,9 +149,7 @@ void DbcParser::parse_dbc_nodes(std::istream& file_stream) {
 
 	Utils::StreamHandler::get_next_non_blank_line(file_stream, line);
 
-	if (!std::regex_search(line, match, node_re)) {
-		throw ValidityError();
-	}
+	std::regex_search(line, match, node_re);
 
 	if (match.length() > 2) {
 		std::string node = match.str(2);
