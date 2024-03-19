@@ -1,4 +1,5 @@
 #include <cstdint>
+#include <cstdio>
 #include <fstream>
 #include <istream>
 #include <libdbc/dbc.hpp>
@@ -76,8 +77,12 @@ void DbcParser::parse_file(const std::string& file) {
 
 	messages.clear();
 
-	parse_dbc_header(stream);
+	auto extension = get_extension(file);
+	if (extension != ".dbc") {
+		throw NonDbcFileFormatError(file, extension);
+	}
 
+	parse_dbc_header(stream);
 	parse_dbc_nodes(stream);
 
 	while (!stream.eof()) {
@@ -86,6 +91,15 @@ void DbcParser::parse_file(const std::string& file) {
 	}
 
 	parse_dbc_messages(lines);
+}
+
+std::string DbcParser::get_extension(const std::string& file_name) {
+	std::size_t dot = file_name.find_last_of(".");
+	if (dot != std::string::npos) {
+		return file_name.substr(dot, file_name.size() - dot);
+	}
+
+	return "";
 }
 
 std::string DbcParser::get_version() const {
@@ -116,7 +130,7 @@ void DbcParser::parse_dbc_header(std::istream& file_stream) {
 	Utils::StreamHandler::get_line(file_stream, line);
 
 	if (!std::regex_search(line, match, version_re)) {
-		throw ValidityError();
+		throw DbcFileIsMissingVersion(line);
 	}
 
 	version = match.str(2);
@@ -126,7 +140,7 @@ void DbcParser::parse_dbc_header(std::istream& file_stream) {
 	Utils::StreamHandler::get_next_non_blank_line(file_stream, line);
 
 	if (!std::regex_search(line, match, bit_timing_re)) {
-		throw ValidityError();
+		throw DbcFileIsMissingBitTiming(line);
 	}
 }
 
@@ -136,9 +150,7 @@ void DbcParser::parse_dbc_nodes(std::istream& file_stream) {
 
 	Utils::StreamHandler::get_next_non_blank_line(file_stream, line);
 
-	if (!std::regex_search(line, match, node_re)) {
-		throw ValidityError();
-	}
+	std::regex_search(line, match, node_re);
 
 	if (match.length() > 2) {
 		std::string node = match.str(2);
@@ -213,6 +225,10 @@ void DbcParser::parse_dbc_messages(const std::vector<std::string>& lines) {
 			signal_value.push_back(val);
 			continue;
 		}
+
+		if (line.length() > 0) {
+			missed_lines.push_back(line);
+		}
 	}
 
 	for (const auto& signal : signal_value) {
@@ -223,6 +239,10 @@ void DbcParser::parse_dbc_messages(const std::vector<std::string>& lines) {
 			}
 		}
 	}
+}
+
+std::vector<std::string> DbcParser::unused_lines() const {
+	return missed_lines;
 }
 
 }

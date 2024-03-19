@@ -31,6 +31,8 @@ public:
 
 	Message::ParseSignalsStatus parse_message(uint32_t message_id, const std::vector<uint8_t>& data, std::vector<double>& out_values);
 
+	std::vector<std::string> unused_lines() const;
+
 private:
 	std::string version;
 	std::vector<std::string> nodes;
@@ -44,9 +46,13 @@ private:
 	std::regex value_re;
 	std::regex signal_re;
 
+	std::vector<std::string> missed_lines;
+
 	void parse_dbc_header(std::istream& file_stream);
 	void parse_dbc_nodes(std::istream& file_stream);
 	void parse_dbc_messages(const std::vector<std::string>& lines);
+
+	static std::string get_extension(const std::string& file_name);
 };
 
 }

@@ -3,29 +3,35 @@
 #include <catch2/catch_approx.hpp>
 #include <catch2/catch_test_macros.hpp>
 #include <catch2/matchers/catch_matchers.hpp>
+#include <catch2/matchers/catch_matchers_string.hpp>
 #include <libdbc/dbc.hpp>
 #include <libdbc/exceptions/error.hpp>
 #include <string>
+
+using Catch::Matchers::ContainsSubstring;
 
 TEST_CASE("Testing dbc file loading error issues", "[fileio][error]") {
 	auto parser = std::unique_ptr<Libdbc::DbcParser>(new Libdbc::DbcParser());
 
 	SECTION("Loading a non dbc file should throw an error", "[error]") {
-		REQUIRE_THROWS_AS(parser->parse_file(TEXT_FILE), Libdbc::ValidityError);
+		REQUIRE_THROWS_AS(parser->parse_file(TEXT_FILE), Libdbc::NonDbcFileFormatError);
+		REQUIRE_THROWS_WITH(parser->parse_file(TEXT_FILE), ContainsSubstring("TextFile.txt"));
 	}
 
-	SECTION("Loading a dbc with bad headers throws an error", "[error]") {
-		REQUIRE_THROWS_AS(parser->parse_file(MISSING_VERSION_DBC_FILE), Libdbc::ValidityError);
+	SECTION("Loading a dbc with missing version header throws an error (VERSION)", "[error]") {
+		REQUIRE_THROWS_AS(parser->parse_file(MISSING_VERSION_DBC_FILE), Libdbc::DbcFileIsMissingVersion);
+		REQUIRE_THROWS_WITH(parser->parse_file(MISSING_VERSION_DBC_FILE), ContainsSubstring("line: (NS_ :)"));
 	}
 
 	SECTION("Loading a dbc without the required bit timing section (BS_:)", "[error]") {
-		REQUIRE_THROWS_AS(parser->parse_file(MISSING_BIT_TIMING_DBC_FILE), Libdbc::ValidityError);
+		REQUIRE_THROWS_AS(parser->parse_file(MISSING_BIT_TIMING_DBC_FILE), Libdbc::DbcFileIsMissingBitTiming);
+		REQUIRE_THROWS_WITH(parser->parse_file(MISSING_BIT_TIMING_DBC_FILE), ContainsSubstring("BU_: DBG DRIVER IO MOTOR SENSOR"));
 	}
 
 	SECTION("Loading a dbc with some missing namespace section tags (NS_ :)", "[error]") {
 		// Confusion about this type of error. it appears that the header isn't
 		// very well standardized for now we ignore this type of error.
-		CHECK_NOTHROW(parser->parse_file(MISSING_NEW_SYMBOLS_DBC_FILE));
+		REQUIRE_NOTHROW(parser->parse_file(MISSING_NEW_SYMBOLS_DBC_FILE));
 	}
 
 	SECTION("Verify that what() method is accessible for all exceptions", "[error]") {
@@ -240,7 +246,7 @@ VAL_ 123 State1 123 "Description 3" 0 "Description 4" ;)";
 	REQUIRE(signal2.value_descriptions.at(1).description == "Description 4");
 }
 
-TEST_CASE("Should parse DBC with empty BU_") {
+TEST_CASE("Should parse DBC with empty BU_", "[error][optional]") {
 	std::string contents = R"(VERSION ""
 
 
@@ -254,15 +260,52 @@ BU_:
 BO_ 293 Msg1: 2 Vector__XXX
  SG_ Wert7 : 0|16@1- (1,0) [0|0] "" Vector__XXX
 
-BO_ 292 Msg2: 8 Vector__XXX
+BO_ 292 Msg2: 1 Vector__XXX
  SG_ Wert8 : 56|8@1- (1,0) [0|0] "" Vector__XXX
 )";
 	const auto filename = create_temporary_dbc_with(contents.c_str());
 
 	auto parser = Libdbc::DbcParser();
-	parser.parse_file(filename.c_str());
+	REQUIRE_NOTHROW(parser.parse_file(filename.c_str()));
 
 	REQUIRE(parser.get_messages().size() == 2);
 	REQUIRE(parser.get_messages().at(0).name() == "Msg1");
 	REQUIRE(parser.get_messages().at(1).name() == "Msg2");
+}
+
+TEST_CASE("Should report unused lines since we don't have tracing.", "[parsing]") {
+	std::string contents = R"(VERSION ""
+
+NS_ :
+
+BS_:
+
+BU_:
+
+
+BO_ 293 Msg1: 2 Vector__XXX
+ SG_ Whitespace: | 0|16@1- (1,0) [0|0] "" Vector__XXX
+ SG_ Wert7 : 0|16@1- (1,0) [0|0] "" Vector__XXX
+ SG_ Wert8 : 0|16@1- (1,0) [0|0] "" Vector__XXX
+
+BO_ 292 Msg2: 1 Vector__XXX
+ SG_ Wert8 : 56|8@1- (1,0) [0|0] "" Vector__XXX
+ SB_ not a correct line
+
+BO_ have a issue here:
+)";
+
+	const auto filename = create_temporary_dbc_with(contents.c_str());
+
+	auto parser = Libdbc::DbcParser();
+	REQUIRE_NOTHROW(parser.parse_file(filename.c_str()));
+
+	REQUIRE(parser.get_messages().size() == 2);
+	REQUIRE(parser.get_messages()[0].size() == 2);
+	REQUIRE(parser.get_messages()[1].size() == 1);
+
+	auto unused = parser.unused_lines();
+
+	// We could match them all here but i think just a check that the size is sufficent.
+	REQUIRE(unused.size() == 3);
 }
