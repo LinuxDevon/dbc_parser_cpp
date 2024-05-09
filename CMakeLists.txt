@@ -95,6 +95,7 @@ if(DBC_GENERATE_SINGLE_HEADER)
 endif()
 
 ## Installation
+include(GNUInstallDirs)
 # install lib
 install(TARGETS ${PROJECT_NAME}
 		DESTINATION ${CMAKE_INSTALL_LIBDIR})
