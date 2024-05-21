@@ -74,7 +74,7 @@ jobs:
         run: ctest --output-on-failure --test-dir build -j `nproc`
 
       - name: Run install
-        run: cmake --install .
+        run: cmake --install build
 
 
   windows-build:
@@ -120,7 +120,7 @@ jobs:
         shell: cmd
 
       - name: Run install
-        run: cmake --install .
+        run: cmake --install build
 
   macos-builds:
     name: macos ${{matrix.cxx}}, C++${{matrix.std}}, ${{matrix.build_type}}
@@ -170,7 +170,7 @@ jobs:
         run: ctest --output-on-failure --test-dir build -j `sysctl -n hw.ncpu` -V
 
       - name: Run install
-        run: cmake --install .
+        run: cmake --install build
 
   format-check:
     runs-on: ubuntu-latest
