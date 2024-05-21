@@ -14,13 +14,13 @@ jobs:
       fail-fast: false
       matrix:
         cxx:
-          - g++-13
+          - g++-14
           - clang++-16
         build_type: [Debug, Release]
         std: [11]
         include:
-          - cxx: g++-13
-            cc: gcc-13
+          - cxx: g++-14
+            cc: gcc-14
           - cxx: clang++-16
             cc: clang-16
             llvm_version: 16
@@ -47,6 +47,11 @@ jobs:
 
           curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
           source "$HOME/.cargo/env"
+
+      - name: Print gcc version
+        run: |
+          which gcc
+          gcc --version
 
       - name: Configure build
         env:
@@ -114,7 +119,7 @@ jobs:
 
   macos-builds:
     name: macos ${{matrix.cxx}}, C++${{matrix.std}}, ${{matrix.build_type}}
-    runs-on: macos-latest
+    runs-on: macos-12
     strategy:
       fail-fast: false
       matrix:
