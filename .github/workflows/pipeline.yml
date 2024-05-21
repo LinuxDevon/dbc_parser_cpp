@@ -14,13 +14,13 @@ jobs:
       fail-fast: false
       matrix:
         cxx:
-          - g++-14
+          - g++-11
           - clang++-16
         build_type: [Debug, Release]
         std: [11]
         include:
-          - cxx: g++-14
-            cc: gcc-14
+          - cxx: g++-11
+            cc: gcc-11
           - cxx: clang++-16
             cc: clang-16
             llvm_version: 16
@@ -49,9 +49,7 @@ jobs:
           source "$HOME/.cargo/env"
 
       - name: Print gcc version
-        run: |
-          which gcc
-          gcc --version
+        run: gcc --version
 
       - name: Configure build
         env:
