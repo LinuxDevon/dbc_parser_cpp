@@ -73,6 +73,10 @@ jobs:
             CTEST_OUTPUT_ON_FAILURE: 1
         run: ctest --output-on-failure --test-dir build -j `nproc`
 
+      - name: Run install
+        run: cmake --install .
+
+
   windows-build:
     name: ${{matrix.os}}, ${{matrix.std}}, ${{matrix.build_type}}, ${{matrix.platform}}
     runs-on: ${{matrix.os}}
@@ -114,6 +118,9 @@ jobs:
         working-directory: ${{runner.workspace}}
         run: ctest --output-on-failure --test-dir build -j %NUMBER_OF_PROCESSORS%
         shell: cmd
+
+      - name: Run install
+        run: cmake --install .
 
   macos-builds:
     name: macos ${{matrix.cxx}}, C++${{matrix.std}}, ${{matrix.build_type}}
@@ -161,6 +168,9 @@ jobs:
             CTEST_OUTPUT_ON_FAILURE: 1
         working-directory: ${{runner.workspace}}
         run: ctest --output-on-failure --test-dir build -j `sysctl -n hw.ncpu` -V
+
+      - name: Run install
+        run: cmake --install .
 
   format-check:
     runs-on: ubuntu-latest
