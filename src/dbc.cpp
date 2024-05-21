@@ -70,17 +70,11 @@ DbcParser::DbcParser()
 			  + whiteSpace + receiverPattern) {
 }
 
-void DbcParser::parse_file(const std::string& file) {
-	std::ifstream stream(file.c_str());
+void DbcParser::parse_file(std::istream& stream) {
 	std::string line;
 	std::vector<std::string> lines;
 
 	messages.clear();
-
-	auto extension = get_extension(file);
-	if (extension != ".dbc") {
-		throw NonDbcFileFormatError(file, extension);
-	}
 
 	parse_dbc_header(stream);
 	parse_dbc_nodes(stream);
@@ -91,6 +85,17 @@ void DbcParser::parse_file(const std::string& file) {
 	}
 
 	parse_dbc_messages(lines);
+}
+
+void DbcParser::parse_file(const std::string& file_name) {
+	auto extension = get_extension(file_name);
+	if (extension != ".dbc") {
+		throw NonDbcFileFormatError(file_name, extension);
+	}
+
+	std::ifstream stream(file_name.c_str());
+
+	parse_file(stream);
 }
 
 std::string DbcParser::get_extension(const std::string& file_name) {

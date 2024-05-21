@@ -7,6 +7,7 @@
 #include <regex>
 #include <string>
 #include <vector>
+#include <istream>
 
 namespace Libdbc {
 
@@ -15,6 +16,7 @@ public:
 	virtual ~Parser() = default;
 
 	virtual void parse_file(const std::string& file) = 0;
+	virtual void parse_file(std::istream& file) = 0;
 
 protected:
 };
@@ -23,7 +25,8 @@ class DbcParser : public Parser {
 public:
 	DbcParser();
 
-	void parse_file(const std::string& file) override;
+	void parse_file(const std::string& file_name) override;
+	void parse_file(std::istream& stream) override;
 
 	std::string get_version() const;
 	std::vector<std::string> get_nodes() const;
