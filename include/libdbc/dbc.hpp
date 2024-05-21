@@ -7,7 +7,6 @@
 #include <regex>
 #include <string>
 #include <vector>
-#include <istream>
 
 namespace Libdbc {
 
