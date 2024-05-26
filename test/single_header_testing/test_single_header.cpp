@@ -54,3 +54,27 @@ TEST_CASE("Testing  big endian, little endian") {
 		REQUIRE(signal.is_bigendian == false);
 	}
 }
+
+TEST_CASE("Testing file stream mirrors the filename interface") {
+	std::string dbc_contents = PRIMITIVE_DBC + R"(BO_ 234 MSG1: 8 Vector__XXX
+ SG_ Sig1 : 55|16@0- (0.1,0) [-3276.8|-3276.7] "C" Vector__XXX
+ SG_ Sig2 : 39|16@1- (0.1,0) [-3276.8|-3276.7] "C" Vector__XXX)";
+	const auto filename = create_temporary_dbc_with(dbc_contents.c_str());
+	std::ifstream file(filename.c_str());
+
+	auto parser = Libdbc::DbcParser();
+	parser.parse_file(file);
+
+	REQUIRE(parser.get_messages().size() == 1);
+	REQUIRE(parser.get_messages().at(0).name() == "MSG1");
+	REQUIRE(parser.get_messages().at(0).size() == 8);
+	REQUIRE(parser.get_messages().at(0).get_signals().size() == 2);
+	{
+		const auto signal = parser.get_messages().at(0).get_signals().at(0);
+		REQUIRE(signal.is_bigendian == true);
+	}
+	{
+		const auto signal = parser.get_messages().at(0).get_signals().at(1);
+		REQUIRE(signal.is_bigendian == false);
+	}
+}
