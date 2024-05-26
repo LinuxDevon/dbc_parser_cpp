@@ -173,3 +173,39 @@ TEST_CASE("Parse Message data length < 8 unsigned") {
 	REQUIRE(Catch::Approx(result_values.at(0)) == 0x1);
 	REQUIRE(Catch::Approx(result_values.at(1)) == 0x2);
 }
+
+TEST_CASE("Parse message with BO_ on single line should fail.") {
+	std::string dbc_contents = PRIMITIVE_DBC + R"(BO_
+234 MSG1: 8 Vector__XXX
+ SG_ State1 : 0|8@1+ (1,0) [0|200] "Km/h"  DEVICE1,DEVICE2,DEVICE3
+ SG_ State2 : 0|8@1+ (1,0) [0|204] "" DEVICE1,DEVICE2,DEVICE3
+VAL_ 234 State1 123 "Description 1" 0 "Description 2" 90903489 "Big value and special characters &$Â§())!")";
+	const auto filename = create_temporary_dbc_with(dbc_contents.c_str());
+
+	Libdbc::DbcParser p;
+	p.parse_file(filename);
+
+	std::vector<uint8_t> data{0x1, 0x2};
+	std::vector<double> result_values;
+	REQUIRE(p.get_messages().size() == 0);
+	REQUIRE(p.parse_message(234, data, result_values) == Libdbc::Message::ParseSignalsStatus::ErrorUnknownID);
+}
+
+TEST_CASE("Parse signal with SG_ on single line should fail.") {
+	std::string dbc_contents = PRIMITIVE_DBC + R"(BO_ 234 MSG1: 8 Vector__XXX
+ SG_
+State1 : 0|8@1+ (1,0) [0|200] "Km/h"  DEVICE1,DEVICE2,DEVICE3
+ SG_ State2 : 0|8@1+ (1,0) [0|204] "" DEVICE1,DEVICE2,DEVICE3
+VAL_ 234 State1 123 "Description 1" 0 "Description 2" 90903489 "Big value and special characters &$Â§())!")";
+	const auto filename = create_temporary_dbc_with(dbc_contents.c_str());
+
+	Libdbc::DbcParser p;
+	p.parse_file(filename);
+
+	std::vector<uint8_t> data{0x1, 0x2};
+	std::vector<double> result_values;
+	REQUIRE(p.get_messages().size() == 1);
+	REQUIRE(p.parse_message(234, data, result_values) == Libdbc::Message::ParseSignalsStatus::Success);
+	REQUIRE(result_values.size() == 1);
+	REQUIRE(Catch::Approx(result_values.at(0)) == 0x1);
+}

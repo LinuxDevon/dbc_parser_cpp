@@ -181,7 +181,7 @@ void DbcParser::parse_dbc_messages(const std::vector<std::string>& lines) {
 			continue;
 		}
 
-		if (std::regex_search(line, match, signal_re)) {
+		if (std::regex_search(line, match, signal_re) && messages.size() > 0) {
 			std::string name = match.str(SIGNAL_NAME_GROUP);
 			bool is_multiplexed = false; // No support yet
 			uint32_t start_bit = static_cast<uint32_t>(std::stoul(match.str(SIGNAL_START_BIT_GROUP)));
@@ -204,7 +204,7 @@ void DbcParser::parse_dbc_messages(const std::vector<std::string>& lines) {
 			continue;
 		}
 
-		if (std::regex_search(line, match, value_re)) {
+		if (std::regex_search(line, match, value_re) && messages.size() > 0) {
 			uint32_t message_id = static_cast<uint32_t>(std::stoul(match.str(2)));
 			std::string signal_name = match.str(3);
 
