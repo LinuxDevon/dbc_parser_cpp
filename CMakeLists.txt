@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.16)
 
 # Keep this on one line for release checking
-project(dbc VERSION 0.4.0 DESCRIPTION "C++ DBC Parser")
+project(dbc VERSION 0.5.0 DESCRIPTION "C++ DBC Parser")
 
 # -- PROJECT OPTIONS  -- #
 option(DBC_ENABLE_TESTS "Enable Unittests" ON)
@@ -95,7 +95,6 @@ if(DBC_GENERATE_SINGLE_HEADER)
 endif()
 
 ## Installation
-include(GNUInstallDirs)
 # install lib
 install(TARGETS ${PROJECT_NAME}
 		DESTINATION ${CMAKE_INSTALL_LIBDIR})
