@@ -19,12 +19,13 @@ struct Message {
 		ErrorBigEndian,
 		ErrorUnknownID,
 		ErrorInvalidConversion,
+		ErrorInvalidSignalSize,
 	};
 
 	ParseSignalsStatus parse_signals(const std::vector<uint8_t>& data, std::vector<double>& values) const;
 
 	void append_signal(const Signal& signal);
-	std::vector<Signal> get_signals() const;
+	const std::vector<Signal>& get_signals() const;
 	uint32_t id() const;
 	uint8_t size() const;
 	const std::string& name() const;
@@ -33,11 +34,11 @@ struct Message {
 	virtual bool operator==(const Message& rhs) const;
 
 private:
-	uint32_t m_id;
-	std::string m_name;
-	uint8_t m_size;
-	std::string m_node;
-	std::vector<Signal> m_signals;
+	uint32_t m_id{};
+	std::string m_name{};
+	uint8_t m_size{};
+	std::string m_node{};
+	std::vector<Signal> m_signals{};
 
 	friend std::ostream& operator<<(std::ostream& out, const Message& msg);
 };

@@ -5,6 +5,7 @@ project(dbc VERSION 0.5.0 DESCRIPTION "C++ DBC Parser")
 
 # -- PROJECT OPTIONS  -- #
 option(DBC_ENABLE_TESTS "Enable Unittests" ON)
+option(DBC_MODERN_CPP "Enable support for modern C++ 17. Default is C++ 11 for legacy systems." OFF)
 option(DBC_TEST_LOCALE_INDEPENDENCE "Used to deterime if the libary is locale agnostic when it comes to converting floats. You need `de_DE.UTF-8` locale installed for this testing." OFF)
 option(DBC_GENERATE_DOCS "Use doxygen if installed to generated documentation files" OFF)
 option(DBC_GENERATE_SINGLE_HEADER "This will run the generator for the single header file version. Default is OFF since we make a static build. Requires cargo installed." OFF)
@@ -21,8 +22,13 @@ set(CPACK_RESOURCE_FILE_README ${CMAKE_CURRENT_SOURCE_DIR}/README.md)
 include(CPack)
 
 # specify the C++ standard
-set(CMAKE_CXX_STANDARD 11)
-set(CMAKE_CXX_STANDARD_REQUIRED True)
+if (DBC_ENABLE_TESTS OR DBC_MODERN_CPP)
+	set(CMAKE_CXX_STANDARD 17)
+	set(CMAKE_CXX_STANDARD_REQUIRED True)
+else()
+	set(CMAKE_CXX_STANDARD 11)
+	set(CMAKE_CXX_STANDARD_REQUIRED True)
+endif()
 
 find_package(FastFloat QUIET)
 if (NOT ${FastFloat_FOUND})

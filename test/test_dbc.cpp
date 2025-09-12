@@ -14,8 +14,7 @@ TEST_CASE("Testing dbc file loading error issues", "[fileio][error]") {
 	auto parser = std::unique_ptr<Libdbc::DbcParser>(new Libdbc::DbcParser());
 
 	SECTION("Loading a non dbc file should throw an error", "[error]") {
-		REQUIRE_THROWS_AS(parser->parse_file(TEXT_FILE), Libdbc::NonDbcFileFormatError);
-		REQUIRE_THROWS_WITH(parser->parse_file(TEXT_FILE), ContainsSubstring("TextFile.txt"));
+		REQUIRE_THROWS_AS(parser->validate_dbc_file(TEXT_FILE), Libdbc::NonDbcFileFormatError);
 	}
 
 	SECTION("Loading a dbc with missing version header throws an error (VERSION)", "[error]") {

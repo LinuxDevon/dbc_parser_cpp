@@ -6,6 +6,8 @@
 #include <string>
 #include <vector>
 
+#include <libdbc/utils/utils.hpp>
+
 namespace Libdbc {
 
 constexpr unsigned ONE_BYTE = 8;
@@ -44,6 +46,7 @@ Message::ParseSignalsStatus Message::parse_signals(const std::vector<uint8_t>& d
 	const auto len = size * 8;
 	uint64_t value = 0;
 	for (const auto& signal : m_signals) {
+
 		if (signal.is_bigendian) {
 			uint32_t start_bit = ONE_BYTE * (signal.start_bit / ONE_BYTE) + (SEVEN_BITS - (signal.start_bit % ONE_BYTE)); // Calculation taken from python CAN
 			value = data_big_endian << start_bit;
@@ -92,7 +95,7 @@ void Message::append_signal(const Signal& signal) {
 	m_signals.push_back(signal);
 }
 
-std::vector<Signal> Message::get_signals() const {
+const std::vector<Signal>& Message::get_signals() const {
 	return m_signals;
 }
 

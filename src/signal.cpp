@@ -5,7 +5,7 @@
 #include <vector>
 
 namespace Libdbc {
-Signal::Signal(std::string name,
+Signal::Signal(const std::string& name,
 			   bool is_multiplexed,
 			   uint32_t start_bit,
 			   uint32_t size,
@@ -15,8 +15,8 @@ Signal::Signal(std::string name,
 			   double offset,
 			   double min,
 			   double max,
-			   std::string unit,
-			   std::vector<std::string> receivers)
+			   const std::string& unit,
+			   const std::vector<std::string>& receivers)
 	: name(name)
 	, is_multiplexed(is_multiplexed)
 	, start_bit(start_bit)

@@ -30,7 +30,7 @@ struct Signal {
 
 	Signal() = delete;
 	virtual ~Signal() = default;
-	explicit Signal(std::string name,
+	explicit Signal(const std::string& name,
 					bool is_multiplexed,
 					uint32_t start_bit,
 					uint32_t size,
@@ -40,8 +40,8 @@ struct Signal {
 					double offset,
 					double min,
 					double max,
-					std::string unit,
-					std::vector<std::string> receivers);
+					const std::string& unit,
+					const std::vector<std::string>& receivers);
 
 	virtual bool operator==(const Signal& rhs) const;
 	bool operator<(const Signal& rhs) const;

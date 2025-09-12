@@ -41,7 +41,8 @@ maybe not this one either\n\
 \n\
 Someone wrote something....\n\
    b\n\
-end";
+end\
+";
 
 	std::istringstream stream(test_string);
 
@@ -78,7 +79,7 @@ end";
 TEST_CASE("Test the string trim feature", "[string]") {
 	std::string s = "    	there might be some white space....   ";
 
-	REQUIRE(String::trim(s) == "there might be some white space....");
+	REQUIRE(trim(s) == "there might be some white space....");
 }
 
 TEST_CASE("Test string split feature", "[string]") {
