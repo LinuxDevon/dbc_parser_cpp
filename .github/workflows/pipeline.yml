@@ -83,7 +83,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [windows-2019, windows-2022]
+        os: [windows-2025, windows-2022]
         platform: [Win32, x64]
         build_type: [Debug, Release]
         std: [11]
@@ -120,11 +120,12 @@ jobs:
         shell: cmd
 
   macos-builds:
-    name: macos ${{matrix.cxx}}, C++${{matrix.std}}, ${{matrix.build_type}}
-    runs-on: macos-12
+    name: ${{matrix.os}}, ${{matrix.cxx}}, C++${{matrix.std}}, ${{matrix.build_type}}
+    runs-on: ${{matrix.os}}
     strategy:
       fail-fast: false
       matrix:
+        os: [macos-15-large]
         cxx:
           - g++
           - clang++
