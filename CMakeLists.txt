@@ -8,6 +8,7 @@ option(DBC_ENABLE_TESTS "Enable Unittests" ON)
 option(DBC_TEST_LOCALE_INDEPENDENCE "Used to deterime if the libary is locale agnostic when it comes to converting floats. You need `de_DE.UTF-8` locale installed for this testing." OFF)
 option(DBC_GENERATE_DOCS "Use doxygen if installed to generated documentation files" OFF)
 option(DBC_GENERATE_SINGLE_HEADER "This will run the generator for the single header file version. Default is OFF since we make a static build. Requires cargo installed." OFF)
+option(DBC_BUILD_EXAMPLES "Build all the examples in the examples folder." OFF)
 # ---------------------- #
 
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
@@ -123,3 +124,5 @@ add_custom_target(clang-tidy-fix
 	clang-tidy -fix-notes -p ${CMAKE_BINARY_DIR}/compile_commands.json ${SOURCE_FILES} ${HEADER_FILES}
 	DEPENDS ${SOURCE_FILES} ${HEADER_FILES}
 )
+
+add_subdirectory(examples)

@@ -125,7 +125,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [macos-15-large]
+        os: [macos-15-intel]
         cxx:
           - g++
           - clang++
@@ -229,3 +229,14 @@ jobs:
     - name: Run build
       run: cmake --build build
 
+  test-examples:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Make build directory
+      run: cmake -Bbuild -DDBC_BUILD_EXAMPLES=ON -H$GITHUB_WORKSPACE
+
+    - name: Run example tests
+      run: cmake --build build --target test_examples

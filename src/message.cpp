@@ -120,7 +120,7 @@ void Message::add_value_description(const std::string& signal_name, const std::v
 std::ostream& operator<<(std::ostream& out, const Message& msg) {
 	out << "Message: {id: " << msg.id() << ", ";
 	out << "name: " << msg.m_name << ", ";
-	out << "size: " << msg.m_size << ", ";
+	out << "size: " << std::to_string(msg.m_size) << ", ";
 	out << "node: " << msg.m_node << "}";
 	return out;
 }

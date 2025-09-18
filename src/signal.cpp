@@ -42,13 +42,13 @@ bool Signal::operator<(const Signal& rhs) const {
 }
 
 std::ostream& operator<<(std::ostream& out, const Signal& sig) {
-	out << "Signal {name: " << sig.name << ", ";
+	out << "Signal: {name: " << sig.name << ", ";
 	out << "Multiplexed: " << (sig.is_multiplexed ? "True" : "False") << ", ";
-	out << "Start bit: " << sig.start_bit << ", ";
-	out << "Size: " << sig.size << ", ";
+	out << "Start bit: " << std::to_string(sig.start_bit) << ", ";
+	out << "Size: " << std::to_string(sig.size) << ", ";
 	out << "Endianness: " << (sig.is_bigendian ? "Big endian" : "Little endian") << ", ";
 	out << "Value Type: " << (sig.is_signed ? "Signed" : "Unsigned") << ", ";
-	out << "Min: " << sig.min << ", Max: " << sig.max << ", ";
+	out << "Min: " << std::to_string(sig.min) << ", Max: " << std::to_string(sig.max) << ", ";
 	out << "Unit: (" << sig.unit << "), ";
 	out << "receivers: ";
 	for (const auto& reciever : sig.receivers) {
