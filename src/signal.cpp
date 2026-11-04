@@ -32,7 +32,8 @@ Signal::Signal(std::string name,
 }
 
 bool Signal::operator==(const Signal& rhs) const {
-	return (this->name == rhs.name) && (this->is_multiplexed == rhs.is_multiplexed) && (this->start_bit == rhs.start_bit) && (this->size == rhs.size)
+	return (this->name == rhs.name) && (this->is_multiplexed == rhs.is_multiplexed) && (this->is_multiplexor == rhs.is_multiplexor)
+		&& (this->multiplexer_value == rhs.multiplexer_value) && (this->start_bit == rhs.start_bit) && (this->size == rhs.size)
 		&& (this->is_bigendian == rhs.is_bigendian) && (this->is_signed == rhs.is_signed) && (this->offset == rhs.offset) && (this->min == rhs.min)
 		&& (this->max == rhs.max) && (this->unit == rhs.unit) && (this->receivers == rhs.receivers);
 }
@@ -44,6 +45,10 @@ bool Signal::operator<(const Signal& rhs) const {
 std::ostream& operator<<(std::ostream& out, const Signal& sig) {
 	out << "Signal {name: " << sig.name << ", ";
 	out << "Multiplexed: " << (sig.is_multiplexed ? "True" : "False") << ", ";
+	if (sig.is_multiplexed) {
+		out << "Multiplexer value: " << sig.multiplexer_value << ", ";
+	}
+	out << "Multiplexor: " << (sig.is_multiplexor ? "True" : "False") << ", ";
 	out << "Start bit: " << sig.start_bit << ", ";
 	out << "Size: " << sig.size << ", ";
 	out << "Endianness: " << (sig.is_bigendian ? "Big endian" : "Little endian") << ", ";

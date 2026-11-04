@@ -6,6 +6,7 @@
 #include <libdbc/message.hpp>
 #include <regex>
 #include <string>
+#include <unordered_map>
 #include <vector>
 
 namespace Libdbc {
@@ -32,6 +33,7 @@ public:
 	std::vector<Libdbc::Message> get_messages() const;
 
 	Message::ParseSignalsStatus parse_message(uint32_t message_id, const std::vector<uint8_t>& data, std::vector<double>& out_values);
+	Message::ParseSignalsStatus parse_message(uint32_t message_id, const std::vector<uint8_t>& data, std::unordered_map<std::string, double>& out_values);
 
 	std::vector<std::string> unused_lines() const;
 

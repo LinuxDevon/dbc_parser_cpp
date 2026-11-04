@@ -4,6 +4,7 @@
 #include <libdbc/signal.hpp>
 #include <ostream>
 #include <string>
+#include <unordered_map>
 #include <vector>
 
 namespace Libdbc {
@@ -26,10 +27,55 @@ bool Message::operator==(const Message& rhs) const {
 	return (m_id == rhs.id()) && (m_name == rhs.m_name) && (m_size == rhs.m_size) && (m_node == rhs.m_node);
 }
 
-Message::ParseSignalsStatus Message::parse_signals(const std::vector<uint8_t>& data, std::vector<double>& values) const {
+namespace {
+
+// Extracts the raw (unscaled) bits of a signal. Bits above signal.size are not masked off.
+uint64_t extract_raw(const Signal& signal, uint64_t data_little_endian, uint64_t data_big_endian, std::size_t len) {
+	if (signal.is_bigendian) {
+		uint32_t start_bit = ONE_BYTE * (signal.start_bit / ONE_BYTE) + (SEVEN_BITS - (signal.start_bit % ONE_BYTE)); // Calculation taken from python CAN
+		uint64_t value = data_big_endian << start_bit;
+		return value >> (len - signal.size);
+	}
+	return data_little_endian >> signal.start_bit;
+}
+
+double to_physical(const Signal& signal, uint64_t value) {
+	if (signal.is_signed && signal.size > 1) {
+		switch (signal.size) {
+		case ONE_BYTE:
+			return static_cast<int8_t>(value) * signal.factor + signal.offset;
+		case TWO_BYTES:
+			return static_cast<int16_t>(value) * signal.factor + signal.offset;
+		case FOUR_BYTES:
+			return static_cast<int32_t>(value) * signal.factor + signal.offset;
+		case EIGHT_BYTES:
+			return static_cast<double>(value) * signal.factor + signal.offset;
+		default: {
+			// 2 complement -> decimal
+			const bool is_negative = (value & (1ULL << (signal.size - 1))) != 0;
+			int64_t nativeInt = 0;
+			if (is_negative) {
+				nativeInt = static_cast<int64_t>(value | ~((1ULL << signal.size) - 1)); // invert all bits above signal.size
+			} else {
+				nativeInt = static_cast<int64_t>(value & ((1ULL << signal.size) - 1)); // masking
+			}
+			return static_cast<double>(nativeInt) * signal.factor + signal.offset;
+		}
+		}
+	}
+	// use only the relevant bits
+	value = value & ((1 << signal.size) - 1); // masking
+	return static_cast<double>(value) * signal.factor + signal.offset;
+}
+
+// Decodes every signal that is present in the frame and hands it to on_value(signal, value).
+// Multiplexed signals are only present when the multiplexor's raw value matches their multiplexer value.
+// NOTE: Extended multiplexing (SG_MUL_VAL_) is not supported. All multiplexed signals are switched by the top level multiplexor.
+template<typename OnValue>
+Message::ParseSignalsStatus decode_signals(const std::vector<Signal>& signals, const std::vector<uint8_t>& data, OnValue on_value) {
 	auto size = data.size();
 	if (size > ONE_BYTE) {
-		return ParseSignalsStatus::ErrorMessageToLong; // not supported yet
+		return Message::ParseSignalsStatus::ErrorMessageToLong; // not supported yet
 	}
 
 	uint64_t data_little_endian = 0;
@@ -42,50 +88,41 @@ Message::ParseSignalsStatus Message::parse_signals(const std::vector<uint8_t>& d
 	// TODO: does this also work on a big endian machine?
 
 	const auto len = size * 8;
-	uint64_t value = 0;
-	for (const auto& signal : m_signals) {
-		if (signal.is_bigendian) {
-			uint32_t start_bit = ONE_BYTE * (signal.start_bit / ONE_BYTE) + (SEVEN_BITS - (signal.start_bit % ONE_BYTE)); // Calculation taken from python CAN
-			value = data_big_endian << start_bit;
-			value = value >> (len - signal.size);
-		} else {
-			value = data_little_endian >> signal.start_bit;
-		}
 
-		if (signal.is_signed && signal.size > 1) {
-			switch (signal.size) {
-			case ONE_BYTE:
-				values.push_back(static_cast<int8_t>(value) * signal.factor + signal.offset);
-				break;
-			case TWO_BYTES:
-				values.push_back(static_cast<int16_t>(value) * signal.factor + signal.offset);
-				break;
-			case FOUR_BYTES:
-				values.push_back(static_cast<int32_t>(value) * signal.factor + signal.offset);
-				break;
-			case EIGHT_BYTES:
-				values.push_back(static_cast<double>(value) * signal.factor + signal.offset);
-				break;
-			default: {
-				// 2 complement -> decimal
-				const bool is_negative = (value & (1ULL << (signal.size - 1))) != 0;
-				int64_t nativeInt = 0;
-				if (is_negative) {
-					nativeInt = static_cast<int64_t>(value | ~((1ULL << signal.size) - 1)); // invert all bits above signal.size
-				} else {
-					nativeInt = static_cast<int64_t>(value & ((1ULL << signal.size) - 1)); // masking
-				}
-				values.push_back(static_cast<double>(nativeInt) * signal.factor + signal.offset);
-				break;
+	bool has_multiplexor = false;
+	uint64_t multiplexer_value = 0;
+	for (const auto& signal : signals) {
+		if (signal.is_multiplexor && !signal.is_multiplexed) {
+			multiplexer_value = extract_raw(signal, data_little_endian, data_big_endian, len);
+			if (signal.size < EIGHT_BYTES) {
+				multiplexer_value &= (1ULL << signal.size) - 1;
 			}
-			}
-		} else {
-			// use only the relevant bits
-			value = value & ((1 << signal.size) - 1); // masking
-			values.push_back(static_cast<double>(value) * signal.factor + signal.offset);
+			has_multiplexor = true;
+			break;
 		}
 	}
-	return ParseSignalsStatus::Success;
+
+	for (const auto& signal : signals) {
+		if (signal.is_multiplexed && (!has_multiplexor || signal.multiplexer_value != multiplexer_value)) {
+			continue;
+		}
+		on_value(signal, to_physical(signal, extract_raw(signal, data_little_endian, data_big_endian, len)));
+	}
+	return Message::ParseSignalsStatus::Success;
+}
+
+}
+
+Message::ParseSignalsStatus Message::parse_signals(const std::vector<uint8_t>& data, std::vector<double>& values) const {
+	return decode_signals(m_signals, data, [&values](const Signal&, double value) {
+		values.push_back(value);
+	});
+}
+
+Message::ParseSignalsStatus Message::parse_signals(const std::vector<uint8_t>& data, std::unordered_map<std::string, double>& values) const {
+	return decode_signals(m_signals, data, [&values](const Signal& signal, double value) {
+		values[signal.name] = value;
+	});
 }
 
 void Message::append_signal(const Signal& signal) {

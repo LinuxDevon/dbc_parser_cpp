@@ -2,7 +2,11 @@
 #include <catch2/catch_test_macros.hpp>
 #include <catch2/matchers/catch_matchers.hpp>
 
+#include <algorithm>
 #include <libdbc/dbc.hpp>
+#include <string>
+#include <unordered_map>
+#include <vector>
 
 #include "testing_utils/common.hpp"
 #include "testing_utils/defines.hpp"
@@ -208,4 +212,127 @@ VAL_ 234 State1 123 "Description 1" 0 "Description 2" 90903489 "Big value and sp
 	REQUIRE(p.parse_message(234, data, result_values) == Libdbc::Message::ParseSignalsStatus::Success);
 	REQUIRE(result_values.size() == 1);
 	REQUIRE(Catch::Approx(result_values.at(0)) == 0x1);
+}
+
+TEST_CASE("Parse multiplexed signals") {
+	Libdbc::DbcParser p;
+	p.parse_file(COMPLEX_DBC_FILE);
+
+	const auto messages = p.get_messages();
+	const auto sonars = std::find_if(messages.begin(), messages.end(), [](const Libdbc::Message& msg) {
+		return msg.id() == 200;
+	});
+	REQUIRE(sonars != messages.end());
+
+	const auto signals = sonars->get_signals();
+	REQUIRE(signals.size() == 10);
+
+	SECTION("Multiplexor") {
+		CHECK(signals.at(0).name == "SENSOR_SONARS_mux");
+		CHECK(signals.at(0).is_multiplexor);
+		CHECK_FALSE(signals.at(0).is_multiplexed);
+	}
+
+	SECTION("Non multiplexed signal") {
+		CHECK(signals.at(1).name == "SENSOR_SONARS_err_count");
+		CHECK_FALSE(signals.at(1).is_multiplexor);
+		CHECK_FALSE(signals.at(1).is_multiplexed);
+	}
+
+	SECTION("Multiplexed signals") {
+		CHECK(signals.at(2).name == "SENSOR_SONARS_left");
+		CHECK(signals.at(2).is_multiplexed);
+		CHECK_FALSE(signals.at(2).is_multiplexor);
+		CHECK(signals.at(2).multiplexer_value == 0);
+		CHECK(signals.at(2).start_bit == 16);
+		CHECK(signals.at(2).size == 12);
+
+		CHECK(signals.at(6).name == "SENSOR_SONARS_no_filt_left");
+		CHECK(signals.at(6).is_multiplexed);
+		CHECK(signals.at(6).multiplexer_value == 1);
+	}
+
+	SECTION("No signal lines are left unparsed") {
+		for (const auto& line : p.unused_lines()) {
+			CHECK(line.find("SG_ SENSOR_SONARS") == std::string::npos);
+		}
+	}
+}
+
+TEST_CASE("Parse extended multiplexor signal (mNM)") {
+	std::string dbc_contents = PRIMITIVE_DBC + R"(BO_ 300 EXT_MUX: 8 Vector__XXX
+ SG_ Mux M : 0|8@1+ (1,0) [0|255] "" Vector__XXX
+ SG_ SubMux m3M : 8|8@1+ (1,0) [0|255] "" Vector__XXX
+ SG_ Value m12 : 16|8@1+ (1,0) [0|255] "" Vector__XXX
+)";
+	const auto filename = create_temporary_dbc_with(dbc_contents.c_str());
+
+	Libdbc::DbcParser p;
+	p.parse_file(filename);
+
+	REQUIRE(p.get_messages().size() == 1);
+	const auto signals = p.get_messages().at(0).get_signals();
+	REQUIRE(signals.size() == 3);
+
+	CHECK(signals.at(1).name == "SubMux");
+	CHECK(signals.at(1).is_multiplexor);
+	CHECK(signals.at(1).is_multiplexed);
+	CHECK(signals.at(1).multiplexer_value == 3);
+
+	CHECK(signals.at(2).name == "Value");
+	CHECK(signals.at(2).multiplexer_value == 12);
+}
+
+TEST_CASE("Decode multiplexed message") {
+	Libdbc::DbcParser p;
+	p.parse_file(COMPLEX_DBC_FILE);
+
+	// err_count = 5, left = 100, middle = 200, right = 300, rear = 400 (raw)
+	std::vector<uint8_t> mux0{0x50, 0x00, 0x64, 0x80, 0x0C, 0x2C, 0x01, 0x19};
+	std::vector<uint8_t> mux1{0x51, 0x00, 0x64, 0x80, 0x0C, 0x2C, 0x01, 0x19};
+	std::vector<uint8_t> mux2{0x52, 0x00, 0x64, 0x80, 0x0C, 0x2C, 0x01, 0x19};
+
+	SECTION("Values in signal order only contain the active signals") {
+		std::vector<double> values;
+		REQUIRE(p.parse_message(200, mux0, values) == Libdbc::Message::ParseSignalsStatus::Success);
+		std::vector<double> expected{0, 5, 10, 20, 30, 40};
+		REQUIRE(values.size() == expected.size());
+		for (size_t i = 0; i < expected.size(); i++) {
+			CHECK(Catch::Approx(values.at(i)) == expected.at(i));
+		}
+	}
+
+	SECTION("Values by name for multiplexer value 0") {
+		std::unordered_map<std::string, double> values;
+		REQUIRE(p.parse_message(200, mux0, values) == Libdbc::Message::ParseSignalsStatus::Success);
+		CHECK(values.size() == 6);
+		CHECK(Catch::Approx(values.at("SENSOR_SONARS_mux")) == 0);
+		CHECK(Catch::Approx(values.at("SENSOR_SONARS_err_count")) == 5);
+		CHECK(Catch::Approx(values.at("SENSOR_SONARS_left")) == 10);
+		CHECK(Catch::Approx(values.at("SENSOR_SONARS_rear")) == 40);
+		CHECK(values.count("SENSOR_SONARS_no_filt_left") == 0);
+	}
+
+	SECTION("Values by name for multiplexer value 1") {
+		std::unordered_map<std::string, double> values;
+		REQUIRE(p.parse_message(200, mux1, values) == Libdbc::Message::ParseSignalsStatus::Success);
+		CHECK(values.size() == 6);
+		CHECK(Catch::Approx(values.at("SENSOR_SONARS_mux")) == 1);
+		CHECK(Catch::Approx(values.at("SENSOR_SONARS_no_filt_left")) == 10);
+		CHECK(Catch::Approx(values.at("SENSOR_SONARS_no_filt_rear")) == 40);
+		CHECK(values.count("SENSOR_SONARS_left") == 0);
+	}
+
+	SECTION("Unknown multiplexer value only yields non multiplexed signals") {
+		std::unordered_map<std::string, double> values;
+		REQUIRE(p.parse_message(200, mux2, values) == Libdbc::Message::ParseSignalsStatus::Success);
+		CHECK(values.size() == 2);
+		CHECK(Catch::Approx(values.at("SENSOR_SONARS_mux")) == 2);
+		CHECK(Catch::Approx(values.at("SENSOR_SONARS_err_count")) == 5);
+	}
+
+	SECTION("Unknown message id") {
+		std::unordered_map<std::string, double> values;
+		CHECK(p.parse_message(9999, mux0, values) == Libdbc::Message::ParseSignalsStatus::ErrorUnknownID);
+	}
 }
