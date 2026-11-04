@@ -5,6 +5,7 @@
 #include <iostream>
 #include <libdbc/signal.hpp>
 #include <string>
+#include <unordered_map>
 #include <vector>
 
 namespace Libdbc {
@@ -21,7 +22,11 @@ struct Message {
 		ErrorInvalidConversion,
 	};
 
+	// Decodes the signals present in data, in signal order. For multiplexed messages only the multiplexor,
+	// the non multiplexed signals and the signals matching the current multiplexer value are present.
 	ParseSignalsStatus parse_signals(const std::vector<uint8_t>& data, std::vector<double>& values) const;
+	// Same as above but keyed by signal name, so multiplexed messages can be decoded without tracking which signals are present.
+	ParseSignalsStatus parse_signals(const std::vector<uint8_t>& data, std::unordered_map<std::string, double>& values) const;
 
 	void append_signal(const Signal& signal);
 	std::vector<Signal> get_signals() const;

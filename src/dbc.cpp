@@ -9,6 +9,7 @@
 #include <libdbc/utils/utils.hpp>
 #include <regex>
 #include <string>
+#include <unordered_map>
 #include <vector>
 
 namespace Libdbc {
@@ -17,6 +18,7 @@ const auto floatPattern = "(-?\\d+\\.?(\\d+)?)"; // Can be negative
 
 const auto signalIdentifierPattern = "(SG_)";
 const auto namePattern = "(\\w+)";
+const auto multiplexerPattern = "(?:\\s(M|m\\d+M?))?"; // Optional: M = multiplexor, mN = multiplexed by value N, mNM = both
 const auto bitStartPattern = "(\\d+)"; // Cannot be negative
 const auto lengthPattern = "(\\d+)"; // Cannot be negative
 const auto byteOrderPattern = "([0-1])";
@@ -34,16 +36,17 @@ const auto receiverPattern = "([\\w\\,]+|Vector__XXX)*";
 const auto whiteSpace = "\\s";
 
 constexpr unsigned SIGNAL_NAME_GROUP = 2;
-constexpr unsigned SIGNAL_START_BIT_GROUP = 3;
-constexpr unsigned SIGNAL_SIZE_GROUP = 4;
-constexpr unsigned SIGNAL_ENDIAN_GROUP = 5;
-constexpr unsigned SIGNAL_SIGNED_GROUP = 6;
-constexpr unsigned SIGNAL_FACTOR_GROUP = 7;
-constexpr unsigned SIGNAL_OFFSET_GROUP = 9;
-constexpr unsigned SIGNAL_MIN_GROUP = 11;
-constexpr unsigned SIGNAL_MAX_GROUP = 13;
-constexpr unsigned SIGNAL_UNIT_GROUP = 15;
-constexpr unsigned SIGNAL_RECIEVER_GROUP = 16;
+constexpr unsigned SIGNAL_MULTIPLEXER_GROUP = 3;
+constexpr unsigned SIGNAL_START_BIT_GROUP = 4;
+constexpr unsigned SIGNAL_SIZE_GROUP = 5;
+constexpr unsigned SIGNAL_ENDIAN_GROUP = 6;
+constexpr unsigned SIGNAL_SIGNED_GROUP = 7;
+constexpr unsigned SIGNAL_FACTOR_GROUP = 8;
+constexpr unsigned SIGNAL_OFFSET_GROUP = 10;
+constexpr unsigned SIGNAL_MIN_GROUP = 12;
+constexpr unsigned SIGNAL_MAX_GROUP = 14;
+constexpr unsigned SIGNAL_UNIT_GROUP = 16;
+constexpr unsigned SIGNAL_RECIEVER_GROUP = 17;
 
 constexpr unsigned MESSAGE_ID_GROUP = 2;
 constexpr unsigned MESSAGE_NAME_GROUP = 3;
@@ -63,11 +66,9 @@ DbcParser::DbcParser()
 	, node_re("^(BU_:)\\s?((?:[\\w]+?\\s?)*)?")
 	, message_re("^(BO_)\\s(\\d+)\\s(\\w+)\\:\\s(\\d+)\\s(\\w+|Vector__XXX)")
 	, value_re("^(VAL_)\\s(\\d+)\\s(\\w+)((?:\\s(\\d+)\\s\"([^\"]*)\")+)\\s;$")
-	,
-	// NOTE: No multiplex support yet
-	signal_re(std::string("^") + whiteSpace + signalIdentifierPattern + whiteSpace + namePattern + whiteSpace + "\\:" + whiteSpace + bitStartPattern + "\\|"
-			  + lengthPattern + "\\@" + byteOrderPattern + signPattern + whiteSpace + offsetScalePattern + whiteSpace + minMaxPattern + whiteSpace + unitPattern
-			  + whiteSpace + receiverPattern) {
+	, signal_re(std::string("^") + whiteSpace + signalIdentifierPattern + whiteSpace + namePattern + multiplexerPattern + whiteSpace + "\\:" + whiteSpace
+				+ bitStartPattern + "\\|" + lengthPattern + "\\@" + byteOrderPattern + signPattern + whiteSpace + offsetScalePattern + whiteSpace
+				+ minMaxPattern + whiteSpace + unitPattern + whiteSpace + receiverPattern) {
 }
 
 void DbcParser::parse_file(std::istream& stream) {
@@ -120,6 +121,16 @@ std::vector<Libdbc::Message> DbcParser::get_messages() const {
 }
 
 Message::ParseSignalsStatus DbcParser::parse_message(const uint32_t message_id, const std::vector<uint8_t>& data, std::vector<double>& out_values) {
+	for (const auto& message : messages) {
+		if (message.id() == message_id) {
+			return message.parse_signals(data, out_values);
+		}
+	}
+	return Message::ParseSignalsStatus::ErrorUnknownID;
+}
+
+Message::ParseSignalsStatus
+DbcParser::parse_message(const uint32_t message_id, const std::vector<uint8_t>& data, std::unordered_map<std::string, double>& out_values) {
 	for (const auto& message : messages) {
 		if (message.id() == message_id) {
 			return message.parse_signals(data, out_values);
@@ -183,7 +194,11 @@ void DbcParser::parse_dbc_messages(const std::vector<std::string>& lines) {
 
 		if (std::regex_search(line, match, signal_re) && !messages.empty()) {
 			std::string name = match.str(SIGNAL_NAME_GROUP);
-			bool is_multiplexed = false; // No support yet
+			// Multiplexer indicator: "M", "mN" or "mNM" (extended multiplexing)
+			std::string multiplexer = match.str(SIGNAL_MULTIPLEXER_GROUP);
+			bool is_multiplexed = !multiplexer.empty() && multiplexer.front() == 'm';
+			bool is_multiplexor = !multiplexer.empty() && multiplexer.back() == 'M';
+			uint32_t multiplexer_value = is_multiplexed ? static_cast<uint32_t>(std::stoul(multiplexer.substr(1))) : 0;
 			uint32_t start_bit = static_cast<uint32_t>(std::stoul(match.str(SIGNAL_START_BIT_GROUP)));
 			uint32_t size = static_cast<uint32_t>(std::stoul(match.str(SIGNAL_SIZE_GROUP)));
 			bool is_bigendian = (std::stoul(match.str(SIGNAL_ENDIAN_GROUP)) == 0);
@@ -200,6 +215,8 @@ void DbcParser::parse_dbc_messages(const std::vector<std::string>& lines) {
 			Utils::String::split(match.str(SIGNAL_RECIEVER_GROUP), receivers, ',');
 
 			Signal sig(name, is_multiplexed, start_bit, size, is_bigendian, is_signed, factor, offset, min, max, unit, receivers);
+			sig.is_multiplexor = is_multiplexor;
+			sig.multiplexer_value = multiplexer_value;
 			messages.back().append_signal(sig);
 			continue;
 		}

@@ -15,7 +15,9 @@ struct Signal {
 	};
 
 	std::string name;
-	bool is_multiplexed;
+	bool is_multiplexed; // Signal is only present for a specific multiplexer value (mN)
+	bool is_multiplexor = false; // Signal is the multiplexer switch of its message (M)
+	uint32_t multiplexer_value = 0; // Multiplexer value this signal is present for. Only valid if is_multiplexed
 	uint32_t start_bit;
 	uint32_t size;
 	bool is_bigendian;
