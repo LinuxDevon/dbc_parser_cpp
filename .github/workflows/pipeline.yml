@@ -125,7 +125,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [macos-15-large]
+        os: [macos-15]
         cxx:
           - g++
           - clang++
@@ -168,7 +168,7 @@ jobs:
         run: ctest --output-on-failure --test-dir build -j `sysctl -n hw.ncpu` -V
 
   format-check:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
 
     steps:
     - uses: actions/checkout@v4
@@ -188,7 +188,7 @@ jobs:
       run: ./scripts/fmt.sh
 
   clang-tidy-check:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
 
     steps:
     - uses: actions/checkout@v4
